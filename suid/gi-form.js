@@ -594,33 +594,102 @@
     view.scrollTop = 0;
     var s = secEl(id), h = s && s.querySelector('h2'); if (h) h.focus({ preventScroll: true });
   }
-  /* Con errores, el primer intento avisa y el segundo (sin editar nada) deja explorar; los errores quedan marcados. */
+  /* Demo: en vez de marcar errores se completan solo los faltantes o inválidos, sin pisar lo escrito. */
+  function pad4(n) { n = String(n); while (n.length < 4) n = '0' + n; return n; }
+  function minD(x, y) { return x < y ? x : y; }
+  function fillPerson(k) {
+    var p = st[k], inf = k === 'i', n = GI.all().length, G = GEO();
+    var menor = inf && menorNow() === true;
+    if (!p.tipoId) p.tipoId = C.tiposId[menor ? 2 : 0];
+    if (!p.numId) p.numId = (inf ? '10101' : '10303') + String(1000 + n * 7 + (menor ? 3 : 0));
+    if (!p.nombres.trim()) p.nombres = inf ? 'Andrés Felipe' : 'Claudia Patricia';
+    if (!p.apellidos.trim()) p.apellidos = inf ? 'Ramírez Cuesta' : 'Villegas Mora';
+    if (!p.pais) { p.pais = 'Colombia'; st.ui.paisOtro[k] = false; }
+    if (p.pais === 'Colombia') {
+      if (p.ciudad && !p.depto) inferDepto(k);
+      if (!p.depto || !G[p.depto]) { p.depto = 'Atlántico'; p.ciudad = ''; }
+      if (G[p.depto].indexOf(p.ciudad) < 0) p.ciudad = G[p.depto][0];
+      if (!p.rural) p.rural = 'No';
+      if (p.rural === 'Sí') { if (!p.viaRural) p.viaRural = C.viaRural[0][0]; }
+      else {
+        if (!p.a.via) p.a.via = C.viaUrbana[0][0];
+        if (!p.a.n1) p.a.n1 = '45'; if (!p.a.n2) p.a.n2 = '76'; if (!p.a.n3) p.a.n3 = '30';
+      }
+    } else {
+      if (!p.ciudad) p.ciudad = 'Ciudad de ejemplo';
+      if (!p.dirLibre.trim()) p.dirLibre = 'Calle 1 # 2 - 3';
+    }
+    if (!p.fechaNac || p.fechaNac > U.today()) p.fechaNac = U.addDays(U.today(), inf ? -10950 : -14600);
+    if (!p.sexo) p.sexo = inf ? C.sexo[0] : C.sexo[1];
+    if (p.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.correo)) p.correo = '';
+    if (p.telefono && p.telefono.length > 10) p.telefono = p.telefono.slice(0, 10);
+  }
+  function fillHechos() {
+    var f = st.f, today = U.today();
+    if (!f.fechaHechos || f.fechaHechos >= today || (f.fechaActo && f.fechaHechos >= f.fechaActo)) {
+      f.fechaHechos = U.addDays(today, -60);
+      if (f.fechaActo && f.fechaHechos >= f.fechaActo) f.fechaHechos = U.addDays(f.fechaActo, -30);
+    }
+    if (!f.competicion) f.competicion = 'Liga';
+    if (f.competicion === 'Otro') {
+      if (!f.otraCompeticion) f.otraCompeticion = C.otraCompeticion[0];
+      if (f.otraCompeticion === 'Otro' && !f.otraTexto.trim()) f.otraTexto = 'Torneo de demostración';
+    }
+    sync();
+    var eq = C.equipos[f.competicion === 'Otro' ? 'Liga' : f.competicion] || [];
+    if (!f.local || (f.local !== 'Otro' && eq.indexOf(f.local) < 0)) f.local = eq[0];
+    if (!f.visitante || f.visitante === f.local || (f.visitante !== 'Otro' && eq.indexOf(f.visitante) < 0)) f.visitante = eq.filter(function (x) { return x !== f.local; })[0];
+    if (f.local === 'Otro' && !f.localTxt.trim()) f.localTxt = 'Club local de ejemplo';
+    if (f.visitante === 'Otro' && !f.visitTxt.trim()) f.visitTxt = 'Club visitante de ejemplo';
+    if (!f.ciudadHechos) f.ciudadHechos = 'Barranquilla';
+    if (!f.origen.length) f.origen = [3];
+    sync();
+    if (!f.descripcion.trim()) f.descripcion = baseText();
+  }
+  function fillSancion() {
+    var f = st.f, today = U.today();
+    if (!f.fechaActo || f.fechaActo > today || (f.fechaHechos && f.fechaActo <= f.fechaHechos)) f.fechaActo = minD(U.addDays(f.fechaHechos || U.addDays(today, -60), 15), today);
+    if (!f.numActo.trim()) f.numActo = 'RES-2026-' + pad4(412 + GI.all().length);
+    if (!f.fechaEjecutoria || f.fechaEjecutoria < f.fechaActo) f.fechaEjecutoria = minD(U.addDays(f.fechaActo, 7), today);
+    if (!f.meses || +f.meses < 6) f.meses = '12';
+  }
+  function fillInterna() {
+    var f = st.f;
+    if (!f.fechaRadicado) f.fechaRadicado = U.today();
+    if (!f.radEntrada.trim()) f.radEntrada = nextRad();
+    if (!f.profesional.trim()) { st.ui.profOtro = false; f.profesional = UI.PROFESIONALES[0]; }
+  }
+  function autofill(id) {
+    if (id === 'inf') fillPerson('i'); else if (id === 'rep') fillPerson('r');
+    else if (id === 'hec') fillHechos(); else if (id === 'san') fillSancion(); else if (id === 'int') fillInterna();
+    sync();
+  }
+  function aviso() { showErrors([]); banner([]); UI.toast('Completamos los datos de ejemplo; revise y pulse ' + (view.querySelector('#giSave').hidden ? 'Siguiente' : 'Guardar registro') + ' de nuevo.'); }
+  /* Con faltantes no hay error: se rellena el bloque y el siguiente clic ya avanza. */
   function guard(from, to) {
     var list = steps();
     for (var i = from; i < to; i++) {
-      var e = blockErrors(list[i]);
-      if (!e.length) { showErrors([], secEl(list[i])); continue; }
-      var sig = list[i] + '|' + e.map(function (x) { return x[0]; }).join();
-      if (tried === sig) { showErrors(e, secEl(list[i])); continue; }
-      tried = sig;
+      if (!blockErrors(list[i]).length) continue;
       if (list[i] !== cur) go(list[i]);
-      showErrors(e, secEl(list[i])); banner(e, true); firstInvalid();
+      autofill(list[i]); aviso();
       return false;
     }
     return true;
   }
-  function fail(errs) {
-    var at = steps().filter(function (id) { return errs.some(function (e) { return secOf(e[0]) === id; }); })[0] || cur;
-    if (at !== cur) go(at);
-    showErrors(errs); banner(errs); firstInvalid();
-  }
   function save() {
-    var errs = validate();
-    if (errs.length) return fail(errs);
+    var errs = validate(), n;
+    if (errs.length) {
+      var at = steps().filter(function (id) { return errs.some(function (e) { return secOf(e[0]) === id; }); })[0] || cur;
+      if (at !== cur) go(at);
+      SECS.forEach(function (id) { if (!secEl(id).hidden && blockErrors(id).length) autofill(id); });
+      return aviso();
+    }
     var rec = toRec(), dup = GI.duplicado(rec, editId);
-    if (dup) return fail([['numActo', 'Ya existe un registro equivalente (' + dup.id + '): misma persona, mismo acto y misma ejecutoria.']]);
+    if (dup) {
+      for (n = 1; dup && n < 200; n++) { st.f.numActo = 'RES-2026-' + pad4(412 + GI.all().length + n); dup = GI.duplicado(toRec(), editId); }
+      sync(); return aviso();
+    }
     showErrors([]); banner([]);
-    /* Los errores de forma se muestran al instante; solo el guardado válido espera. */
     SUID.busy(view.querySelector('#giSave'), editId ? 'Guardando cambios…' : 'Guardando registro…', function () {
       var out;
       if (editId) { out = GI.update(editId, rec, 'Registro actualizado por el profesional.'); UI.toast('Cambios guardados.'); }
