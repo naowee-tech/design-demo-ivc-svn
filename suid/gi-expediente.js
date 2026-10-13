@@ -184,7 +184,7 @@
     var total = fin ? Math.max(1, Math.round((U.parse(fin) - U.parse(ini)) / 86400000)) : 1, corrido = fin ? Math.round((U.parse(U.today()) - U.parse(ini)) / 86400000) : 0;
     var desde = fin ? 'Desde ' + U.fmt(ini) + ' · ' + r.meses + ' meses' : '';
     var estado;
-    if (res === 'Activa') estado = { tono: 'neg', titulo: 'Activa · bloquea en todo el país', lineas: ['Hasta el <b>' + U.fmt(fin) + '</b> · <b>' + esc(GI.fmtDias(dias).toLowerCase()) + '</b>'], progreso: corrido * 100 / total, desde: desde };
+    if (res === 'Activa') estado = { tono: 'neg', titulo: 'Sanción activa · bloquea en todo el país', lineas: ['Hasta el <b>' + U.fmt(fin) + '</b> · <b>' + esc(GI.fmtDias(dias).toLowerCase()) + '</b>'], progreso: corrido * 100 / total, desde: desde };
     else if (res === 'Cumplida') estado = { tono: 'ok', titulo: 'Cumplida · no bloquea', lineas: ['Cumplida el <b>' + U.fmt(D.fechaCumplida(r) || U.addDays(fin, 1)) + '</b>', esc(vig)], progreso: 100, desde: desde };
     else estado = { tono: porSub ? 'cau' : 'gr', titulo: porSub ? 'Inactiva · por subsanar' : 'Inactiva · aún no bloquea',
       lineas: (porSub ? ['Devuelta a la inspección de policía'].concat(r.observaciones ? ['Motivo: ' + esc(r.observaciones)] : []) : ['Pasa a <b>Activa</b> al quedar <b>Validado</b>']).concat(fin ? ['Vigencia prevista hasta <b>' + U.fmt(fin) + '</b>'] : []) };

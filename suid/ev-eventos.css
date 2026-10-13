@@ -62,10 +62,7 @@
 .ev-page .gi-head .naowee-btn { width: auto; gap: 8px; }
 .ev-page .gi-tabs { margin-top: 0; }
 
-/* Atajos del demo: una línea al pie, plegada. */
-.ev-demo { margin-top: 8px; font-size: 13px; color: var(--text-secondary); }
-.ev-demo summary { cursor: pointer; width: max-content; font-weight: 600; }
-.ev-demo__ops { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; }
+/* Enlaces de «Para revisar» en Auditoría (ev-auditoria.js). */
 .ev-demo__op { padding: 0; border: 0; background: none; font: inherit; color: var(--blue-info); text-decoration: underline; cursor: pointer; }
 
 .gi-toast--info { background: var(--azul); }

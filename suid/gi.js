@@ -198,8 +198,8 @@
     if (!plot || !C0) return;
     var W = Math.floor(plot.clientWidth), H = 230;
     if (W < 120) return;
-    /* En escritorio la tarjeta tiene alto fijo: la gráfica ocupa lo que queda entre el encabezado y el pie. */
-    if (w.innerWidth > 1180) { plot.innerHTML = ''; H = Math.max(180, Math.min(320, Math.floor(wrap.clientHeight))); }
+    /* En escritorio la tarjeta llena el alto de la pestaña: la gráfica ocupa lo que queda entre el encabezado y el pie. */
+    if (w.innerWidth > 1180) { plot.innerHTML = ''; H = Math.max(180, Math.min(480, Math.floor(wrap.clientHeight))); }
     anim = anim && !(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var S = C0.S, n = C0.n, top = C0.top, pl = 30, pr = 10, pt = 22, pb = 28, iw = W - pl - pr, ih = H - pt - pb, step = iw / n, base = H - pb, u = 'gtc' + (++chartUid);
     function X(i) { return pl + (i + .5) * step; }
@@ -308,9 +308,9 @@
     periodoInit(cc);
     drawChart(cc, anim);
     if (chartRO) chartRO.disconnect();
-    var plot = cc.querySelector('.gt-plot'), lw = plot ? plot.clientWidth : 0;
+    var plot = cc.querySelector('.gt-plot'), lw = plot ? plot.clientWidth : 0, lh = plot ? plot.clientHeight : 0;
     if (plot && w.ResizeObserver) {
-      chartRO = new ResizeObserver(function () { if (!d.body.contains(plot)) { chartRO.disconnect(); return; } if (Math.abs(plot.clientWidth - lw) > 1) { lw = plot.clientWidth; drawChart(cc); } });
+      chartRO = new ResizeObserver(function () { if (!d.body.contains(plot)) { chartRO.disconnect(); return; } if (Math.abs(plot.clientWidth - lw) > 1 || Math.abs(plot.clientHeight - lh) > 1) { lw = plot.clientWidth; lh = plot.clientHeight; drawChart(cc); } });
       chartRO.observe(plot);
     }
   }
@@ -368,14 +368,15 @@
         }).join('') + '</tbody></table></div></section></div>';
     }
 
-    view.innerHTML = '<div class="page-inner gi-page">' +
+    view.innerHTML = '<div class="page-inner gi-page gi-page--tabs">' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Gestión de infractores</h1>' +
       '<p class="page-subtitle">Registra, valida y consulta las sanciones en firme de la Ley 1453 de 2011.</p></div>' +
       '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a></div></header>' +
-      '<section class="gi-panel-row" aria-label="Panorama de infractores">' + insightsHtml() + '<div id="giChartCard">' + chartHtml() + '</div></section>' +
-      '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión"><button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="true" aria-controls="giPanR" data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
+      '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión"><button type="button" role="tab" class="gi-tab" id="giTabI" aria-selected="true" aria-controls="giPanI" data-tab="ind">Indicadores</button>' +
+      '<button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="false" aria-controls="giPanR" tabindex="-1" data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
       '<button type="button" role="tab" class="gi-tab" id="giTabS" aria-selected="false" aria-controls="giPanS" tabindex="-1" data-tab="sol">Expedientes por tramitar <span class="gt-count" id="giTabSN">' + (w.GS && w.GS.lista ? w.GS.lista().length : 0) + '</span></button></div>' +
-      '<div id="giPanR" role="tabpanel" aria-labelledby="giTabR">' +
+      '<div id="giPanI" class="gi-pan-ind" role="tabpanel" aria-labelledby="giTabI"><section class="gi-panel-row" aria-label="Panorama de infractores">' + insightsHtml() + '<div id="giChartCard">' + chartHtml() + '</div></section></div>' +
+      '<div id="giPanR" role="tabpanel" aria-labelledby="giTabR" hidden>' +
       '<section class="gt-card" id="giCard" aria-label="Registros de infractores">' +
         '<div class="gt-toolbar"><div class="gc-field">' + svg('search') + '<input type="text" id="giQ" aria-label="Buscar por documento, nombre o acto" title="Buscar por documento, nombre o acto" placeholder="Buscar" value="' + esc(filt.q) + '"></div>' +
         filtrosHtml() +
@@ -419,10 +420,10 @@
     GI.filasClicables(d.getElementById('giBodyS'), function (id) { location.hash = '#/control-acceso/solicitudes/' + encodeURIComponent(id); });
     [].forEach.call(view.querySelectorAll('.gi-tab'), function (t) {
       t.addEventListener('click', function () {
-        var sol = t.getAttribute('data-tab') === 'sol';
-        d.getElementById('giPanR').hidden = sol; d.getElementById('giPanS').hidden = !sol;
+        var k = t.getAttribute('data-tab');
+        d.getElementById('giPanI').hidden = k !== 'ind'; d.getElementById('giPanR').hidden = k !== 'reg'; d.getElementById('giPanS').hidden = k !== 'sol';
         [].forEach.call(view.querySelectorAll('.gi-tab'), function (o) { o.setAttribute('aria-selected', o === t ? 'true' : 'false'); o.tabIndex = o === t ? 0 : -1; });
-        if (sol) GI.panel.cerrar('api');
+        if (k !== 'reg') GI.panel.cerrar('api');
       });
     });
     d.getElementById('giQ').addEventListener('input', function (e) { filt.q = e.target.value; pag = 1; paint(); });

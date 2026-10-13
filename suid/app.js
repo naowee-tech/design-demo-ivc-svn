@@ -39,10 +39,10 @@
       { id: 'actos-coord', label: 'Aprobación de actos', icon: img('icon-actos'), ph: 1 }
     ] },
     { sec: 'Control de acceso', items: [
-      { id: 'consulta', label: 'Búsqueda de sanciones', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
       { id: 'infractores', label: 'Gestión de sanciones', icon: img('icon-acceso'), href: '#/control-acceso/infractores' },
+      { id: 'consulta', label: 'Búsqueda avanzada', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
       { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
-      { id: 'eventos', label: 'Eventos', icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
+      { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
     ] },
     { sec: 'Configuración', items: [{ id: 'equipo-coord', label: 'Usuarios y áreas', icon: img('icon-equipo'), ph: 1 }] },
     { sec: 'Operación', items: [{ id: 'bandeja-prof', label: 'Mi bandeja', icon: img('icon-bandeja'), ph: 1 }] },
@@ -82,6 +82,8 @@
       var dim = s.items.every(function (it) { return it.ph; }) ? ' is-dim' : '';
       html += '<div class="nav-section' + dim + '">' + SUID.esc(s.sec) + '</div>';
       s.items.forEach(function (it) {
+        /* DC-433: separa Eventos del resto sin abrir una sección nueva; es decorativo, no se anuncia. */
+        if (it.divider) { html += '<div class="nav-divider" role="separator" aria-hidden="true"></div>'; }
         var kids = it.children;
         var isOpen = kids && SUID.open[it.id];
         var isActive = it.id === active.parent || it.id === active.item;
@@ -100,9 +102,9 @@
         }
       });
     });
-    // Publicado dentro del SVN (/ivc/), cerrar sesión vuelve al inicio del sitio; suelto, al login.
+    // Publicado dentro del SVN (/ivc/), «Cambiar de perfil» vuelve al inicio del sitio; suelto, al login.
     var salida = /\/ivc\//.test(location.pathname) ? location.pathname.replace(/\/ivc\/.*$/, '/index.html') : '../index.html';
-    html += '</nav><div class="sidebar-bottom"><a class="nav-row" href="' + salida + '"><div class="icon">' + I.out + '</div><span class="lbl">Cerrar sesión</span></a></div>';
+    html += '</nav><div class="sidebar-bottom"><a class="nav-row" href="' + salida + '"><div class="icon">' + I.out + '</div><span class="lbl">Cambiar de perfil</span></a></div>';
     d.getElementById('sidebar').innerHTML = html;
     d.querySelectorAll('#sidebar [data-toggle]').forEach(function (a) {
       a.addEventListener('click', function (e) {

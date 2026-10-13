@@ -125,13 +125,14 @@
     fragmento: function (kind) { return FR[kind](); },
     delay: function (match, ctx) { return escala(BASE[kind(match, ctx)]); },
     crumbs: function (match, ctx) {
-      var I = { label: 'Inicio', href: '#/' }, A = { label: 'Control de acceso' }, B = '#/control-acceso/infractores', G = { label: 'Gestión', href: B };
+      var I = { label: 'Inicio', href: '#/' }, A = { label: 'Control de acceso' }, B = '#/control-acceso/infractores', G = { label: 'Gestión de sanciones', href: B };
       if (!match) return [I, { label: 'En construcción' }];
-      if (match === 'control-acceso/consulta') return [I, A, { label: 'Búsqueda' }];
-      if (match === 'control-acceso/solicitudes') return [I, A, { label: 'Solicitudes' }];
-      if (match === 'control-acceso/eventos') return [I, A, { label: 'Eventos' }];
+      if (match === 'control-acceso/consulta') return [I, A, { label: 'Búsqueda avanzada' }];
+      var r0 = (ctx.rest || [])[0];
+      if (match === 'control-acceso/solicitudes') return r0 ? [I, A, { label: 'Solicitudes', href: '#/control-acceso/solicitudes' }, { label: r0 }] : [I, A, { label: 'Solicitudes' }];
+      if (match === 'control-acceso/eventos') return r0 ? [I, A, { label: 'Eventos', href: '#/control-acceso/eventos' }, { label: 'Evento' }] : [I, A, { label: 'Eventos' }];
       var a = ctx.rest[0];
-      if (!a) return [I, A, { label: 'Gestión' }];
+      if (!a) return [I, A, { label: 'Gestión de sanciones' }];
       if (a === 'nuevo') return [I, A, G, { label: 'Registrar infractor' }];
       if (a === 'carga-masiva') return [I, A, G, { label: 'Carga masiva' }];
       if (ctx.rest[1] === 'editar') return [I, A, G, { label: 'Editar ' + a }];

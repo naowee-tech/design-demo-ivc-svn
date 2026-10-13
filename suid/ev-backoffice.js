@@ -212,22 +212,14 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       return '<div class="pb-vacio">' + ico('settings') + '<b>En preparación</b><span>' + esc(v.label) + ' se está armando y aparece en esta pestaña.</span></div>';
     }
 
-    // Atajos del demo: una línea discreta al pie, no un panel al costado.
-    function atajos() {
-      var a = function (acc, t) { return '<button type="button" class="ev-demo__op" data-acc="' + acc + '">' + esc(t) + '</button>'; };
-      return '<details class="ev-demo"><summary>Casos del demo</summary><div class="ev-demo__ops">' +
-        a('g-libre', 'Sector de aforo libre') + a('g-sinred', 'Dispositivo sin conexión') + a('g-sinvis', 'Evento sin hinchada visitante') +
-        a('g-sinhora', 'Borrador sin hora de inicio') + a('g-curso', 'Evento en curso (solo lectura)') + '</div></details>';
-    }
-
     function contenido() {
-      if (!detalle) { return lista() + atajos(); }
+      if (!detalle) { return lista(); }
       var v = activa(), html = '';
       if (v.def) {
         try { html = v.def.render(ctx); } catch (err) { html = '<div class="pb-vacio">' + ico('caution') + '<b>No se pudo pintar la vista</b><span>' + esc(err.message) + '</span></div>'; if (w.console) { console.warn('eventos:', v.id, err); } }
       } else { html = preparacion(v); }
       return cabecera(v) + '<div class="pb-app">' +
-        '<div class="pb-vista" data-sc="v-' + v.id + '" role="tabpanel" aria-label="' + esc(v.label) + '">' + html + '</div></div>' + atajos();
+        '<div class="pb-vista" data-sc="v-' + v.id + '" role="tabpanel" aria-label="' + esc(v.label) + '">' + html + '</div></div>';
     }
 
     /* ---------- Pintado: conserva foco y scroll al repintar ---------- */
@@ -241,11 +233,9 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
 
     function pintar() {
       var act = d.activeElement, kf = act && raiz.contains(act) ? clave(act) : null, sel = null;
-      var demo = raiz.querySelector('.ev-demo'), demoAbierto = demo && demo.open;
       try { if (kf && act.selectionStart != null) { sel = [act.selectionStart, act.selectionEnd]; } } catch (e) { /* tipo sin selección */ }
       raiz.querySelectorAll('[data-sc]').forEach(function (el) { scr[el.dataset.sc] = el.scrollTop; });
       raiz.innerHTML = contenido();
-      if (demoAbierto) { raiz.querySelector('.ev-demo').open = true; }
       raiz.querySelectorAll('[data-sc]').forEach(function (el) { el.scrollTop = scr[el.dataset.sc] || 0; });
       if (kf) {
         var els = raiz.querySelectorAll('[data-k],[data-acc],[id]');
@@ -300,7 +290,6 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
         case 'lst-filtro': evpEst().filtro = ds.id === 'todos' ? null : ds.id; marcarFiltro(); pintar(); return;
         case 'lst-crear': crear(); return;
       }
-      if (ds.acc.indexOf('g-') === 0) { atajo(ds.acc); return; }
       var v = activa();
       if (!detalle || (v && v.def && v.def.onClick && v.def.onClick(el, ev, ctx) === false)) { return; }
       pintar();
@@ -325,21 +314,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       if (!texto) { delegar(ev, 'onChange'); }
     }
 
-    /* ---------- Atajos del demo: cada caso entra al detalle del evento que lo muestra ---------- */
-
-    function atajo(a) {
-      var e, ec, base = detalle ? st.evento : 'e1';
-      switch (a) {
-        case 'g-libre': ec = escenarioEst(); ec.sel = 'norte'; ec.filtro = 'sector'; entrar(base, 'escenario'); return;
-        case 'g-sinred': ec = escenarioEst(); ec.sel = 'sur'; ec.filtro = 'sector'; entrar(base, 'escenario'); return;
-        case 'g-sinvis': evpEst().filtro = null; evpEst().q = ''; entrar('e4', 'evento'); return;
-        case 'g-sinhora':
-          st.evento = 'e4'; e = evActual(); e.estado = 'borrador'; e.partidos[0].hora = '';
-          evpEst().filtro = null; evpEst().q = ''; entrar('e4', 'evento'); return;
-        case 'g-curso': evpEst().filtro = null; evpEst().q = ''; entrar('e2', 'evento'); return;
-      }
-    }
-    // Estado por vista (creado bajo demanda, para que los atajos lo dejen listo).
+    // Estado por vista (creado bajo demanda, para crearlo solo al entrar a la vista).
     function escenarioEst() { return st.esc || (st.esc = iniciarEsc(B)); }
     function evpEst() { return st.evp || (st.evp = { filtro: null, q: '' }); }
     // El filtro viaja en el hash sin recargar: replaceState no agrega pasos al atrás ni dispara hashchange.

@@ -43,10 +43,14 @@
 .gt-tip strong { display: block; margin-bottom: 4px; }
 .gt-tip p { margin: 0; color: var(--text-secondary); } .gt-tip p + p { margin-top: 6px; color: var(--text-primary); font-weight: 600; }
 
-/* Altura del panorama: 400 px en escritorio; si no cabe, la lista de insights se desplaza por dentro. */
+/* DC-431: la pestaña Indicadores llena el alto que deja la vista (sin px fijos); bajo el mínimo, el scroll es el de la página. */
+.gi-page--tabs { min-height: 100%; }
+.gi-page--tabs > .gi-tabs { margin-top: 0; }
+.gi-pan-ind:not([hidden]) { flex: 1; display: flex; min-height: 0; }
+.gi-pan-ind > .gi-panel-row { flex: 1; min-height: 0; }
 @media (min-width: 1181px) {
-  .gi-panel-row { grid-template-rows: minmax(0, 400px); }
-  .gi-panel-row > .gi-panel--ins, .gi-panel-row > #giChartCard, .gi-panel-row > #giChartCard > .gi-panel { min-height: 0; max-height: 400px; overflow: hidden; }
+  .gi-panel-row { grid-template-rows: minmax(360px, 1fr); }
+  .gi-panel-row > .gi-panel--ins, .gi-panel-row > #giChartCard, .gi-panel-row > #giChartCard > .gi-panel { min-height: 0; overflow: hidden; }
   .gi-panel--ins .gi-insights { flex: 1; overflow-y: auto; }
 }
 
@@ -289,3 +293,11 @@ span.gt-trend--eq { color: var(--text-secondary); background: var(--bg-soft); }
 .gi-insight__head { padding-right: 0; }
 .gi-insight .gt-info { width: 18px; height: 18px; margin: 3px 0; }
 .gi-insight .gt-info::before { inset: -8px 0 -8px -8px; }
+
+/* DC-431: en móvil las pestañas se desplazan en vez de partir el texto, y los indicadores van en una columna sin divisores laterales. */
+.gi-page--tabs > .gi-tabs { overflow-x: auto; scrollbar-width: none; }
+.gi-page--tabs .gi-tab { flex: none; white-space: nowrap; }
+@media (max-width: 600px) {
+  .gi-insight:nth-child(odd), .gi-insight:nth-child(even) { padding-left: 0; padding-right: 0; border-right: 0; }
+  .gi-insight:nth-child(n+2) { border-top: 1px solid var(--border); }
+}

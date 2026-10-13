@@ -39,7 +39,7 @@
   ];
 
   function open(view, ctx) {
-    ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión', href: BASE }, { label: 'Carga masiva' }];
+    ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión de sanciones', href: BASE }, { label: 'Carga masiva' }];
     var S = { paso: 1, nombre: '', filas: null, progreso: 0, validado: false, dec: {}, abierto: null, conf: false, timer: null };
 
     function malas() { return S.filas.filter(function (r) { return r[7]; }); }

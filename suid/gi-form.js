@@ -751,7 +751,7 @@
       u.paisOtro.i = st.i.pais !== 'Colombia'; u.paisOtro.r = st.r.pais !== 'Colombia';
       u.menorOn = !!(rec && rec.rep); u.agrOn = st.f.agravantes.length > 0; u.multaOn = !!st.f.valor;
       u.profOtro = !!(st.f.profesional && UI.PROFESIONALES.indexOf(st.f.profesional) < 0);
-      ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión', href: UI.BASE }, { label: id ? 'Editar ' + id : 'Registrar infractor' }];
+      ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión de sanciones', href: UI.BASE }, { label: id ? 'Editar ' + id : 'Registrar infractor' }];
       build(); bind();
       if (rec) {
         lastDep.comp = rec.competicion;
