@@ -2,7 +2,7 @@
 (function (w, d) {
   'use strict';
   /* Una sola velocidad: la base (×1), el doble de rápida que la ×2 anterior (DC-140); la vista más corta queda en 350 ms. */
-  var BASE = { busqueda: 500, lista: 1000, ficha: 750, form: 700, masiva: 450, solicitudes: 900, ph: 350 };
+  var BASE = { busqueda: 500, lista: 1000, ficha: 750, form: 700, masiva: 450, solicitudes: 900, eventos: 800, ph: 350 };
   var FACTOR = 1, timer = 0;
 
   function escala(ms) { return Math.round(ms * FACTOR); }
@@ -75,6 +75,12 @@
         '<div class="sk-card">' + b('110px', 18) + b('70%', 13) + pill('220px', 42) + '</div>' +
         '<div class="sk-card">' + b('190px', 18) + b('100%', 190, 'border-radius:12px;margin-top:6px') + '</div>');
     },
+    eventos: function () {
+      var tabs = ''; [96, 150, 120, 70, 130].forEach(function (x) { tabs += b(x + 'px', 20); });
+      return pagina('Eventos', head('180px', '560px', 1) + '<div class="sk-row sk-row--gap" style="margin:0;gap:28px">' + tabs + '</div>' + b('520px', 14) +
+        '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px"><div class="sk-card">' + b('160px', 18) + b('100%', 420, 'border-radius:12px;margin-top:6px') + '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:16px"><div class="sk-card">' + b('140px', 18) + b('100%', 120, 'margin-top:6px') + '</div><div class="sk-card">' + b('120px', 18) + b('100%', 220, 'margin-top:6px') + '</div></div></div>');
+    },
     ph: function () {
       return pagina('la sección', b('240px', 32) + b('460px', 14, 'margin-top:4px') + pill('210px', 42));
     }
@@ -84,6 +90,7 @@
     if (!match) return 'ph';
     if (match === 'control-acceso/consulta') return 'busqueda';
     if (match === 'control-acceso/solicitudes') return 'solicitudes';
+    if (match === 'control-acceso/eventos') return 'eventos';
     var a = ctx.rest[0];
     if (!a) return 'lista';
     if (a === 'nuevo' || ctx.rest[1] === 'editar') return 'form';
@@ -122,6 +129,7 @@
       if (!match) return [I, { label: 'En construcción' }];
       if (match === 'control-acceso/consulta') return [I, A, { label: 'Búsqueda' }];
       if (match === 'control-acceso/solicitudes') return [I, A, { label: 'Solicitudes' }];
+      if (match === 'control-acceso/eventos') return [I, A, { label: 'Eventos' }];
       var a = ctx.rest[0];
       if (!a) return [I, A, { label: 'Gestión' }];
       if (a === 'nuevo') return [I, A, G, { label: 'Registrar infractor' }];

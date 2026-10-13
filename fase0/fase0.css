@@ -1,0 +1,166 @@
+/* Fase 0 del demo del IVC: fuentes -> base central -> despacho. Prefijo f0- para no chocar. */
+.f0-root {
+  --f0-azul: var(--azul, #002B5B);
+  --f0-naranja: var(--naranja, #FF7500);
+  --f0-acento: var(--accent, #d74009);
+  --f0-info: var(--blue-info, #1f78d1);
+  --f0-texto: var(--text-primary, #282834);
+  --f0-texto-2: var(--text-secondary, #646587);
+  --f0-superficie: var(--surface, #ffffff);
+  --f0-borde: var(--border-dark, #d0d4e6);
+  --f0-ease: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  position: relative; display: flex; flex-direction: column;
+  width: 100%; height: 100%; min-height: 440px; box-sizing: border-box; overflow: hidden;
+  background: linear-gradient(180deg, var(--surface-alt, #fafbff), var(--bg-soft, #f5f6fa));
+  color: var(--f0-texto);
+  font-family: var(--font-sans, 'Google Sans', system-ui, -apple-system, sans-serif);
+}
+.f0-root *, .f0-root *::before, .f0-root *::after { box-sizing: border-box; }
+
+.f0-barra { height: 4px; flex: none; background: var(--border, #e7e9f3); }
+.f0-barra > i { display: block; height: 100%; background: var(--f0-naranja); transform-origin: left; transform: scaleX(0); }
+
+.f0-escena { flex: 1; min-height: 0; padding: 4px 16px 0; }
+
+/* Stepper de etapas */
+.f0-etapas { list-style: none; margin: 0 auto; padding: 14px 16px 6px; width: 100%; max-width: 980px; display: flex; gap: 12px; }
+.f0-etapa { position: relative; flex: 1; display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.f0-etapa::after { content: ''; flex: 1; align-self: flex-start; margin-top: 15px; min-width: 16px; height: 2px; background: var(--border-dark, #d0d4e6); }
+.f0-etapa:last-child::after { display: none; }
+.f0-etapa-n {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; z-index: 1;
+  font-size: .9375rem; font-weight: 700; background: var(--f0-superficie); color: var(--f0-texto-2);
+  border: 2px solid var(--f0-borde); transition: background-color .4s, border-color .4s, color .4s;
+}
+.f0-etapa-t { font-size: .875rem; line-height: 1.25; font-weight: 500; color: var(--f0-texto-2); padding-top: 1px; padding-right: 4px; }
+.f0-etapa-k { display: block; font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 500; }
+.f0-actual .f0-etapa-n { background: var(--f0-azul); border-color: var(--f0-azul); color: #fff; }
+.f0-actual .f0-etapa-t { color: var(--f0-texto); font-weight: 700; }
+.f0-hecha .f0-etapa-n { background: var(--green-bg, #e6f4e7); border-color: var(--green, #1f8923); color: var(--green, #1f8923); font-size: 0; }
+.f0-hecha .f0-etapa-n::before { content: '\2713'; font-size: 1rem; }
+.f0-hecha .f0-etapa-t { color: var(--f0-texto); }
+.f0-hecha::after { background: var(--green, #1f8923); }
+.f0-svg { display: block; width: 100%; height: 100%; }
+
+/* Botones */
+.f0-btn {
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font: inherit; font-size: 0.9375rem; font-weight: 500; line-height: 1; cursor: pointer;
+  min-height: 40px; padding: 0 18px; border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--f0-borde); background: var(--f0-superficie); color: var(--f0-texto);
+  transition: background-color .2s, border-color .2s;
+}
+.f0-btn:hover { background: var(--bg-soft, #f5f6fa); border-color: var(--border-strong, #b4b9d4); }
+.f0-btn:focus-visible { outline: 3px solid var(--f0-info); outline-offset: 3px; }
+.f0-btn--primario { background: var(--f0-azul); border-color: var(--f0-azul); color: var(--text-inverse, #fff); min-height: 44px; padding: 0 28px; font-weight: 700; }
+.f0-btn--primario:hover { background: var(--f0-azul); border-color: var(--f0-azul); filter: brightness(1.25); }
+.f0-btn kbd { font: inherit; font-size: .75rem; margin-left: 8px; padding: 2px 6px; border-radius: var(--radius-sm, 6px); background: var(--bg-soft, #f5f6fa); color: var(--f0-texto-2); }
+
+/* Controles del recorrido (DC-413): cápsula quieta; la acción fuerte sigue siendo la de .f0-botones. */
+.f0-controles { display: inline-flex; align-items: center; gap: 2px; padding: 3px; box-sizing: border-box; min-height: 40px; border: 1px solid var(--f0-borde); border-radius: var(--radius-md, 8px); background: var(--f0-superficie); }
+.f0-ctl {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 14px;
+  border: 0; border-radius: var(--radius-sm, 6px); background: transparent; color: var(--f0-texto);
+  font: inherit; font-size: .875rem; font-weight: 500; line-height: 1; cursor: pointer; transition: background-color .2s;
+}
+.f0-ctl[hidden] { display: none; }
+.f0-ctl svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.f0-ctl--pausa { min-width: 7.5rem; }
+.f0-ctl--pausa svg { fill: currentColor; stroke-width: 1.5; }
+.f0-ctl:hover:not(:disabled) { background: var(--bg-soft, #f5f6fa); }
+.f0-ctl:focus-visible { outline: 3px solid var(--f0-info); outline-offset: 2px; }
+.f0-ctl:disabled { color: var(--text-muted, #9ca0b8); cursor: default; }
+/* En pausa se ve en el botón (icono y fondo), en la barra y, para lectores, en .f0-sr. */
+.f0-pausada .f0-ctl--pausa { background: var(--accent-bg, #fff3e6); }
+.f0-pausada .f0-ctl--pausa svg { color: var(--f0-acento); }
+.f0-pausada .f0-ctl--pausa:hover:not(:disabled) { background: var(--accent-bg-warm, #ffe4cf); }
+.f0-pausada .f0-barra > i { background: var(--f0-texto-2); }
+.f0-root.f0-pausada .f0-hub.f0-on .f0-onda { animation-play-state: paused; }
+/* Sin animación no hay a qué esperar: el avance es manual y Siguiente pasa a ser la acción principal. */
+.f0-manual .f0-ctl--sig:not(:disabled) { background: var(--f0-azul); color: var(--text-inverse, #fff); font-weight: 700; }
+.f0-manual .f0-ctl--sig:not(:disabled):hover { background: var(--f0-azul); filter: brightness(1.25); }
+.f0-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Pie: etiqueta de paso, subtítulo, título final y acciones */
+.f0-pie {
+  flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; max-width: 880px; min-height: 128px; margin: 0 auto; padding: 8px 24px 14px; text-align: center;
+}
+.f0-etiqueta { margin: 0 0 6px; font-size: .8125rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--f0-texto-2); }
+.f0-titulo { margin: 0 0 8px; font-size: clamp(1.5rem, 3.2vw, 2.25rem); line-height: 1.15; font-weight: 700; color: var(--f0-azul); }
+.f0-sub { margin: 0; font-size: clamp(1.0625rem, 1.5vw + .55rem, 1.5rem); line-height: 1.35; font-weight: 500; color: var(--f0-texto); }
+/* Alto fijo (44 + 24): al cambiar Omitir por los botones finales el diagrama no se reescala. */
+.f0-acciones { flex: none; min-height: 68px; padding: 0 16px 24px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: center; }
+.f0-botones { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+.f0-cambia { animation: f0-entra .5s var(--f0-ease) both; }
+@keyframes f0-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Escena SVG */
+.f0-aparece {
+  opacity: 0; transform: translateY(10px); transform-box: fill-box; transform-origin: center;
+  transition: opacity .7s var(--f0-ease) var(--d, 0s), transform .7s var(--f0-ease) var(--d, 0s);
+}
+.f0-aparece.f0-on { opacity: 1; transform: none; }
+.f0-hub.f0-aparece { transform: scale(.88); }
+.f0-hub.f0-aparece.f0-on { transform: none; }
+
+.f0-tarjeta { fill: var(--f0-superficie); stroke: var(--f0-borde); stroke-width: 1.5; }
+.f0-insignia-in { fill: var(--blue-bg, #eef5ff); stroke: var(--blue-border, #b8d4f2); stroke-width: 1; }
+.f0-insignia-out { fill: var(--orange-bg, #fff3e6); stroke: var(--orange-border, #ffbf75); stroke-width: 1; }
+.f0-ico { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.f0-ico--in { stroke: var(--f0-azul); }
+.f0-ico--out { stroke: var(--f0-acento); }
+.f0-ico--hub { stroke: #fff; }
+.f0-t { fill: var(--f0-texto); font-weight: 700; }
+.f0-s { fill: var(--f0-texto-2); font-weight: 400; }
+.f0-hub-t { fill: #fff; font-weight: 700; }
+.f0-hub-s { fill: #fff; font-weight: 400; opacity: .85; }
+.f0-hub-disco { fill: var(--f0-azul); stroke: var(--f0-naranja); stroke-width: 5; }
+.f0-onda { fill: none; stroke: var(--f0-naranja); stroke-width: 2; opacity: 0; }
+.f0-svg .f0-tarjeta-g { filter: drop-shadow(0 6px 10px rgba(145, 158, 171, .22)); }
+
+.f0-enlace {
+  fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; opacity: .6;
+  transition: stroke-dashoffset 1s var(--ease-in-out, ease) var(--d, 0s);
+}
+.f0-enlace.f0-on { stroke-dashoffset: 0; }
+.f0-enlace--in { stroke: var(--f0-info); }
+.f0-enlace--out { stroke: var(--f0-naranja); }
+.f0-enlace--mod { stroke: var(--f0-azul); }
+.f0-flecha { opacity: 0; transition: opacity .4s ease calc(var(--d, 0s) + .8s); }
+.f0-flecha.f0-on { opacity: .85; }
+.f0-flecha--in { fill: var(--f0-info); }
+.f0-flecha--out { fill: var(--f0-naranja); }
+.f0-flecha--mod { fill: var(--f0-azul); }
+.f0-fade { opacity: 0; transition: opacity .5s ease; }
+.f0-fade.f0-on { opacity: .9; }
+.f0-particula--in { fill: var(--f0-info); }
+.f0-particula--out { fill: var(--f0-naranja); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .f0-hub.f0-on .f0-onda { animation: f0-onda 2.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  .f0-hub.f0-on .f0-onda + .f0-onda { animation-delay: 1.4s; }
+}
+@keyframes f0-onda { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.4); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .f0-root *, .f0-root *::before, .f0-root *::after { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 640px) {
+  .f0-etapas { gap: 6px; padding: 10px 10px 4px; }
+  .f0-etapa { flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+  .f0-etapa { position: relative; }
+  .f0-etapa::after { position: absolute; top: 15px; left: calc(50% + 22px); right: calc(-50% + 22px); margin: 0; }
+  .f0-etapa-t { font-size: .75rem; padding-right: 0; }
+  .f0-etapa-k { display: none; }
+  .f0-pie { padding: 4px 16px 10px; min-height: 120px; }
+  .f0-escena { padding-inline: 8px; }
+}
+
+/* En pantallas angostas Anterior y Siguiente quedan solo con el icono (el nombre accesible sigue ahí). */
+@media (max-width: 520px) {
+  .f0-ctl { min-height: 32px; padding: 0 12px; }
+  .f0-ctl--ant span, .f0-ctl--sig span { display: none; }
+  .f0-ctl--pausa { min-width: 6.75rem; }
+}

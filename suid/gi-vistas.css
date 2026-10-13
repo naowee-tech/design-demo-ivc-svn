@@ -210,8 +210,15 @@
 .gc-headrow { align-items: center; }
 
 
-/* Recientes en rejilla: 8 columnas cuando cabe, menos si el ancho no alcanza. */
-.gc-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; padding: 20px; }
+/* Recientes en carrusel (DC-400): una línea con scroll-snap; 4, 3, 2 o 1 tarjetas según el ancho de la línea.
+   Las flechas viven en el margen de la línea; las tarjetas vecinas pasan bajo el degradado de cada borde (DC-416). */
+.gc-grid { --gc-n: 4; display: flex; gap: var(--gc-hueco); padding: 12px var(--gc-margen); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gc-margen); scrollbar-width: none; }
+.gc-grid::-webkit-scrollbar { display: none; }
+.gc-grid > .gc-persona { flex: 0 0 calc((100% - (var(--gc-n) - 1) * var(--gc-hueco)) / var(--gc-n)); scroll-snap-align: start; }
+@media (prefers-reduced-motion: no-preference) { .gc-grid { scroll-behavior: smooth; } }
+@container (max-width: 959px) { .gc-grid { --gc-n: 3; } }
+@container (max-width: 759px) { .gc-grid { --gc-n: 2; } }
+@container (max-width: 559px) { .gc-grid { --gc-n: 1; } }
 .gc-persona { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; cursor: pointer; }
 .gc-persona:hover { background: var(--accent-bg); }
 .gc-persona:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -235,7 +242,7 @@
 .gc-field > svg { left: 16px; width: 22px; height: 22px; }
 .gc-btn--q { min-height: 48px; font-size: 16px; }
 .gc-fh .gs-pick__btn { height: 48px; padding: 0 18px; font-size: 15px; }
-.gc-form .gc-reset { width: 48px; height: 48px; border-radius: 8px; align-self: auto; }
+.gc-form .gc-reset, .gt-toolbar .gc-reset { width: 48px; height: 48px; border-radius: 8px; align-self: auto; }
 .gc-try { left: 52px; right: 4px; }
 
 /* DC-107: lupa de 40 px a la izquierda y títulos alineados a la izquierda. */
@@ -271,3 +278,40 @@
 .gb-errs { text-align: left; }
 .gb-errs .gb-fix label { text-align: left; }
 .gb-sum li { text-align: left; }
+
+/* DC-400: encabezado, buscador, título y carrusel de Recientes centrados en un mismo eje; Resultados conserva todo el ancho. */
+.gc-page { --gc-eje: 1152px; --gc-hueco: 16px; --gc-margen: 64px; --gc-flecha: 44px; }
+.gc-page > .gi-head, .gc-page > .gc-card, .gc-page > .gc-out, .gc-car, .gc-headrow--car { width: 100%; max-width: var(--gc-eje); margin-inline: auto; box-sizing: border-box; }
+.gc-headrow--car > .gt-head { padding-inline: 0; } /* DC-415: «Recientes» pegado al borde izquierdo de la línea */
+.gc-car { position: relative; container-type: inline-size; }
+.gc-car__nav { position: absolute; top: 50%; z-index: 2; width: var(--gc-flecha); height: var(--gc-flecha); padding: 0; display: inline-flex; align-items: center; justify-content: center; transform: translateY(-50%); border: 1px solid var(--border-dark); border-radius: 50%; background: #fff; color: var(--text-primary); box-shadow: var(--shadow-card); cursor: pointer; }
+.gc-car__nav[hidden] { display: none; }
+.gc-car__nav--ant { left: calc((var(--gc-margen) - var(--gc-flecha)) / 2); }
+.gc-car__nav--sig { right: calc((var(--gc-margen) - var(--gc-flecha)) / 2); }
+.gc-car__nav--sig svg { transform: scaleX(-1); }
+.gc-car__nav:hover:not(:disabled) { background: var(--bg-soft); }
+.gc-car__nav:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gc-car__nav:disabled { color: var(--text-secondary); background: var(--bg-soft); box-shadow: none; cursor: not-allowed; }
+/* DC-416: degradados a blanco que funden las tarjetas en el borde donde el scroll las esconde (clases de carEstado). */
+.gc-car::before, .gc-car::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: 1; width: var(--gc-margen); border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .15s; }
+.gc-car::before { left: 0; background: linear-gradient(to right, var(--surface) 50%, transparent); }
+.gc-car::after { right: 0; background: linear-gradient(to left, var(--surface) 50%, transparent); }
+.gc-car.tiene-izq::before, .gc-car.tiene-der::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .gc-car::before, .gc-car::after { transition: none; } }
+
+/* DC-417: la vista cabe sin scroll vertical a 1512×828: menos relleno arriba y abajo y menos aire entre bloques. */
+@media (min-width: 701px) {
+  .main-scroll:has(.gc-page) { --gc-pt: 16px; padding-top: var(--gc-pt); padding-bottom: 20px; }
+  .gc-page { --gc-gap: 12px; gap: var(--gc-gap); }
+  .gc-page > .gc-card { top: calc(16px - var(--gc-pt)); padding: 16px; }
+  .gc-veil { top: calc(-1 * var(--gc-pt)); margin-bottom: calc(-1 * var(--gc-gap)); }
+  .gc-card__hd { margin-bottom: 12px; }
+  .gc-headrow--car { margin-top: 0; }
+  .gc-headrow--car > .gt-head { padding-top: 0; }
+}
+
+/* DC-419: en móvil los casos de ejemplo no caben dentro del campo; abren como una lista bajo él, completos. */
+@media (max-width: 700px) {
+  .gc-try__list { position: absolute; top: calc(100% + 6px); left: -52px; z-index: 5; padding: 4px; background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; box-shadow: var(--shadow-card); }
+  .gc-try__list .gc-case { height: 44px; }
+}

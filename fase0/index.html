@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Integración de bases de datos · IVC</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/fonts/google-sans.css">
+  <link rel="stylesheet" href="fase0.css">
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body { display: flex; flex-direction: column; background: var(--bg-soft); font-family: var(--font-sans, system-ui, sans-serif); color: var(--text-primary); }
+    .f0-cab { flex: none; display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .f0-cab h1 { margin: 0; min-width: 0; font-size: 1.125rem; font-weight: 700; color: var(--azul); }
+    /* Mismo botón que «Cambiar de perfil» de las apps del SVN, a la derecha (DC-418). */
+    .f0-cab a { margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 24px; white-space: nowrap; color: var(--text-primary); text-decoration: none; font-weight: 600; font-size: .875rem; border-radius: var(--radius-lg); background: var(--bg-soft); }
+    .f0-cab a svg { flex: none; width: 20px; height: 20px; }
+    .f0-cab a:hover { background: var(--border); }
+    .f0-cab a:active { background: var(--border-dark); }
+    .f0-cab a:focus-visible { outline: 3px solid var(--blue-info); outline-offset: 2px; }
+    #escena { flex: 1; min-height: 0; }
+    @media (max-width: 520px) { .f0-cab { padding: 8px 12px; gap: 10px; } .f0-cab h1 { font-size: 1rem; } .f0-cab a { padding: 0 14px; } }
+  </style>
+</head>
+<body>
+  <header class="f0-cab">
+    <h1>Integración de bases de datos</h1>
+    <a id="volver" href="../index.html">Cambiar de vista<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg></a>
+  </header>
+  <main id="escena"></main>
+  <script src="fase0.js"></script>
+  <script>
+    // En /ivc/ el inicio es la raíz del SVN; fuera de ahí, el index del demo. Mismo criterio que cerrar sesión.
+    var inicio = /\/ivc\//.test(location.pathname) ? location.pathname.replace(/\/ivc\/.*$/, '/index.html') : '../index.html';
+    document.getElementById('volver').href = inicio;
+    window.__f0 = Fase0.montar(document.getElementById('escena'), {
+      alTerminar: function () { window.__terminadas = (window.__terminadas || 0) + 1; },
+      acciones: [
+        { texto: 'Ir al IVC', href: '../index.html', primario: true },
+        { texto: 'Volver al inicio', href: inicio }
+      ]
+    });
+  </script>
+</body>
+</html>

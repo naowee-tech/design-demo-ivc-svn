@@ -8,13 +8,14 @@ Abre en el login del SUID. Es un login de demostración: entra con cualquier dat
 
 ## Qué tiene
 
-Dentro del panel del IVC, la sección **Control de acceso** tiene tres pantallas:
+Dentro del panel del IVC, la sección **Control de acceso** tiene cuatro pantallas:
 
 | Pantalla | Qué hace |
 |---|---|
 | Búsqueda | Consulta si una persona tiene una medida vigente y hasta cuándo. Los menores solo por documento completo |
 | Gestión | Bandeja, ficha con historial, registro de infractor (55 campos), edición y carga masiva |
 | Solicitudes | Reportes de entidades deportivas e inspecciones; se enlazan a una medida de Gestión |
+| Eventos | Backoffice del organizador (superficie 4 del SVN): escenario, evento y partidos, configuración, cupos y listo para abrir |
 
 El resto del menú (Bandeja, Aprobación de actos, etc.) es el del IVC real y no tiene contenido en esta demo.
 

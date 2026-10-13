@@ -212,8 +212,12 @@ span.gt-trend--eq { color: var(--text-secondary); background: var(--bg-soft); }
 @keyframes gtFade { from { opacity: 0; } }
 @keyframes gtPop { from { opacity: 0; transform: scale(.2); } }
 @media (prefers-reduced-motion: reduce) { .gt-plot *, .gi-chart * { animation: none !important; transition: none !important; } }
-/* DC-025: el buscador llena el ancho libre de la barra (gi-tabla.css lo limita a 420 px). */
-#giCard .gt-search { flex: 1 1 220px; max-width: none; }
+/* DC-397: la barra usa los controles de Consulta (.gc-*, gi-vistas.css); el buscador llena el ancho libre (DC-025) y
+   su base baja a 120 px para que el peor par de estados (216 + 209 px) no mande el reinicio a otra línea a 1024 px. */
+#giCard .gc-field { flex-basis: 120px; }
+#giCard .gc-field input { padding-right: 16px; } /* aquí no hay «+» a la derecha: el relleno de 56 px sobra */
+/* DC-397: en esta barra el selector se ensancha lo justo para mostrar completo cada estado (180 px es el mínimo). */
+#giCard .gc-fh .gs-pick__btn { width: auto; min-width: 180px; max-width: none; }
 /* Tabla de Gestión (.gt-table.gi-reg): 8 columnas, así que el aire lateral baja a 10 px para no desbordar; los bordes alinean con la tarjeta. */
 .gt-table.gi-reg thead th, .gt-table.gi-reg tbody td { padding-left: 10px; padding-right: 10px; }
 .gt-table.gi-reg th:first-child, .gt-table.gi-reg td:first-child { padding-left: 20px; }
@@ -234,6 +238,8 @@ span.gt-trend--eq { color: var(--text-secondary); background: var(--bg-soft); }
 .gi-dot--positive { background: var(--naowee-color-feedback-fill-positive-loud, #1f8923); }
 .gi-dot--informative { background: var(--naowee-color-feedback-fill-informative-loud, #006aff); }
 .gi-dot--neutral { background: var(--text-muted); }
+/* DC-397: a 180 px la cara cerrada es la de Consulta (prefijo + valor); punto y conteo quedan en la lista. */
+#giReg .gi-dot, #giReg .gi-fsel__n, #giRes .gi-dot, #giRes .gi-fsel__n { display: none; }
 
 /* Franja «Por tramitar desde solicitudes» (DC-064). */
 .gi-tram { margin-top: 16px; padding: 12px 16px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }

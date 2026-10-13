@@ -19,6 +19,8 @@ body { background: var(--surface-alt); font-family: var(--font-sans); }
 .nav-sub { display: block; margin: 0 10px 2px 58px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; }
 .nav-sub:hover { background: #f5f6fa; color: var(--text-primary); text-decoration: none; }
 .nav-sub.is-active { color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+/* Lo que no es de la demo, a media opacidad por pedido de diseño (DC-422); baja el contraste a propósito. */
+.nav-section.is-dim, .nav-row.is-dim { opacity: .5; }
 
 .suid-bc { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
 .suid-bc a { color: var(--text-primary); text-decoration: none; } .suid-bc a:hover { color: var(--accent); }

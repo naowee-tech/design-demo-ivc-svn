@@ -24,6 +24,7 @@ Menú del profesional del IVC (`suite-web-ivc`): "Mi bandeja" es relleno y lleva
 - `app.html`, `app.js`, `app.css`: shell del SUID (sidebar, migas, avatar) sobre `../shared/` del IVC.
 - `gi-catalogos.js`: catálogos reales de la Fuente 2. `gi-data.js`: reglas y 9 registros ficticios en `localStorage`.
 - `gi.js` (bandeja y ficha), `gi-form.js` (registro), `gi-bulk.js` (carga masiva), `gi.css`.
+- `ev-backoffice.js` (marco, Escenario y Evento y partidos), `ev-backoffice-evento.js` (Configuración, Cupos y Listo para abrir), `ev-datos.js`: **Eventos**, el backoffice traído del SVN. `ev-eventos.css` traduce los tokens `--naotech-*` del SDK a los del IVC.
 - `gi-panel.js` / `gi-panel.css`: panel derecho único (`GI.panel`). `gi-perfil.js` / `gi-perfil.css`: perfil y afinidad (`GI.perfilDe`, `GI.perfilHtml`).
 - `login/`: CSS e imágenes del login real.
 
