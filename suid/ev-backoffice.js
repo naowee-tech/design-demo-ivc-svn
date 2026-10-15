@@ -173,7 +173,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       }
       if (m === 'pasados') {
         var c = x.cierre || { entraron: 0, noEntraron: 0, acciones: 0 };
-        return '<span class="ev-datos">' + dato(miles(c.entraron), 'Entraron') + dato(miles(c.noEntraron), 'No entraron') + dato(c.acciones, 'Acciones policiales', c.acciones ? 'ev-dato--policia' : '') + '</span>';
+        return '<span class="ev-datos">' + dato(miles(c.entraron), 'Entraron') + dato(miles(c.noEntraron), 'No entraron') + dato(c.acciones, 'Acciones de seguridad', c.acciones ? 'ev-dato--policia' : '') + '</span>';
       }
       var b = x.boletas || { generadas: 0, cupos: aforo };
       // En borrador aún no hay boletas: una barra vacía y un guion se leían como error.

@@ -7,16 +7,16 @@ window.EV_AUDIT = (function (w) {
     { id: 'amarillo', label: 'Entró con aviso' },
     { id: 'operativo', label: 'No entró · boleta' },
     { id: 'medida', label: 'No entró · medida' },
-    { id: 'policia', label: 'Registro policial' },
+    { id: 'policia', label: 'Registro de seguridad' },
     { id: 'consulta', label: 'Consulta de perfil' },
     { id: 'venta', label: 'Venta' }
   ];
-  var ORIGENES = ['Lectura en puerta', 'Vista policial', 'Comercializadora A', 'Comercializadora B', 'Taquilla oficial'];
+  var ORIGENES = ['Lectura en puerta', 'Vista de seguridad', 'Comercializadora A', 'Comercializadora B', 'Taquilla oficial'];
   var OPERADOR = { 1: 'Op. A. Rueda', 2: 'Op. J. Ríos', 3: 'Op. P. Gil', 4: 'Op. L. Mejía', 5: 'Op. S. León', 6: 'Op. D. Salazar', 7: 'Op. C. Mora', 8: 'Op. M. Cano' };
   var AGENTE = { 1: 'Pt. A. Duarte', 2: 'Pt. M. Castaño', 3: 'Pt. S. Ramírez', 4: 'Pt. J. Herrera', 5: 'Pt. J. Herrera', 6: 'Pt. F. Ospina', 7: 'Pt. H. Londoño', 8: 'Sub. C. Pérez' };
   var PMU = 'Pt. R. Gómez';
   var CIERRES = ['Conducido', 'No encontrado', 'Retirado del escenario', 'Conducido'];
-  var BOLETA_MAL = ['Boleta ya usada · no llamó a la Policía', 'Boleta de otro partido · no llamó a la Policía', 'Titular no coincide · no llamó a la Policía', 'Boleta falsa · llamó a la Policía'];
+  var BOLETA_MAL = ['Boleta ya usada · no llamó a la autoridad', 'Boleta de otro partido · no llamó a la autoridad', 'Titular no coincide · no llamó a la autoridad', 'Boleta falsa · llamó a la autoridad'];
   var FILAS = 'ABCDEFGHJKLMNPRST';
 
   // Casos del SVN, en minutos respecto al pitazo (19:00 allá). doc: número completo; el registro solo muestra los últimos 4.
@@ -25,9 +25,9 @@ window.EV_AUDIT = (function (w) {
     { m: -17, t: 'policia', p: 4, doc: '71894447', o: 1, d: 'Alerta asignada a Pt. J. Herrera', q: PMU },
     { m: -18, t: 'medida', p: 4, doc: '71894447', o: 0, d: 'No entró · alerta al PMU', q: 'Op. L. Mejía' },
     { m: -19, t: 'verde', p: 1, doc: '71302117', o: 0, d: 'Entró · Norte, aforo libre', q: 'Op. A. Rueda' },
-    { m: -20, t: 'operativo', p: 6, doc: '1017239013', o: 0, d: 'Boleta de otro partido · no llamó a la Policía', q: 'Op. D. Salazar' },
+    { m: -20, t: 'operativo', p: 6, doc: '1017239013', o: 0, d: 'Boleta de otro partido · no llamó a la autoridad', q: 'Op. D. Salazar' },
     { m: -21, t: 'amarillo', p: 5, doc: '1152446583', o: 0, d: 'Entró con aviso · veto levantado', q: 'Op. S. León' },
-    { m: -23, t: 'operativo', p: 2, doc: '80297702', o: 0, d: 'Boleta ya usada · no llamó a la Policía', q: 'Op. J. Ríos' },
+    { m: -23, t: 'operativo', p: 2, doc: '80297702', o: 0, d: 'Boleta ya usada · no llamó a la autoridad', q: 'Op. J. Ríos' },
     { m: -25, t: 'policia', p: 2, doc: '1036612208', o: 1, d: 'En la puerta con la persona', q: 'Pt. M. Castaño' },
     { m: -28, t: 'consulta', p: 2, doc: '1036612208', o: 1, d: 'Abrió el perfil desde la alerta', q: PMU },
     { m: -28, t: 'policia', p: 2, doc: '1036612208', o: 1, d: 'Alerta tomada', q: 'Pt. M. Castaño' },
@@ -40,7 +40,7 @@ window.EV_AUDIT = (function (w) {
     { m: -63, t: 'policia', p: 8, doc: '43115561', o: 1, d: 'Alerta cerrada · No encontrado', q: 'Sub. C. Pérez' },
     { m: -71, t: 'policia', p: 8, doc: '43115561', o: 1, d: 'Alerta tomada', q: 'Sub. C. Pérez' },
     { m: -71, t: 'policia', p: 8, doc: '43115561', o: 1, d: 'Alerta asignada a Sub. C. Pérez', q: PMU },
-    { m: -72, t: 'operativo', p: 8, doc: '43115561', o: 0, d: 'Boleta falsa · llamó a la Policía', q: 'Op. M. Cano' },
+    { m: -72, t: 'operativo', p: 8, doc: '43115561', o: 0, d: 'Boleta falsa · llamó a la autoridad', q: 'Op. M. Cano' },
     { m: -158, t: 'venta', p: 0, doc: '1152446583', o: 2, d: 'Venta autorizada · con aviso', q: 'Canal web' },
     { m: -232, t: 'venta', p: 0, doc: '71894447', o: 3, d: 'Venta bloqueada · medida vigente', q: 'Canal web' },
     { m: -249, t: 'venta', p: 0, doc: '71302117', o: 2, d: 'Venta autorizada', q: 'Canal web' },
@@ -150,7 +150,7 @@ window.EV_AUDIT = (function (w) {
     function momento() { return Math.round(ap + (finIngreso - ap - 3) * Math.sqrt(r())); }
     for (var b = 0; b < gBoleta + gFalsa; b++) {
       var sb = sectorAzar(), pb = puertaAzar(sb), kb = persona(docAzar()), mb = momento(), pol = b >= gBoleta;
-      fila(mb, 'operativo', pb, kb, pol ? 'Boleta falsa · llamó a la Policía' : BOLETA_MAL[Math.floor(r() * 3)], OPERADOR[pb], 0);
+      fila(mb, 'operativo', pb, kb, pol ? 'Boleta falsa · llamó a la autoridad' : BOLETA_MAL[Math.floor(r() * 3)], OPERADOR[pb], 0);
       if (pol) { alerta(mb, pb, kb, vivo && mb > corte - 6); }
     }
     // Rojos por medida: la venta ya se había bloqueado; en la puerta se repite el intento y sale la alerta.

@@ -28,7 +28,7 @@
       if (D.esMenor(r)) p.menor = true;
       var res = D.estadoRestriccion(r), fin = D.finVigencia(r), i0 = r.origen[0];
       p.medidas.push({ id: r.id, orig: r.origen || [], acto: r.numActo, art: (/Art\. \d+/.exec(C.origen[i0]) || [''])[0], corta: CORTA[i0] || '', full: r.origen.map(function (i) { return C.origen[i].replace(/^(\d+\.|[a-c]\) )/, ''); }).join('\n'),
-        autoridad: 'Inspección de Policía de ' + (r.ciudadHechos || r.ciudad), ini: r.fechaEjecutoria ? U.addDays(r.fechaEjecutoria, 1) : '', fin: fin, meses: +r.meses || 0, dias: D.diasRestantes(r), href: BASE + '/' + r.id, reg: r.fechaRegistro,
+        autoridad: 'Inspección municipal de ' + (r.ciudadHechos || r.ciudad), ini: r.fechaEjecutoria ? U.addDays(r.fechaEjecutoria, 1) : '', fin: fin, meses: +r.meses || 0, dias: D.diasRestantes(r), href: BASE + '/' + r.id, reg: r.fechaRegistro,
         estado: res === 'Activa' ? 'Vigente' : res === 'Cumplida' ? 'Cumplida' : 'En validación', enTramite: res === 'Inactiva' });
     });
     out.forEach(function (p) { p.res = resumen(p); });

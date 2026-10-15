@@ -187,7 +187,7 @@
     if (res === 'Activa') estado = { tono: 'neg', titulo: 'Sanción activa · bloquea en todo el país', lineas: ['Hasta el <b>' + U.fmt(fin) + '</b> · <b>' + esc(GI.fmtDias(dias).toLowerCase()) + '</b>'], progreso: corrido * 100 / total, desde: desde };
     else if (res === 'Cumplida') estado = { tono: 'ok', titulo: 'Cumplida · no bloquea', lineas: ['Cumplida el <b>' + U.fmt(D.fechaCumplida(r) || U.addDays(fin, 1)) + '</b>', esc(vig)], progreso: 100, desde: desde };
     else estado = { tono: porSub ? 'cau' : 'gr', titulo: porSub ? 'Inactiva · por subsanar' : 'Inactiva · aún no bloquea',
-      lineas: (porSub ? ['Devuelta a la inspección de policía'].concat(r.observaciones ? ['Motivo: ' + esc(r.observaciones)] : []) : ['Pasa a <b>Activa</b> al quedar <b>Validado</b>']).concat(fin ? ['Vigencia prevista hasta <b>' + U.fmt(fin) + '</b>'] : []) };
+      lineas: (porSub ? ['Devuelta a la inspección municipal'].concat(r.observaciones ? ['Motivo: ' + esc(r.observaciones)] : []) : ['Pasa a <b>Activa</b> al quedar <b>Validado</b>']).concat(fin ? ['Vigencia prevista hasta <b>' + U.fmt(fin) + '</b>'] : []) };
     var hist = r.historial.slice().reverse().map(function (h) {
       return { t: h.de === h.a || !h.de ? h.a : h.de + ' → ' + h.a, por: h.usuario || 'Sistema', nota: h.nota, fecha: U.fmt(h.fecha) + ' ' + h.hora };
     });

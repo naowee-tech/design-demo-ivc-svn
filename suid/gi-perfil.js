@@ -29,7 +29,7 @@
   ];
   var TRIBUNAS = [{ n: 'Norte', p: 30 }, { n: 'Sur', p: 30 }, { n: 'Oriental', p: 22 }, { n: 'Occidental', p: 18 }];
   var ESCUDOS = [[/^(atl.tico )?nacional$/i, 'nacional.png'], [/^(independiente )?medell.n$/i, 'medellin.png']];
-  /* Julián Andrés Posada: los mismos valores que el SVN (datos.js, vista policial). */
+  /* Julián Andrés Posada: los mismos valores que el SVN (datos.js, vista de seguridad). */
   var FIJOS = { '71894447': { club: 0, cert: 86, partidos: 16, tribuna: 'Sur', enTribuna: 11, viajes: 3, acomp: 2, intentos: 1, ultimo: 'Último: Puerta 4 · Oriental, 18:42.' } };
 
   function mono(n) {

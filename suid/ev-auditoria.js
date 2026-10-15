@@ -178,7 +178,7 @@
 
   function casos(A) {
     var c = function (acc, t) { return '<button type="button" class="ev-demo__op" data-acc="' + acc + '">' + esc(t) + '</button>'; };
-    return '<p class="ev-aud-casos"><span>Para revisar:</span>' + c('aud-caso-medida', 'Historia de CC 71.894.447') + c('aud-caso-alerta', 'Alertas policiales') + c('aud-caso-venta', 'Ventas bloqueadas') + '</p>';
+    return '<p class="ev-aud-casos"><span>Para revisar:</span>' + c('aud-caso-medida', 'Historia de CC 71.894.447') + c('aud-caso-alerta', 'Alertas de seguridad') + c('aud-caso-venta', 'Ventas bloqueadas') + '</p>';
   }
 
   function renderRegistros(ctx) {
@@ -231,7 +231,7 @@
       kpi('verde', 'Entraron', A.entraron, pct(A.entraron, V.con) + ' de las boletas con titular' + (c.amarillo ? ' · ' + fmt(c.amarillo) + ' con aviso' : '')) +
       kpi('operativo', 'No entraron por boleta', c.operativo, 'Usada, falsa, de otro partido o de otro titular') +
       kpi('medida', 'No entraron por medida', c.medida, 'Medida vigente: alerta al PMU') +
-      kpi('policia', 'Acciones policiales', al.n, 'Alertas atendidas, ' + (al.abiertas.length ? fmt(al.abiertas.length) + ' abiertas' : 'todas cerradas') + ' · ' + fmt(c.policia) + ' registros') +
+      kpi('policia', 'Acciones de seguridad', al.n, 'Alertas atendidas, ' + (al.abiertas.length ? fmt(al.abiertas.length) + ' abiertas' : 'todas cerradas') + ' · ' + fmt(c.policia) + ' registros') +
       kpi('consulta', 'Consultas de perfil', c.consulta, 'Cada apertura de datos protegidos') + '</div>';
 
     // Ingresos por cada 15 minutos, de la apertura al último ingreso.

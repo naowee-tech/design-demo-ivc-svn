@@ -11,7 +11,7 @@
 
   var ETAPAS = [
     { n: 'Integrar las fuentes',
-      sub: 'Policía Nacional, Registraduría e informes de clubes suman sus datos a una base central del IVC.' },
+      sub: 'Autoridad de seguridad, Registraduría e informes de clubes suman sus datos a una base central del IVC.' },
     { n: 'El IVC construye su plataforma',
       sub: 'Sobre esa base nace la plataforma: búsqueda, gestión con historial y solicitudes de entidades.' },
     { n: 'Lista para conectarse con los demás',
@@ -21,8 +21,8 @@
   var SUB_FINAL = 'Fuentes integradas, plataforma construida y API disponible para quien la necesita.';
 
   var FUENTES = [
-    { icono: 'escudo', t: ['Policía Nacional'], s: ['Medidas correctivas', 'en firme'],
-      tc: ['Policía', 'Nacional'], sc: ['Medidas en firme'] },
+    { icono: 'escudo', t: ['Autoridad de seguridad'], s: ['Medidas correctivas', 'en firme'],
+      tc: ['Autoridad', 'de seguridad'], sc: ['Medidas en firme'] },
     { icono: 'cedula', t: ['Registraduría', 'Nacional'], s: ['Verificación de identidad'],
       tc: ['Registraduría', 'Nacional'], sc: ['Identidad'] },
     { icono: 'informe', t: ['Informes de clubes'], s: ['Entidades deportivas:', 'incidentes de sus eventos'],
@@ -44,15 +44,15 @@
       tc: ['Comercializadoras'], sc: ['Consulta ciega: sí o no y código de motivo'] },
     { icono: 'puerta', t: ['Puertas del SVN'], s: ['Semáforo de acceso con', 'el estado del momento'],
       tc: ['Puertas del SVN'], sc: ['Semáforo de acceso con el estado actual'] },
-    { icono: 'monitor', t: ['Policía Nacional'], s: ['Monitor PMU: alertas rojas', 'con la puerta y la hora'],
-      tc: ['Policía Nacional · PMU'], sc: ['Alertas rojas con la puerta y la hora'] },
+    { icono: 'monitor', t: ['Autoridad de seguridad'], s: ['Monitor PMU: alertas rojas', 'con la puerta y la hora'],
+      tc: ['Autoridad de seguridad · PMU'], sc: ['Alertas rojas con la puerta y la hora'] },
     { icono: 'estadio', t: ['Entidades deportivas'], s: ['Medidas vigentes y estado', 'de sus reportes'],
       tc: ['Entidades deportivas'], sc: ['Medidas vigentes y estado de sus reportes'] }
   ];
 
-  var DESCRIPCION = 'Diagrama en tres etapas: la Policía Nacional, la Registraduría Nacional y los informes de clubes ' +
+  var DESCRIPCION = 'Diagrama en tres etapas: la autoridad de seguridad, la Registraduría Nacional y los informes de clubes ' +
     'se integran en la base central del IVC; sobre ella nacen la búsqueda, la gestión con historial y las solicitudes; ' +
-    'y el IVC despacha a comercializadoras, puertas del SVN, la Policía Nacional y las entidades deportivas.';
+    'y el IVC despacha a comercializadoras, puertas del SVN, la autoridad de seguridad y las entidades deportivas.';
 
   // Iconos de 24x24 con trazo; se escalan al tamaño de la insignia.
   var ICONOS = {

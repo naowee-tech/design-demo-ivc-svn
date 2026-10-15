@@ -78,7 +78,7 @@
       ctx: 'De recibido a decisión en 90 días' + (I.revPrevio != null ? ' (antes ' + n1(I.revPrevio) + ')' : '') + '. El pendiente más viejo lleva ' + plural(I.pendienteViejo || 0, 'día', 'días') + '.',
       lec: dr == null ? 'Aún no hay comparación.' : dr > 0.2 ? 'Se demora más que antes: atiende primero el pendiente más viejo.' : dr < -0.2 ? 'Se revisa más rápido que antes.' : 'Se mantiene estable.' });
     var dn = I.dev.n - I.devPrev.n;
-    L.push({ tono: dn > 0 ? 'negative' : dn < 0 ? 'positive' : 'informative', tag: tend(dn, 0), cifra: I.dev.n, sub: ' devueltos', t: 'Devueltos a la inspección de policía', corta: 'Devueltos a policía',
+    L.push({ tono: dn > 0 ? 'negative' : dn < 0 ? 'positive' : 'informative', tag: tend(dn, 0), cifra: I.dev.n, sub: ' devueltos', t: 'Devueltos a la inspección municipal', corta: 'Devueltos a inspección',
       ctx: 'En 90 días, contra ' + I.devPrev.n + ' antes: ' + pct(I.dev.n, I.dev.recibidos) + '% de lo recibido (' + I.dev.n + ' de ' + I.dev.recibidos + ').',
       lec: dn > 0 ? 'Suben las devoluciones: a los oficios les falta algo con frecuencia.' : dn < 0 ? 'Bajan las devoluciones: los oficios llegan más completos.' : 'Sin cambios frente al periodo anterior.' });
     var rp = pct(I.reincidentes, I.personas);
@@ -491,7 +491,7 @@
       });
     });
     if (aSub) aSub.addEventListener('click', function () {
-      var m = modal({ title: 'Devolver por subsanar', sub: r.id, body: '<p class="gi-p">El expediente se devuelve a la inspección de policía. Indica qué falta.</p><label class="gi-lbl gi-lbl--req">Motivo<textarea class="gi-ta" id="sMot" rows="3"></textarea></label><p class="gi-err" id="sErr" hidden>El motivo es obligatorio.</p>',
+      var m = modal({ title: 'Devolver por subsanar', sub: r.id, body: '<p class="gi-p">El expediente se devuelve a la inspección municipal. Indica qué falta.</p><label class="gi-lbl gi-lbl--req">Motivo<textarea class="gi-ta" id="sMot" rows="3"></textarea></label><p class="gi-err" id="sErr" hidden>El motivo es obligatorio.</p>',
         footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="sOk">Devolver</button>' });
       m.el.querySelector('#sOk').addEventListener('click', function () {
         var mot = m.el.querySelector('#sMot').value.trim();
