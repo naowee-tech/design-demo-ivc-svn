@@ -195,7 +195,10 @@
     var sancion = [{ k: 'Tiempo', v: r.meses + ' meses' }].concat(r.valor ? [{ k: 'Valor', v: dinero(r.valor) }] : []);
     var resumen = val ? [{ k: 'Conducta', v: conducta }, { k: 'Acto', v: esc(r.numActo) }, { k: 'Evento', v: esc(GI.titulo(r.local + ' vs. ' + r.visitante)) }, { k: 'Fecha', v: U.fmt(r.fechaHechos) }].concat(r.ciudadHechos ? [{ k: 'Lugar', v: esc(GI.titulo(r.ciudadHechos)) }] : [], sancion)
       : [{ k: 'Conducta', v: conducta }, { k: 'Acto', v: esc(r.numActo) }, { k: 'Fecha del acto', v: U.fmt(r.fechaActo) }, { k: 'Ejecutoria', v: U.fmt(r.fechaEjecutoria) }].concat(sancion);
-    var enlHtml = enl.length ? enl.map(function (x) { return '<a href="' + SOLS + '">' + esc(x.id) + '</a>' + (x.origen ? ' · ' + esc(x.origen) : ''); }).join('<br>') : '';
+    /* Las solicitudes que derivaron aquí, más la de origen guardada en el registro si el almacén de solicitudes no la trae. */
+    if (r.solicitud && !enl.some(function (x) { return x.id === r.solicitud.id; })) enl = enl.concat([r.solicitud]);
+    var enlHtml = enl.length ? enl.map(function (x) { return 'Solicitud <a href="' + SOLS + '/' + encodeURIComponent(x.id) + '">' + esc(x.id) + '</a>' + (x.origen ? ' · reportada por ' + esc(x.origen) : ''); }).join('<br>') : '';
+    var sol0 = r.solicitud || enl[0], adj = r.solicitud && r.solicitud.adjuntos ? r.solicitud.adjuntos : [];
     var otras = misma.length ? misma.map(function (x) { return '<a href="' + BASE + '/' + esc(x.id) + '">' + esc(x.id) + '</a>'; }).join(', ') : 'Ninguna';
     var fVal = D.fechaValidacion(r);
     var segundo = val ? { t: 'Validado', estado: 'done' } : { t: porSub ? 'Por subsanar' : 'Validar', estado: 'on' };
@@ -204,12 +207,14 @@
       sub: doc + (edad != null ? ' · ' + edad + ' años' : '') + (r.ciudad ? ' · ' + GI.titulo(r.ciudad) : ''),
       badges: [{ t: res, tono: TONO_RES[res] || 'neu' }, { t: r.estadoRegistro, tono: TONO_REG[r.estadoRegistro] || 'neu' }],
       estado: estado,
+      avisos: sol0 ? [{ tono: 'info', html: '<strong>Origen:</strong> ' + enlHtml.split('<br>')[0] + '.' }] : [],
       etapas: [{ t: 'Recibido', estado: 'done' }, segundo, { t: res === 'Cumplida' ? 'Cumplida' : 'Activa', estado: res === 'Activa' ? 'on' : res === 'Cumplida' ? 'done' : 'next' }],
       etapasInterno: [{ t: 'Recibido · ' + dd(r.fechaRegistro), estado: 'done' }, val ? { t: 'Validado' + (fVal ? ' · ' + dd(fVal) : ''), estado: 'done' } : { t: porSub ? 'Por subsanar' : 'Validar registro', estado: 'on' },
         { t: res === 'Cumplida' ? 'Restricción cumplida' : 'Restricción activa', estado: res === 'Activa' ? 'on' : res === 'Cumplida' ? 'done' : 'next' }],
       etapasNota: 'Recibido el ' + U.fmt(r.fechaRegistro) + (r.profesional ? ' por ' + r.profesional : '') + '. Para validar o devolver, abre el expediente.',
       resumen: resumen, interna: [{ k: 'Radicado de entrada', v: esc(r.radEntrada) }, { k: 'Profesional', v: esc(r.profesional) }, { k: 'Solicitud de origen', v: enlHtml || '—' }, { k: 'Otras restricciones', v: otras }],
       movimientos: hist,
+      seccionesAntes: sol0 ? [{ t: 'Origen de la medida', kv: [['Viene de', enlHtml, true], ['Tipo de entidad', esc(sol0.tipo || '')], ['Fecha del reporte', esc(sol0.fecha || '')], ['Adjuntos de la solicitud', adj.length ? lista(adj) : 'Sin evidencia adjunta', true]] }] : [],
       persona: { t: 'Infractor', kv: personaKv(r, r) }, rep: r.rep ? { t: 'Representante legal o tutor', kv: personaKv(r.rep, r) } : null,
       secciones: [
         { t: 'Hechos y conducta', kv: [['Fecha de los hechos', U.fmt(r.fechaHechos)], ['Competición', esc(r.competicion + (r.otraCompeticion ? ' · ' + r.otraCompeticion : ''))],
@@ -234,7 +239,7 @@
     var idx = PASOS.map(function (x) { return x[0]; }).indexOf(s.estado), arch = s.estado === 'archivado', medida = s.medida && GI.get(s.medida);
     var etapas = PASOS.map(function (x, i) { return { t: x[1], estado: arch ? (i === 0 ? 'done' : 'next') : i < idx ? 'done' : i === idx ? 'on' : 'next' }; });
     var estado = arch ? { tono: 'gr', titulo: 'Archivada: ' + s.motivoArchivo, lineas: s.notaArchivo ? [esc(s.notaArchivo)] : [] }
-      : s.estado === 'derivo' ? { tono: 'info', titulo: 'Derivó en la medida ' + s.medida, lineas: medida ? ['<a href="' + BASE + '/' + esc(s.medida) + '">Abrir la ficha en Gestión</a>'] : [] } : null;
+      : s.estado === 'derivo' ? { tono: 'info', titulo: 'Derivó en la medida ' + s.medida, lineas: medida ? ['<a href="' + BASE + '/' + esc(s.medida) + '">Abrir la medida en Gestión</a>'] : [] } : null;
     var avisos = [{ tono: 'info', html: '<strong>Un reporte no bloquea por sí solo.</strong> Solo una medida vigente bloquea el ingreso.' }];
     if (s.menor) avisos.push({ tono: 'warn', html: '<strong>Reserva reforzada.</strong> La persona es menor de edad: no se muestra su nombre, su foto ni su huella.' });
     var nombre = s.menor ? 'Menor de edad · ' + s.iniciales : s.nombre, digs = String(s.doc || '').replace(/\D/g, '');
@@ -252,7 +257,7 @@
       secciones: [{ t: 'Evento y conducta', kv: [['Evento', esc(GI.titulo(s.evento)), true], ['Fecha de los hechos', esc(s.hechos)], ['Autoridad competente', esc(s.autoridad)], ['Conductas', esc((s.conductas || []).join('; ')), true]] },
         { t: 'Relato', html: '<p>' + esc(s.descripcion) + '</p>' }, { t: 'Evidencia', html: '<p>' + esc(s.evid) + '</p>' }],
       estadosNota: aviso(avisos[0]) + (avisos[1] ? aviso(avisos[1]) : ''),
-      relacionados: [{ k: 'Medida enlazada', v: s.medida ? '<a href="' + BASE + '/' + esc(s.medida) + '">' + esc(s.medida) + '</a>' : 'Aún sin medida: se enlaza al pasar a trámite' }],
+      relacionados: [{ k: 'Medida creada', v: s.medida ? '<a href="' + BASE + '/' + esc(s.medida) + '">' + esc(s.medida) + '</a>' : 'Aún sin medida: se crea desde «Crear medida» cuando la solicitud está en trámite' }],
       historial: hist
     };
   }

@@ -10,7 +10,7 @@
   var PUERTAS = { norte: [1, 2], occ: [3, 8], ori: [4, 5], sur: [6, 7] };
   var ESTADOS = [['habilitado', 'Habilitado'], ['limitado', 'Limitado'], ['sancionado', 'Sancionado']];
   // Estado de la vista: filtro de la lista, pestaña y sector elegido del detalle.
-  var vs = { q: '', tab: 'sectores', sector: null };
+  var vs = { q: '', tab: 'sectores', sector: null, enviado: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function miles(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
@@ -48,7 +48,7 @@
   function usos(e, ctx) { return ctx.st.eventos.filter(function (x) { return x.escenario === e.nombre; }); }
 
   function ico(ctx, n) { return ctx.ico(n); }
-  function volver(ctx, href, texto) { return '<a class="gi-back" href="' + href + '">' + ico(ctx, 'arrow-left') + esc(texto) + '</a>'; }
+  function volver(ctx, href, texto) { return '<a class="gi-back" href="' + href + '" aria-label="' + esc(texto) + '" title="' + esc(texto) + '">' + ico(ctx, 'arrow-left') + '</a>'; }
 
   /* ---------- Lista ---------- */
 
@@ -66,17 +66,29 @@
       '<span class="ev-datos">' + dato(esc(e.aforo), 'Aforo') + dato(4, 'Sectores') + dato(n, 'Restricción', n ? 'ev-dato--alerta' : '') + '</span></span>' + (elegido == null ? '</a>' : '</button>');
   }
 
+  function estadoEsc(e) { return e.estado === 'revision' ? badge('limitado', 'En revisión') : badge('habilitado', 'Activo'); }
+
+  // DC-008: el catálogo se lee como tabla densa (una fila por lugar), no como las tarjetas de eventos.
+  function filaEsc(e, ctx) {
+    var rev = e.estado === 'revision', nu = usos(e, ctx).length;
+    var th = e.foto ? '<img src="' + esc(e.foto) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '';
+    return '<a class="pb-fila exs-fila" href="' + LISTA + '/' + e.id + '" data-acc="ex-abrir" data-id="' + e.id + '">' +
+      '<span class="exs-fila__nom"><span class="exs-th" aria-hidden="true"><b>' + esc(siglas(e.nombre)) + '</b>' + th + '</span><b class="pb-cortar">' + esc(e.nombre) + '</b></span>' +
+      '<span class="pb-cortar">' + esc(e.ciudad) + '</span><span class="pb-num">' + esc(e.aforo) + '</span><span class="pb-num">' + sectores(e).length + '</span><span class="pb-num">' + nu + '</span>' +
+      '<span>' + (rev ? '<span class="pb-sub">Pendiente de revisión</span>' : resumen(e)) + '</span><span>' + estadoEsc(e) + '</span></a>';
+  }
+
   function lista(ctx) {
     nu = null;
     var q = vs.q.trim().toLowerCase();
     var xs = ESC.filter(function (e) { return !q || (e.nombre + ' ' + e.ciudad).toLowerCase().indexOf(q) >= 0; });
-    return volver(ctx, '#/control-acceso/eventos', 'Volver a Eventos') +
-      '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Escenarios</h1>' +
-      '<p class="page-subtitle">Los lugares donde ocurren los eventos. Cada escenario se registra una vez y cada evento lo hereda, con sus sectores, puertas y restricciones.</p></div>' +
-      '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--loud" data-acc="ex-nuevo">' + ico(ctx, 'add') + 'Agregar escenario</button></div></header>' +
-      '<div class="pb-app ev-lista"><div class="pb-evl__herr"><div class="pb-q pb-evl__buscar">' + ico(ctx, 'search') +
-      '<input type="search" class="pb-input" data-s="exs" data-k="q" aria-label="Buscar escenario" placeholder="Buscar por escenario o ciudad" value="' + esc(vs.q) + '"></div></div>' +
-      (xs.length ? '<section class="ev-grupo" aria-label="Escenarios"><h2 class="ev-grupo__tit">Escenarios<span>' + xs.length + '</span></h2><div class="ev-grid">' + xs.map(function (e) { return tarjeta(e, ctx); }).join('') + '</div></section>'
+    var buscador = '<div class="pb-q ev-cab__q">' + ico(ctx, 'search') +
+      '<input type="search" class="pb-input" data-s="exs" data-k="q" aria-label="Buscar escenario" placeholder="Buscar por escenario o ciudad" value="' + esc(vs.q) + '"></div>';
+    var boton = '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="ex-nuevo">' + ico(ctx, 'add') + 'Agregar escenario</button>';
+    var enviado = vs.enviado ? '<div class="pb-aviso exs-enviado" role="status">' + ico(ctx, 'check-doc') + '<span><b>' + esc(vs.enviado) + ' se envió a revisión.</b> El IVC validará los documentos y certificaciones; mientras tanto el escenario aparece «En revisión» y todavía no se puede elegir para crear eventos. No tiene que hacer nada más.</span></div>' : '';
+    return ctx.cabeceraLista('escenarios', buscador, boton) + '<div class="pb-app ev-lista">' + enviado +
+      (xs.length ? '<div class="exs-scroll"><section class="pb-tabla exs-tabla" aria-label="Escenarios" style="--pb-cols:minmax(0,2.4fr) minmax(0,1fr) 84px 80px 72px minmax(0,1.5fr) 132px">' +
+        '<div class="pb-cols"><span>Escenario</span><span>Ciudad</span><span>Aforo</span><span>Sectores</span><span>Eventos</span><span>Restricción</span><span>Estado</span></div>' + xs.map(function (e) { return filaEsc(e, ctx); }).join('') + '</section></div>'
         : '<div class="pb-vacio" style="min-height:160px"><b>Ningún escenario coincide</b><span>Cambie la búsqueda.</span></div>') + '</div>';
   }
 
@@ -146,7 +158,7 @@
       return '<button type="button" role="tab" class="gi-tab" data-acc="ex-tab" data-id="' + t[0] + '" aria-selected="' + (vs.tab === t[0]) + '">' + t[1] + '</button>';
     }).join('');
     return volver(ctx, LISTA, 'Volver a Escenarios') +
-      '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(e.nombre) + '</h1><p class="page-subtitle pb-evsub">' + resumen(e) +
+      '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(e.nombre) + '</h1><p class="page-subtitle pb-evsub">' + (e.estado === 'revision' ? estadoEsc(e) : resumen(e)) +
       '<span>' + esc(e.ciudad) + '</span><span>Aforo ' + esc(e.aforo) + '</span>' + (n ? '<span>' + esc(dicho(e)) + '</span>' : '') + '</p></div></header>' +
       '<div class="gi-tabs ev-tabs" role="tablist" aria-label="Secciones del escenario">' + tabs + '</div>' +
       '<div class="pb-app"><div class="pb-vista" role="tabpanel">' + (vs.tab === 'eventos' ? eventosVista(e, ctx) : sectoresVista(e, ctx)) + '</div></div>';
@@ -177,7 +189,7 @@
   function elegir(ctx, ev) {
     var sel = porNombre(ev.escenario) || ESC[0];
     return '<p class="pb-sub" style="margin:0 0 16px">El escenario define los sectores y las puertas del evento. Si algún sector tiene restricciones, el evento las hereda.</p>' +
-      '<div class="ev-grid exs-pick" role="group" aria-label="Elegir escenario">' + ESC.map(function (e) { return tarjeta(e, ctx, e.id === sel.id); }).join('') + '</div>' +
+      '<div class="ev-grid exs-pick" role="group" aria-label="Elegir escenario">' + ESC.filter(function (e) { return e.estado !== 'revision'; }).map(function (e) { return tarjeta(e, ctx, e.id === sel.id); }).join('') + '</div>' +
       '<section class="pb-card exs-estado" aria-label="Estado del escenario"><div class="pb-card__cuerpo" style="padding-top:20px"><div class="exs-estado__cab"><h3 class="pb-h3">Estado de ' + esc(sel.nombre) + '</h3>' + resumen(sel) +
       '<a class="pb-btn pb-btn--enlace" href="' + LISTA + '/' + sel.id + '">Ver el escenario</a></div>' +
       '<div class="pb-esc"><div class="pb-mapa exs-mapa">' + mapaDe(sel) + '</div><div class="pb-sec" style="margin-top:0">' + filas(sel) + '</div></div></div></section>';
@@ -185,13 +197,16 @@
 
   function resumenTexto(e) { return e.restricciones.length ? dicho(e).toLowerCase() : 'sin restricciones vigentes'; }
 
-  /* ---------- Agregar escenario: asistente de 3 pasos ---------- */
+  /* ---------- Agregar escenario: asistente de 4 pasos; al final se envía a revisión, no se crea ---------- */
 
-  var PASOS_N = [['lugar', 'Datos del lugar', 'Nombre, ciudad y aforo'], ['sectores', 'Sectores y puertas', 'Cómo se reparte el aforo'], ['revisar', 'Revisar y guardar', 'Lo que se va a registrar']];
+  var PASOS_N = [['lugar', 'Datos del lugar', 'Nombre, ciudad y aforo'], ['sectores', 'Sectores y puertas', 'Cómo se reparte el aforo'],
+    ['documentos', 'Documentos y certificaciones', 'Soportes del lugar'], ['revisar', 'Revisar y enviar', 'Se envía a revisión']];
+  var DOCS = B.documentosEscenario || [];
   var nu = null;
-  function nuevoEst() { return nu || (nu = { i: 0, max: 0, nombre: '', ciudad: '', aforo: '', manual: false, tipo: { norte: 'libre', occ: 'num', ori: 'num', sur: 'libre' }, af: { norte: '', occ: '', ori: '', sur: '' } }); }
+  function nuevoEst() { return nu || (nu = { i: 0, max: 0, nombre: '', ciudad: '', aforo: '', manual: false, docs: {}, tipo: { norte: 'libre', occ: 'num', ori: 'num', sur: 'libre' }, af: { norte: '', occ: '', ori: '', sur: '' } }); }
   function entero(v) { return Number(String(v == null ? '' : v).replace(/\D/g, '')) || 0; }
   function suma(n) { return ORDEN.reduce(function (a, id) { return a + entero(n.af[id]); }, 0); }
+  function docsFalta(n) { return DOCS.filter(function (d) { return d.obligatorio && !n.docs[d.id]; }); }
 
   // Mientras no se edite un sector a mano, el aforo total se reparte como en el Atanasio y Sur absorbe el resto.
   function repartir(n) {
@@ -202,16 +217,31 @@
     });
   }
 
-  function faltas(n) {
+  function faltasPaso(n, i) {
     var o = [];
-    if (n.i === 0) {
+    if (i === 0) {
       if (!n.nombre.trim()) { o.push('escriba el nombre del escenario'); }
       else if (porNombre(n.nombre.trim())) { o.push('ya existe un escenario con ese nombre'); }
       if (!n.ciudad.trim()) { o.push('escriba la ciudad'); }
       if (!entero(n.aforo)) { o.push('escriba el aforo total'); }
     }
-    if (n.i === 1 && suma(n) !== entero(n.aforo)) { o.push('los sectores suman ' + miles(suma(n)) + ' y el aforo es ' + miles(entero(n.aforo))); }
+    if (i === 1 && suma(n) !== entero(n.aforo)) { o.push('los sectores suman ' + miles(suma(n)) + ' y el aforo es ' + miles(entero(n.aforo))); }
+    if (i === 2 && docsFalta(n).length) { o.push('faltan ' + docsFalta(n).length + ' documentos obligatorios'); }
     return o;
+  }
+  function faltas(n) { return faltasPaso(n, n.i); }
+  function pendiente(n) { return [0, 1, 2].filter(function (i) { return faltasPaso(n, i).length; })[0]; }
+
+  // DC-009: «Siguiente» siempre activo; con el paso incompleto lo llena con datos de ejemplo y el siguiente toque avanza.
+  function completar(n) {
+    if (n.i === 0) {
+      var ej = (B.escenariosEjemplo || []).filter(function (x) { return !porNombre(x.nombre); })[0] || { nombre: 'Estadio Nuevo ' + (ESC.length + 1), ciudad: 'Bogotá', aforo: '25.000' };
+      if (!n.nombre.trim() || porNombre(n.nombre.trim())) { n.nombre = ej.nombre; }
+      if (!n.ciudad.trim()) { n.ciudad = ej.ciudad; }
+      if (!entero(n.aforo)) { n.aforo = ej.aforo; }
+      n.manual = false; repartir(n);
+    } else if (n.i === 1) { n.manual = false; repartir(n); }
+    else if (n.i === 2) { DOCS.forEach(function (d) { if (d.obligatorio) { n.docs[d.id] = true; } }); }
   }
 
   function sectoresNuevos(n) {
@@ -222,8 +252,17 @@
     return w.BACKOFFICE.mapaSectores(sectoresNuevos(n), sec, {});
   }
 
+  function tarjetaDoc(d, n) {
+    var ok = !!n.docs[d.id];
+    return '<div class="doc-upload-card exs-doc' + (ok ? ' is-uploaded' : '') + '"><span class="doc-upload-card__check" aria-hidden="true">' + (ok ? '✓' : '') + '</span>' +
+      '<div class="doc-upload-card__content"><h3 class="doc-upload-card__title">' + esc(d.nombre) + (d.obligatorio ? '' : '<span class="doc-upload-card__optional">Opcional</span>') + '</h3>' +
+      '<p class="doc-upload-card__legal">' + esc(d.detalle) + '</p>' +
+      '<p class="doc-upload-card__meta">' + (ok ? esc(d.archivo) + ' · ' + esc(d.peso) + ' · carga simulada' : 'PDF, hasta 10 MB') + '</p></div>' +
+      '<button type="button" class="pb-btn" data-acc="ne-doc" data-id="' + d.id + '">' + (ok ? 'Quitar' : 'Adjuntar archivo') + '<span class="pb-vh"> ' + esc(d.nombre) + '</span></button></div>';
+  }
+
   function cuerpoNuevo(n) {
-    var ver = faltas(n), aviso = ver.length ? '<div class="pb-aviso pb-aviso--alerta" role="status"><span>Para continuar: ' + esc(ver.join(' · ')) + '.</span></div>' : '';
+    var ver = faltas(n), aviso = ver.length ? '<div class="pb-aviso pb-aviso--alerta" role="status"><span>Pendiente en este paso: ' + esc(ver.join(' · ')) + '. Toque «Siguiente» y se completa con datos de ejemplo.</span></div>' : '';
     if (n.i === 0) {
       return '<p class="pb-sub" style="margin:0 0 16px">El escenario se registra una vez y cada evento lo hereda. Después puede marcar un sector como limitado o sancionado.</p>' +
         '<div class="pb-esc-form"><label class="pb-campo">Nombre del escenario<input type="text" data-acc="ne-campo" data-k="nombre" value="' + esc(n.nombre) + '" placeholder="Estadio …"></label>' +
@@ -242,35 +281,66 @@
         '<div class="pb-sec" style="margin-top:0">' + filas + '<div class="pb-aviso' + (dif ? ' pb-aviso--alerta' : '') + '" role="status"><span>Repartido ' + miles(suma(n)) + ' de ' + miles(entero(n.aforo)) + (dif ? ' · ' + (dif > 0 ? 'faltan ' + miles(dif) : 'sobran ' + miles(-dif)) : ' · completo') +
         '. Cada sector lleva dos puertas.</span></div></div></div>';
     }
+    if (n.i === 2) {
+      var obl = DOCS.filter(function (d) { return d.obligatorio; }), ok = obl.length - docsFalta(n).length;
+      return '<p class="pb-sub" style="margin:0 0 16px">Un escenario es un lugar complejo y a veces lo administra una empresa: el IVC revisa estos soportes antes de habilitarlo. En el prototipo no se sube ningún archivo real.</p>' +
+        '<p class="exs-docs__n" role="status"><b>' + ok + ' de ' + obl.length + '</b> documentos obligatorios adjuntos</p>' +
+        '<div class="exs-docs">' + DOCS.map(function (d) { return tarjetaDoc(d, n); }).join('') + '</div>' + aviso;
+    }
     var fila = function (t, d) { return '<div class="exs-sec-fila exs-sec-fila--res"><span class="exs-chk" aria-hidden="true"></span><span class="exs-sec-fila__t"><b>' + esc(t) + '</b><span class="pb-sub">' + esc(d) + '</span></span></div>'; };
+    var adj = DOCS.filter(function (d) { return n.docs[d.id]; }), falta = pendiente(n);
     return '<div class="pb-esc"><div class="pb-card pb-mapa exs-mapa">' + mapaNuevo(n) + '</div><div class="pb-sec" style="margin-top:0">' +
       fila(n.nombre.trim(), n.ciudad.trim() + ' · aforo ' + miles(entero(n.aforo))) +
       sectoresNuevos(n).map(function (s) { return fila(s.nombre, s.tipo + ' · ' + miles(s.base) + ' puestos · puertas ' + PUERTAS[s.id][0] + ' y ' + PUERTAS[s.id][1]); }).join('') +
-      '<div class="pb-aviso"><span>Se registra sin restricciones. Después puede marcar un sector como limitado o sancionado.</span></div></div></div>';
+      fila('Documentos y certificaciones', adj.length + (adj.length === 1 ? ' archivo adjunto' : ' archivos adjuntos') + ' (simulado)') +
+      (falta != null ? '<div class="pb-aviso pb-aviso--alerta" role="status"><span>Falta completar «' + esc(PASOS_N[falta][1]) + '» para poder enviarlo.</span></div>' : '') +
+      '<div class="pb-aviso"><span>Al enviarlo no se crea el escenario: queda «En revisión» hasta que el IVC valide los documentos. Mientras tanto no se puede elegir para un evento.</span></div></div></div>';
   }
 
   function nuevo(ctx) {
-    var n = nuevoEst();
-    return ctx.armar({ pref: 'ne-', pasos: PASOS_N, i: n.i, max: n.max, cuerpo: cuerpoNuevo(n), bloqueo: faltas(n).length > 0, volver: [LISTA, 'Volver a Escenarios'], titulo: n.nombre.trim() || 'Escenario nuevo',
-      aria: 'Pasos para agregar el escenario', sub: '<span class="pb-badge pb-badge--borrador">Sin guardar</span>' + (n.ciudad.trim() ? '<span>' + esc(n.ciudad.trim()) + '</span>' : ''),
-      cancelar: LISTA, hint: 'Se registra al guardar, en el último paso.', fin: { acc: 'ne-guardar', label: 'Guardar escenario', disabled: false } });
+    var n = nuevoEst(), ult = n.i === PASOS_N.length - 1;
+    var hint = ult ? 'El escenario no se crea al enviarlo: queda en revisión.' : faltas(n).length ? 'Toque Siguiente para completar con datos de ejemplo' : 'Paso completo. Toque Siguiente para continuar.';
+    return ctx.armar({ pref: 'ne-', pasos: PASOS_N, i: n.i, max: n.max, cuerpo: cuerpoNuevo(n), volver: [LISTA, 'Volver a Escenarios'], titulo: n.nombre.trim() || 'Escenario nuevo',
+      aria: 'Pasos para agregar el escenario', sub: '<span class="pb-badge pb-badge--borrador">Sin enviar</span>' + (n.ciudad.trim() ? '<span>' + esc(n.ciudad.trim()) + '</span>' : ''),
+      cancelar: LISTA, hint: hint, fin: { acc: 'ne-guardar', label: 'Enviar a revisión', disabled: pendiente(n) != null } });
   }
 
   function clickNuevo(el, ctx) {
     var n = nuevoEst(), ds = el.dataset, m = document.querySelector('.main-scroll');
-    if (ds.acc === 'ne-sig') { if (faltas(n).length) { return; } n.i = Math.min(2, n.i + 1); n.max = Math.max(n.max, n.i); }
+    if (ds.acc === 'ne-sig') {
+      if (faltas(n).length) {
+        var raiz = document.querySelector('.main-scroll'), foto = w.LaserFill && raiz ? w.LaserFill.snap(raiz) : null;
+        completar(n);
+        if (foto) w.LaserFill.play(raiz, foto, { defer: true });
+        ctx.toast('Datos de ejemplo', 'Completamos este paso. Revíselo y toque Siguiente de nuevo para continuar.', 'informative'); return; }
+      n.i = Math.min(PASOS_N.length - 1, n.i + 1); n.max = Math.max(n.max, n.i);
+    }
     else if (ds.acc === 'ne-atras') { n.i = Math.max(0, n.i - 1); }
     else if (ds.acc === 'ne-paso') { if (+ds.id <= n.max && (+ds.id < n.i || !faltas(n).length)) { n.i = +ds.id; } }
     else if (ds.acc === 'ne-tipo') { var p = ds.id.split('.'); n.tipo[p[0]] = p[1]; return; }
+    else if (ds.acc === 'ne-doc') { n.docs[ds.id] = !n.docs[ds.id]; return; }
     else if (ds.acc === 'ne-guardar') {
+      if (pendiente(n) != null) { return; }
       var base = n.nombre.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/^estadio\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'escenario', id = base, k = 2;
       while (porId(id)) { id = base + '-' + k++; }
-      ESC.push({ id: id, nombre: n.nombre.trim(), ciudad: n.ciudad.trim(), aforo: miles(entero(n.aforo)), eventos: 0, restricciones: [], sectores: sectoresNuevos(n) });
-      ctx.toast('Escenario agregado', n.nombre.trim() + ' quedó en el catálogo, sin restricciones.');
-      nu = null; location.hash = LISTA + '/' + id; return false;
+      var nuevoEsc = { id: id, nombre: n.nombre.trim(), ciudad: n.ciudad.trim(), aforo: miles(entero(n.aforo)), eventos: 0, estado: 'revision', restricciones: [], sectores: sectoresNuevos(n),
+        documentos: DOCS.filter(function (d) { return n.docs[d.id]; }).map(function (d) { return d.id; }) };
+      ESC.push(nuevoEsc); guardarRevision();
+      vs.enviado = nuevoEsc.nombre; vs.q = '';
+      ctx.toast('Enviado a revisión', nuevoEsc.nombre + ' quedó «En revisión». El IVC validará los documentos antes de habilitarlo.');
+      nu = null; location.hash = LISTA; return false;
     }
     if (m) { m.scrollTop = 0; }
   }
+
+  // Los escenarios en revisión sobreviven al recargue de la demo.
+  var LLAVE = 'ivc.ev.escenarios-revision';
+  function guardarRevision() {
+    try { localStorage.setItem(LLAVE, JSON.stringify(ESC.filter(function (e) { return e.estado === 'revision'; }))); } catch (err) { /* sin almacenamiento */ }
+  }
+  (function () {
+    try { (JSON.parse(localStorage.getItem(LLAVE) || '[]') || []).forEach(function (e) { if (e && e.id && !porId(e.id)) { ESC.push(e); } }); } catch (err) { /* sin almacenamiento */ }
+  })();
 
   /* ---------- Acciones ---------- */
 
@@ -287,7 +357,7 @@
     if (ds.acc.indexOf('ne-') === 0) { return clickNuevo(el, ctx); }
     switch (ds.acc) {
       case 'ex-abrir': return false;
-      case 'ex-nuevo': nu = null; location.hash = LISTA + '/nuevo'; return false;
+      case 'ex-nuevo': nu = null; vs.enviado = ''; location.hash = LISTA + '/nuevo'; return false;
       case 'ex-tab': vs.tab = ds.id; return;
       case 'ex-sector': vs.sector = ds.id; return;
       case 'ex-estado':
@@ -303,7 +373,7 @@
   // El texto se guarda al escribir y no repinta: así no se pierde el foco ni la posición del cursor.
   function entrada(ev, id) {
     var el = ev.target, ds = el.dataset, e = porId(id);
-    if (ds.s === 'exs') { vs.q = el.value; return true; }
+    if (ds.s === 'exs') { vs.q = el.value; vs.enviado = ''; return true; }
     if (ds.acc === 'ne-campo') {
       var n = nuevoEst();
       if (ds.k === 'af') { n.af[ds.id] = el.value; n.manual = true; }

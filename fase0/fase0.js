@@ -13,46 +13,47 @@
     { n: 'Integrar las fuentes',
       sub: 'Autoridad de seguridad, Registraduría e informes de clubes suman sus datos a una base central del IVC.' },
     { n: 'El IVC construye su plataforma',
-      sub: 'Sobre esa base nace la plataforma: búsqueda, gestión con historial y solicitudes de entidades.' },
+      sub: 'Sobre esa base nace la plataforma: gestión de sanciones con historial y búsqueda cruzada, solicitudes de entidades y auditoría.' },
     { n: 'Lista para conectarse con los demás',
-      sub: 'El IVC queda como API y portal, y despacha a quien lo necesita.' }
+      sub: 'La base queda lista: la API de validación del SVN la expone y, a través de ella, se conectan los demás.' }
   ];
   var TITULO_FINAL = 'Base central lista para conectarse';
-  var SUB_FINAL = 'Fuentes integradas, plataforma construida y API disponible para quien la necesita.';
+  var SUB_FINAL = 'Fuentes integradas, plataforma construida y API de validación para quien se conecte.';
 
   var FUENTES = [
     { icono: 'escudo', t: ['Autoridad de seguridad'], s: ['Medidas correctivas', 'en firme'],
       tc: ['Autoridad', 'de seguridad'], sc: ['Medidas en firme'] },
-    { icono: 'cedula', t: ['Registraduría', 'Nacional'], s: ['Verificación de identidad'],
+    { icono: 'cedula', t: ['Registraduría Nacional'], s: ['Verificación de identidad'],
       tc: ['Registraduría', 'Nacional'], sc: ['Identidad'] },
     { icono: 'informe', t: ['Informes de clubes'], s: ['Entidades deportivas:', 'incidentes de sus eventos'],
       tc: ['Informes', 'de clubes'], sc: ['Incidentes'] }
   ];
 
-  // Los módulos que ya existen en el demo del IVC (menú del SUID).
+  // Los módulos de la plataforma, en el orden en que se construyen (DC-029): la búsqueda cruzada vive dentro de la gestión.
   var MODULOS = [
-    { icono: 'buscar', t: ['Búsqueda y', 'nuevos casos'], s: ['Consulta y registro', 'de medidas'],
-      tc: ['Búsqueda y nuevos casos'], sc: ['Consulta y registro de medidas'] },
-    { icono: 'historial', t: ['Gestión de sanciones'], s: ['Seguimiento de cada medida', 'con su historial'],
-      tc: ['Gestión de sanciones'], sc: ['Seguimiento de cada medida, con historial'] },
-    { icono: 'bandeja', t: ['Solicitudes'], s: ['Reportes y solicitudes', 'de las entidades'],
-      tc: ['Solicitudes de entidades'], sc: ['Reportes y solicitudes de clubes'] }
+    { icono: 'historial', t: ['Gestión de sanciones'], s: ['Seguimiento de cada medida', 'con historial y', 'búsqueda cruzada'],
+      tc: ['Gestión de sanciones'], sc: ['Seguimiento de cada medida, con historial y búsqueda cruzada'] },
+    { icono: 'bandeja', t: ['Solicitudes'], s: ['Se reciben los reportes', 'y solicitudes de entidades'],
+      tc: ['Solicitudes recibidas'], sc: ['Se reciben reportes de entidades'] },
+    { icono: 'auditoria', t: ['Auditoría'], s: ['Trazabilidad de cada', 'acción y de quién la hizo'],
+      tc: ['Auditoría'], sc: ['Trazabilidad de cada acción'] }
   ];
 
+  // Quienes se conectan (DC-028): la base alimenta la API de validación (`clave`, puerta de entrada) y de ella salen las otras tres.
   var CONSUMIDORES = [
+    { icono: 'puerta', clave: true, t: ['API de validación del SVN'], s: ['Puertas del SVN: responde', 'al instante, autoescalada'],
+      tc: ['API de validación del SVN'], sc: ['Puertas del SVN: responde al instante'] },
     { icono: 'boleta', t: ['Comercializadoras'], s: ['Consulta ciega: sí o no', 'y código de motivo'],
       tc: ['Comercializadoras'], sc: ['Consulta ciega: sí o no y código de motivo'] },
-    { icono: 'puerta', t: ['Puertas del SVN'], s: ['Semáforo de acceso con', 'el estado del momento'],
-      tc: ['Puertas del SVN'], sc: ['Semáforo de acceso con el estado actual'] },
-    { icono: 'monitor', t: ['Autoridad de seguridad'], s: ['Monitor PMU: alertas rojas', 'con la puerta y la hora'],
+    { icono: 'monitor', t: ['Autoridad de seguridad'], s: ['Monitor PMU: alertas', 'rojas en vivo'],
       tc: ['Autoridad de seguridad · PMU'], sc: ['Alertas rojas con la puerta y la hora'] },
-    { icono: 'estadio', t: ['Entidades deportivas'], s: ['Medidas vigentes y estado', 'de sus reportes'],
+    { icono: 'estadio', t: ['Entidades deportivas'], s: ['Medidas vigentes y', 'estado de reportes'],
       tc: ['Entidades deportivas'], sc: ['Medidas vigentes y estado de sus reportes'] }
   ];
 
   var DESCRIPCION = 'Diagrama en tres etapas: la autoridad de seguridad, la Registraduría Nacional y los informes de clubes ' +
-    'se integran en la base central del IVC; sobre ella nacen la búsqueda, la gestión con historial y las solicitudes; ' +
-    'y el IVC despacha a comercializadoras, puertas del SVN, la autoridad de seguridad y las entidades deportivas.';
+    'se integran en la base central del IVC; sobre ella nacen la gestión de sanciones con historial y búsqueda cruzada, las solicitudes y la auditoría; ' +
+    'y la base se conecta a la API de validación del SVN, las puertas del SVN, de la que salen comercializadoras, la autoridad de seguridad y las entidades deportivas.';
 
   // Iconos de 24x24 con trazo; se escalan al tamaño de la insignia.
   var ICONOS = {
@@ -63,7 +64,7 @@
     puerta: '<path d="M6 21V4h12v17M4 21h16"/><circle cx="15" cy="13" r=".8"/>',
     monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M12 7.5v4M12 13.5v.01"/>',
     estadio: '<path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/>',
-    buscar: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+    auditoria: '<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h5"/><circle cx="11.5" cy="16" r="2"/><path d="M13 17.5l2 2"/>',
     historial: '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
     bandeja: '<path d="M4 13l2-8h12l2 8v6H4zM4 13h5l1 2h4l1-2h5"/>',
     base: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>'
@@ -125,19 +126,28 @@
     g.appendChild(i);
   }
 
-  function tarjeta(capa, d, caja, ancho, entrada, desde, hasta, retraso) {
+  // estilo: 'grande' (ancha), 'fila' (consumidor en la rama de abajo), 'fuente' (columna) o 'compacta' (apilada).
+  function tarjeta(capa, d, caja, estilo, cl, desde, hasta, retraso, flota) {
     var x = caja.x, y = caja.y, w = caja.w, h = caja.h;
-    var wrap = el('g', {}, 'f0-tarjeta-g');
+    var wrap = el('g', {}, 'f0-tarjeta-g' + (flota ? ' f0-flota' : ''));
+    if (flota) {
+      wrap.style.setProperty('--fx', flota[0] + 'px'); wrap.style.setProperty('--fy', flota[1] + 'px');
+      wrap.style.setProperty('--fd', flota[2] + 's'); wrap.style.setProperty('--sc', flota[3]); wrap.style.setProperty('--ox', flota[4] + 'px'); wrap.style.setProperty('--oy', flota[5] + 'px');
+    }
     var g = el('g', {}, 'f0-aparece');
     g.setAttribute('data-desde', desde); g.setAttribute('data-hasta', hasta);
     g.style.setProperty('--d', retraso + 's');
-    g.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 12 }, 'f0-tarjeta'));
-    var cy = y + h / 2, cl = entrada ? 'in' : 'out';
-    if (ancho) {
+    g.appendChild(el('rect', { x: x, y: y, width: w, height: h, rx: 12 }, 'f0-tarjeta' + (d.clave ? ' f0-tarjeta--clave' : '')));
+    var cy = y + h / 2;
+    if (estilo === 'grande') {
       g.appendChild(el('circle', { cx: x + 36, cy: cy, r: 22 }, 'f0-insignia-' + cl));
       icono(g, d.icono, x + 36, cy, 24, 'f0-ico--' + cl);
       texto(g, x + 70, cy, d.t, d.s, 15.5, 13);
-    } else if (entrada === 'fuente') {
+    } else if (estilo === 'fila') {
+      g.appendChild(el('circle', { cx: x + 32, cy: cy, r: 19 }, 'f0-insignia-' + cl));
+      icono(g, d.icono, x + 32, cy, 22, 'f0-ico--' + cl);
+      texto(g, x + 62, cy, d.t, d.s, 14.5, 12.5);
+    } else if (estilo === 'fuente') {
       g.appendChild(el('circle', { cx: x + w / 2, cy: y + 28, r: 19 }, 'f0-insignia-in'));
       icono(g, d.icono, x + w / 2, y + 28, 22, 'f0-ico--in');
       var tg = el('g', { 'text-anchor': 'middle' });
@@ -152,12 +162,12 @@
     capa.appendChild(wrap);
   }
 
-  // Geometría de las dos disposiciones: ancha (3 | base | 4) y alta (3 / base / 4).
-  function geometria(ancho, altoVB) {
-    var G = { ancho: ancho, fuentes: [], consum: [], entra: [], sale: [], hub: null };
+  // Geometría: fuentes a la izquierda, base al centro, módulos a la derecha; abajo, base -> API de validación -> tres consumidores.
+  function geometria(ancho) {
+    var G = { ancho: ancho, fuentes: [], mods: [], consum: [], entra: [], mod: [], sale: [], hub: null };
     var i;
     if (ancho) {
-      G.vb = [1000, 480];
+      G.vb = [1000, 640];
       var hub = { cx: 500, cy: 240, r: 84 }; G.hub = hub;
       var cys = [120, 240, 360];
       for (i = 0; i < 3; i++) {
@@ -166,34 +176,46 @@
         var px = hub.cx + hub.r * Math.cos(th), py = hub.cy + hub.r * Math.sin(th);
         var dx = (px - 282) / 2;
         G.entra.push('M282,' + cys[i] + ' C' + r1(282 + dx) + ',' + cys[i] + ' ' + r1(px - dx) + ',' + r1(py) + ' ' + r1(px) + ',' + r1(py));
-      }
-      for (i = 0; i < 4; i++) {
-        var cy = 75 + i * 110;
-        G.consum.push({ x: 718, y: cy - 46, w: 262, h: 92 });
-        var t2 = (i - 1.5) * 0.42;
+        G.mods.push({ x: 718, y: cys[i] - 46, w: 262, h: 92 });
+        var t2 = (i - 1) * 0.5;
         var qx = hub.cx + hub.r * Math.cos(t2), qy = hub.cy + hub.r * Math.sin(t2);
         var dd = (718 - qx) / 2;
-        G.sale.push('M' + r1(qx) + ',' + r1(qy) + ' C' + r1(qx + dd) + ',' + r1(qy) + ' ' + r1(718 - dd) + ',' + cy + ' 718,' + cy);
+        G.mod.push('M' + r1(qx) + ',' + r1(qy) + ' C' + r1(qx + dd) + ',' + r1(qy) + ' ' + r1(718 - dd) + ',' + cys[i] + ' 718,' + cys[i]);
+      }
+      // Puertas del SVN al centro, bajo la base; las tres hermanas cuelgan de ella.
+      G.consum.push({ x: 330, y: 372, w: 340, h: 100 });
+      G.sale.push('M500,' + (hub.cy + hub.r) + ' L500,372');
+      var sx = [30, 370, 710], bx = [410, 500, 590];
+      for (i = 0; i < 3; i++) {
+        G.consum.push({ x: sx[i], y: 548, w: 260, h: 84 });
+        var tx = sx[i] + 130;
+        G.sale.push(tx === bx[i] ? 'M500,472 L500,548' : 'M' + bx[i] + ',472 C' + bx[i] + ',512 ' + tx + ',512 ' + tx + ',548');
       }
     } else {
-      var H = altoVB; G.vb = [400, H];
-      var g = (H - 32 - 484) / 2;
-      var hubTop = 16 + 108 + g;
-      var hb = { cx: 200, cy: hubTop + 64, r: 64 }; G.hub = hb;
+      var g = 28, hb = { cx: 200, cy: 16 + 108 + g + 64, r: 64 }; G.hub = hb;
       var xs = [15, 141, 267];
       for (i = 0; i < 3; i++) {
         G.fuentes.push({ x: xs[i], y: 16, w: 118, h: 108 });
-        var cx = xs[i] + 59, a = -Math.PI / 2 + (i - 1) * 0.55;
-        var ex = hb.cx + hb.r * Math.cos(a), ey = hb.cy + hb.r * Math.sin(a);
-        var my = (124 + ey) / 2;
-        G.entra.push('M' + cx + ',124 C' + cx + ',' + r1(my) + ' ' + r1(ex) + ',' + r1(my) + ' ' + r1(ex) + ',' + r1(ey));
+        var cx2 = xs[i] + 59, a2 = -Math.PI / 2 + (i - 1) * 0.55;
+        var ex2 = hb.cx + hb.r * Math.cos(a2), ey2 = hb.cy + hb.r * Math.sin(a2);
+        var my2 = (124 + ey2) / 2;
+        G.entra.push('M' + cx2 + ',124 C' + cx2 + ',' + r1(my2) + ' ' + r1(ex2) + ',' + r1(my2) + ' ' + r1(ex2) + ',' + r1(ey2));
       }
-      var base = hb.cy + hb.r, y0 = base + g, rail = Math.min(18, g / 2);
+      // Módulos con el riel a la izquierda y consumidores con el riel a la derecha: dos ramas desde la misma base.
+      var base = hb.cy + hb.r, y0 = base + g, rail = Math.min(18, g / 2), y1 = y0 + 3 * 64 + g - 8;
+      for (i = 0; i < 3; i++) {
+        var ym = y0 + i * 64;
+        G.mods.push({ x: 52, y: ym, w: 300, h: 56 });
+        G.mod.push(redondeada([[200, base], [200, base + rail], [28, base + rail], [28, ym + 28], [52, ym + 28]], 12));
+      }
+      // Puertas del SVN recibe de la base por el riel derecho; las hermanas salen de ella por un riel a su izquierda.
       for (i = 0; i < 4; i++) {
-        var yc = y0 + i * 64;
-        G.consum.push({ x: 52, y: yc, w: 336, h: 56 });
-        G.sale.push(redondeada([[200, base], [200, base + rail], [28, base + rail], [28, yc + 28], [52, yc + 28]], 12));
+        var yc = y1 + i * 64;
+        G.consum.push({ x: i ? 92 : 52, y: yc, w: i ? 260 : 300, h: 56 });
+        G.sale.push(i ? redondeada([[72, y1 + 56], [72, yc + 28], [92, yc + 28]], 10)
+          : redondeada([[200, base], [200, base + rail], [376, base + rail], [376, yc + 28], [352, yc + 28]], 12));
       }
+      G.vb = [400, y1 + 4 * 64 - 8 + 16];
     }
     return G;
   }
@@ -208,8 +230,9 @@
     raiz.setAttribute('role', 'region');
     raiz.setAttribute('aria-label', 'Integración de bases de datos del IVC, en tres etapas');
     var lis = ETAPAS.map(function (e, i) {
-      return '<li class="f0-etapa"><span class="f0-etapa-n" aria-hidden="true">' + (i + 1) + '</span>' +
-        '<span class="f0-etapa-t"><span class="f0-etapa-k">Etapa ' + (i + 1) + '</span>' + e.n + '</span></li>';
+      return '<li class="f0-etapa"><button type="button" class="f0-etapa-b" data-i="' + i + '" aria-label="Ir a la etapa ' + (i + 1) + ': ' + e.n + '">' +
+        '<span class="f0-etapa-n" aria-hidden="true">' + (i + 1) + '</span>' +
+        '<span class="f0-etapa-t"><span class="f0-etapa-k">Etapa ' + (i + 1) + '</span>' + e.n + '</span></button></li>';
     }).join('');
     raiz.innerHTML =
       '<div class="f0-barra" role="progressbar" aria-label="Avance de las etapas" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i></i></div>' +
@@ -238,11 +261,10 @@
       var w = escena.clientWidth, h = escena.clientHeight;
       if (!w || !h) return;
       var ancho = w / h >= 1.15;
-      var altoVB = Math.max(604, Math.min(760, Math.round(400 * h / w / 8) * 8));
-      var clave = ancho ? 'a' : 'b' + altoVB;
+      var clave = ancho ? 'a' : 'b';
       if (clave === disposicion) return;
       disposicion = clave;
-      var G = geometria(ancho, altoVB);
+      var G = geometria(ancho);
       escena.textContent = '';
       svg = el('svg', { viewBox: '0 0 ' + G.vb[0] + ' ' + G.vb[1], preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': DESCRIPCION }, 'f0-svg');
       var capaL = el('g', {}), capaP = el('g', { 'aria-hidden': 'true' }), capaN = el('g', {});
@@ -269,12 +291,19 @@
         flujos.push(f);
       }
       G.entra.forEach(function (d, i) { enlace(d, 'in', 1.5, 99, 0.25 * i, true); });
-      G.sale.slice(0, 3).forEach(function (d, i) { enlace(d, 'mod', 2, 3, 0.25 * i, false); });
-      G.sale.forEach(function (d, i) { enlace(d, 'out', 3, 99, 0.2 * i, true); });
+      G.mod.forEach(function (d, i) { enlace(d, 'mod', 2, 99, 0.25 * i, false); });
+      G.sale.forEach(function (d, i) { enlace(d, 'out', 3, 99, i ? 0.5 + 0.2 * i : 0, true); });
 
-      FUENTES.forEach(function (f, i) { tarjeta(capaN, f, G.fuentes[i], G.ancho, 'fuente', 1, 99, 0.5 * i); });
-      MODULOS.forEach(function (m, i) { tarjeta(capaN, m, G.consum[i], G.ancho, 'in', 2, 3, 0.5 + 0.25 * i); });
-      CONSUMIDORES.forEach(function (c, i) { tarjeta(capaN, c, G.consum[i], G.ancho, false, 3, 99, 0.45 + 0.22 * i); });
+      // Suspendidas y apenas separadas hasta que entra la base (DC-030); en la fila estrecha casi solo en vertical.
+      var FLOTA = G.ancho ? [[-14, -10, -0.4], [10, 5, -1.7], [-6, 11, -3]] : [[-2, -9, -0.4], [0, 7, -1.7], [2, -5, -3]];
+      // Antes de la base las fuentes van al centro de la vista y más grandes; al entrar el hub vuelven a su columna.
+      FUENTES.forEach(function (f, i) {
+        var c = G.fuentes[i], fl = FLOTA[i].slice(), mx = G.ancho ? 500 - (c.x + c.w / 2) : 0, my = G.ancho ? (i - 1) * 38 + 36 : 70;
+        fl[0] += mx; fl[1] += my; fl.push(G.ancho ? 1.28 : 1, c.x + c.w / 2, c.y + c.h / 2);
+        tarjeta(capaN, f, c, G.ancho ? 'grande' : 'fuente', 'in', 1, 99, 0.5 * i, fl);
+      });
+      MODULOS.forEach(function (m, i) { tarjeta(capaN, m, G.mods[i], G.ancho ? 'grande' : 'compacta', 'in', 2, 99, 0.5 + 0.25 * i); });
+      CONSUMIDORES.forEach(function (c, i) { tarjeta(capaN, c, G.consum[i], G.ancho ? (i ? 'fila' : 'grande') : 'compacta', 'out', 3, 99, 0.45 + 0.22 * i); });
 
       var H = G.hub, hub = el('g', {}, 'f0-hub f0-aparece');
       hub.setAttribute('data-desde', 1.5); hub.setAttribute('data-hasta', 99); hub.style.setProperty('--d', '0s');
@@ -288,7 +317,7 @@
         var s = el('tspan', { x: H.cx, dy: i ? (big ? 21 : 17) : 0 }); s.textContent = l; tt.appendChild(s);
       });
       hub.appendChild(tt);
-      [[big ? 'Medidas correctivas' : 'Medidas', 1.5, 2], [big ? 'Plataforma del IVC' : 'Plataforma', 2, 3], ['API y portal', 3, 99]].forEach(function (x) {
+      [[big ? 'Medidas correctivas' : 'Medidas', 1.5, 2], [big ? 'Plataforma del IVC' : 'Plataforma', 2, 3]].forEach(function (x) {
         var ss = el('text', { x: H.cx, y: H.cy + (big ? 56 : 49), 'text-anchor': 'middle', 'font-size': big ? 12.5 : 11.5 }, 'f0-hub-s f0-fade');
         ss.setAttribute('data-desde', x[1]); ss.setAttribute('data-hasta', x[2]); ss.textContent = x[0]; hub.appendChild(ss);
       });
@@ -299,6 +328,7 @@
     }
 
     function marcar() {
+      raiz.classList.toggle('f0-unidas', fase >= 1.5);
       var nodos = raiz.querySelectorAll('[data-desde]');
       for (var i = 0; i < nodos.length; i++) {
         var d = Number(nodos[i].getAttribute('data-desde')), h = Number(nodos[i].getAttribute('data-hasta'));
@@ -308,24 +338,13 @@
 
     function etapaDe(f) { return f >= 4 ? 4 : Math.max(1, Math.floor(f)); }
 
-    function boton(txt, clase, alClick, href) {
-      var b = document.createElement(href ? 'a' : 'button');
-      if (href) b.href = href; else b.type = 'button';
-      b.className = 'f0-btn ' + clase; b.textContent = txt;
-      if (alClick) b.addEventListener('click', alClick);
-      return b;
-    }
-
+    // Solo «Omitir» mientras corre el recorrido; en el resumen no hay botones de salida.
     function aplicarAcciones(final) {
       botones.textContent = '';
-      if (final) {
-        var lista = opciones.acciones && opciones.acciones.length ? opciones.acciones : [{ texto: 'Continuar', primario: true }];
-        lista.forEach(function (a) {
-          botones.appendChild(boton(a.texto, a.primario ? 'f0-btn--primario' : '', a.alClick, a.href));
-        });
-        return;
-      }
-      var om = boton('Omitir', 'f0-omitir', finalizar);
+      if (final) return;
+      var om = document.createElement('button');
+      om.type = 'button'; om.className = 'f0-btn f0-omitir'; om.textContent = 'Omitir';
+      om.addEventListener('click', finalizar);
       om.setAttribute('aria-keyshortcuts', 'Escape');
       om.insertAdjacentHTML('beforeend', '<kbd aria-hidden="true">Esc</kbd>');
       botones.appendChild(om);
@@ -471,6 +490,11 @@
 
     arrancar();
 
+    // Tocar una etapa devuelve el recorrido a ella, también desde el resumen.
+    q('.f0-etapas').addEventListener('click', function (e) {
+      var b = e.target.closest('.f0-etapa-b');
+      if (b) irA(Number(b.getAttribute('data-i')));
+    });
     ant.addEventListener('click', function () { irA(paradaActual() - 1); });
     sig.addEventListener('click', function () { irA(paradaActual() + 1); });
     pausa.addEventListener('click', function () { ponerPausa(!pausado); });

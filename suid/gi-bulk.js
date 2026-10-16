@@ -111,7 +111,7 @@
     function pinta(foco) {
       var p = S.paso, pct = Math.round(p * 100 / TOTAL), P = PASOS[p - 1];
       view.innerHTML = '<div class="page-inner gi-page gb-wiz">' +
-        '<button type="button" class="gi-back gb-exit" id="bkExit">' + UI.svg('back') + ' Volver</button>' +
+        '<button type="button" class="gi-back gb-exit" id="bkExit" aria-label="Volver" title="Volver">' + UI.svg('back') + '</button>' +
         '<div class="gb-top"><div class="gb-prog"><div class="gb-prog__row"><span style="color:var(--text-primary)">Paso ' + p + ' de ' + TOTAL + '</span><span>' + pct + '%</span></div>' +
         '<div class="gb-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Paso ' + p + ' de ' + TOTAL + '"><i style="width:' + pct + '%"></i></div></div></div>' +
         '<div class="gb-stage"><section class="gb-step"><span class="gb-eyebrow">Carga masiva de infractores</span>' +

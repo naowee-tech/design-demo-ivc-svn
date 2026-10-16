@@ -53,7 +53,9 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
 
   var D = { backoffice: w.EV_DATOS.backoffice }, B = D.backoffice;
   // El estado vive en el módulo: salir a otra sección y volver deja el evento como estaba.
-  var st = { vista: 'evento', evento: 'e1', eventos: copiar(B.eventos) };
+  var st = { vista: 'evento', evento: 'e1', eventos: copiar(B.eventos), visto: '' };
+  // Un evento publicado se abre en su Resumen, como los de en vivo y pasado.
+  function entrada(e) { return e && e.estado === 'publicado' ? 'preparacion' : 'evento'; }
 
   function evActual() { return st.eventos.filter(function (e) { return e.id === st.evento; })[0] || st.eventos[0]; }
 
@@ -85,7 +87,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
   SUID.views['control-acceso/eventos'] = function (view, route) {
     // Sin id se presentan los eventos; con id (…/eventos/e1) se entra a uno. Un id que ya no existe vuelve a la lista.
     var idRuta = (route.rest || [])[0], detalle = !!idRuta && st.eventos.some(function (e) { return e.id === idRuta; });
-    if (detalle) { st.evento = idRuta; }
+    if (detalle) { st.evento = idRuta; if (st.visto !== idRuta) { st.visto = idRuta; st.vista = entrada(evActual()); } }
     // …/eventos/escenarios[/id]: el catálogo de escenarios, aparte del selector de momentos de la lista.
     var modoEsc = idRuta === 'escenarios', escId = (route.rest || [])[1], escActual = modoEsc && escId ? w.EV_ESCENARIOS.porId(escId) : null;
     route.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, detalle || modoEsc ? { label: 'Eventos', href: LISTA } : { label: 'Eventos' }];
@@ -111,12 +113,17 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
 
     /* ---------- Lista de eventos: presenta y deja elegir; crear es solo el botón de arriba ---------- */
 
-    function cabeceraLista() {
+    // Tabs arriba; debajo, una barra con filtros o buscador a la izquierda y crear a la derecha (DC-012, DC-013).
+    function cabeceraLista(activo, izq, der) {
+      var tabs = [['eventos', 'Eventos', LISTA], ['escenarios', 'Escenarios', LISTA + '/escenarios']].map(function (t) {
+        return '<a role="tab" class="gi-tab" href="' + t[2] + '" aria-selected="' + (t[0] === activo) + '">' + t[1] + '</a>';
+      }).join('');
       return '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Eventos</h1>' +
-        '<p class="page-subtitle">Los eventos del organizador y el estado de cada uno. Elija uno para ver su escenario, partidos, cupos y boletería.</p></div>' +
-        '<div class="gi-head__actions"><button type="button" class="pb-btn" data-acc="lst-escenarios">' + ico('pin') + 'Escenarios</button>' +
-        '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="lst-crear">' + ico('add') + 'Crear evento</button></div></header>';
+        '<p class="page-subtitle">Los eventos del organizador, los escenarios donde ocurren y el estado de cada uno.</p></div></header>' +
+        '<div class="ev-cab"><div class="gi-tabs ev-tabs" role="tablist" aria-label="Eventos y escenarios">' + tabs + '</div>' +
+        '</div><div class="ev-herr"><div class="ev-herr__izq">' + izq + '</div><div class="ev-cab__acc">' + der + '</div></div>';
     }
+    ctx.cabeceraLista = cabeceraLista;
 
     function lista() {
       var es = evpEst(), evs = st.eventos, q = es.q.trim().toLowerCase(), filtro = es.filtro || 'todos';
@@ -138,10 +145,11 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
         return '<section class="ev-grupo" aria-label="' + esc(m[1]) + '">' + (filtro === 'todos' ? '<h2 class="ev-grupo__tit">' + esc(m[1]) + '<span>' + xs.length + '</span></h2>' : '') +
           '<div class="ev-grid">' + xs.map(tarjeta).join('') + '</div></section>';
       }).join('');
-      var herr = '<div class="pb-evl__herr"><div class="pb-segmento ev-segmento" role="group" aria-label="Filtrar por momento">' + segs + '</div>' +
-        '<div class="pb-q pb-evl__buscar">' + ico('search') +
-        '<input type="search" class="pb-input" data-s="lst" data-k="q" aria-label="Buscar evento" placeholder="Buscar por equipo, escenario o ciudad" value="' + esc(es.q) + '"></div></div>';
-      return cabeceraLista() + '<div class="pb-app ev-lista">' + herr + (grupos ||
+      var herr = '<div class="pb-evl__herr"><div class="pb-segmento ev-segmento" role="group" aria-label="Filtrar por momento">' + segs + '</div></div>';
+      var buscador = '<div class="pb-q ev-cab__q">' + ico('search') +
+        '<input type="search" class="pb-input" data-s="lst" data-k="q" aria-label="Buscar evento" placeholder="Buscar por equipo, escenario o ciudad" value="' + esc(es.q) + '"></div>';
+      var crear = '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="lst-crear">' + ico('add') + 'Crear evento</button>';
+      return cabeceraLista('eventos', herr, buscador + crear) + '<div class="pb-app ev-lista">' + (grupos ||
         '<div class="pb-vacio" style="min-height:160px"><b>Ningún evento coincide</b><span>Cambie la búsqueda o elija otro momento.</span></div>') + '</div>';
     }
 
@@ -206,7 +214,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       var tabs = listaVistas().map(function (t) {
         return '<button type="button" role="tab" class="gi-tab" data-acc="pb-tab" data-id="' + t.id + '" aria-selected="' + (t.id === st.vista) + '">' + esc(t.label) + '</button>';
       }).join('');
-      return '<a class="gi-back" href="' + LISTA + '">' + ico('arrow-left') + 'Volver a Eventos</a>' +
+      return '<a class="gi-back" href="' + LISTA + '" aria-label="Volver a Eventos" title="Volver a Eventos">' + ico('arrow-left') + '</a>' +
         '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(e.nombre || 'Evento sin nombre') + '</h1>' +
         '<p class="page-subtitle pb-evsub">' + (e.estado === 'cerrado' ? '<span class="pb-badge pb-badge--cerrado">Finalizado</span><span class="pb-badge ev-aud-auditable">Auditable</span>' : '<span class="pb-badge pb-badge--' + e.estado + '">' + ESTADOS[e.estado] + '</span>') + '<span class="pb-num">' + esc(e.codigo) + '</span>' +
         '<span>' + esc(e.escenario) + ', ' + esc(e.ciudad) + '</span><span>' + fecha(e.fecha) + '</span><span>Aforo ' + esc(e.aforo) + '</span></p></div>' +
@@ -248,7 +256,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       }).join('');
       var fin = last ? '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="' + o.fin.acc + '"' + (o.fin.disabled ? ' disabled' : '') + '>' + o.fin.label + '</button>'
         : '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="' + o.pref + 'sig"' + (o.bloqueo ? ' disabled' : '') + '>Siguiente ' + ico('arrow-right') + '</button>';
-      return '<a class="gi-back" href="' + o.volver[0] + '">' + ico('arrow-left') + esc(o.volver[1]) + '</a>' +
+      return '<a class="gi-back" href="' + o.volver[0] + '" aria-label="' + esc(o.volver[1]) + '" title="' + esc(o.volver[1]) + '">' + ico('arrow-left') + '</a>' +
         '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(o.titulo) + '</h1><p class="page-subtitle pb-evsub">' + o.sub + '</p></div></header>' +
         '<div class="gi-layout"><nav class="gi-steps" aria-label="' + esc(o.aria) + '"><div class="gf-total"><div class="gf-total__pct"><strong>Paso ' + (o.i + 1) + '</strong><span>de ' + n + '</span></div>' +
         '<div class="gf-bar" role="progressbar" aria-label="Avance" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div><small>' + esc(p[1]) + '</small></div>' + lista + '</nav>' +
@@ -365,7 +373,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       if (el.disabled) { return; }
       switch (ds.acc) {
         case 'pb-tab': irVista(ds.id); return;
-        case 'lst-abrir': st.vista = 'evento'; return; // el enlace navega solo; se entra por el evento, no por la última pestaña
+        case 'lst-abrir': st.visto = ''; return; // el enlace navega solo; se entra por el evento, no por la última pestaña
         case 'lst-filtro': evpEst().filtro = ds.id === 'todos' ? null : ds.id; marcarFiltro(); pintar(); return;
         case 'lst-crear': crear(); return;
         case 'lst-escenarios': location.hash = LISTA + '/escenarios'; return;

@@ -25,7 +25,11 @@
 /* Stepper de etapas */
 .f0-etapas { list-style: none; margin: 0 auto; padding: 14px 16px 6px; width: 100%; max-width: 980px; display: flex; gap: 12px; }
 .f0-etapa { position: relative; flex: 1; display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
-.f0-etapa::after { content: ''; flex: 1; align-self: flex-start; margin-top: 15px; min-width: 16px; height: 2px; background: var(--border-dark, #d0d4e6); }
+/* Cada etapa es un botón: tocarla devuelve el recorrido a ella. */
+.f0-etapa-b { flex: 0 1 auto; display: flex; align-items: flex-start; gap: 10px; min-width: 0; margin: 0; padding: 2px 6px 2px 2px; border: 0; border-radius: var(--radius-md, 8px); background: transparent; font: inherit; text-align: left; color: inherit; cursor: pointer; transition: background-color .2s; }
+.f0-etapa-b:hover { background: var(--bg-soft, #f5f6fa); }
+.f0-etapa-b:focus-visible { outline: 3px solid var(--f0-info); outline-offset: 2px; }
+.f0-etapa::after { content: ''; flex: 1; align-self: flex-start; margin-top: 17px; min-width: 16px; height: 2px; background: var(--border-dark, #d0d4e6); }
 .f0-etapa:last-child::after { display: none; }
 .f0-etapa-n {
   flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; z-index: 1;
@@ -51,11 +55,9 @@
 }
 .f0-btn:hover { background: var(--bg-soft, #f5f6fa); border-color: var(--border-strong, #b4b9d4); }
 .f0-btn:focus-visible { outline: 3px solid var(--f0-info); outline-offset: 3px; }
-.f0-btn--primario { background: var(--f0-azul); border-color: var(--f0-azul); color: var(--text-inverse, #fff); min-height: 44px; padding: 0 28px; font-weight: 700; }
-.f0-btn--primario:hover { background: var(--f0-azul); border-color: var(--f0-azul); filter: brightness(1.25); }
 .f0-btn kbd { font: inherit; font-size: .75rem; margin-left: 8px; padding: 2px 6px; border-radius: var(--radius-sm, 6px); background: var(--bg-soft, #f5f6fa); color: var(--f0-texto-2); }
 
-/* Controles del recorrido (DC-413): cápsula quieta; la acción fuerte sigue siendo la de .f0-botones. */
+/* Controles del recorrido (DC-413): cápsula quieta junto a Omitir. */
 .f0-controles { display: inline-flex; align-items: center; gap: 2px; padding: 3px; box-sizing: border-box; min-height: 40px; border: 1px solid var(--f0-borde); border-radius: var(--radius-md, 8px); background: var(--f0-superficie); }
 .f0-ctl {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 14px;
@@ -80,7 +82,7 @@
 .f0-manual .f0-ctl--sig:not(:disabled):hover { background: var(--f0-azul); filter: brightness(1.25); }
 .f0-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-/* Pie: etiqueta de paso, subtítulo, título final y acciones */
+/* Pie: etiqueta de paso, subtítulo, título final y controles */
 .f0-pie {
   flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center;
   width: 100%; max-width: 880px; min-height: 128px; margin: 0 auto; padding: 8px 24px 14px; text-align: center;
@@ -88,7 +90,7 @@
 .f0-etiqueta { margin: 0 0 6px; font-size: .8125rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--f0-texto-2); }
 .f0-titulo { margin: 0 0 8px; font-size: clamp(1.5rem, 3.2vw, 2.25rem); line-height: 1.15; font-weight: 700; color: var(--f0-azul); }
 .f0-sub { margin: 0; font-size: clamp(1.0625rem, 1.5vw + .55rem, 1.5rem); line-height: 1.35; font-weight: 500; color: var(--f0-texto); }
-/* Alto fijo (44 + 24): al cambiar Omitir por los botones finales el diagrama no se reescala. */
+/* Alto fijo: al quitar Omitir en el resumen el diagrama no se reescala. */
 .f0-acciones { flex: none; min-height: 68px; padding: 0 16px 24px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: center; }
 .f0-botones { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
 .f0-cambia { animation: f0-entra .5s var(--f0-ease) both; }
@@ -104,6 +106,7 @@
 .f0-hub.f0-aparece.f0-on { transform: none; }
 
 .f0-tarjeta { fill: var(--f0-superficie); stroke: var(--f0-borde); stroke-width: 1.5; }
+.f0-tarjeta--clave { stroke: var(--f0-naranja); stroke-width: 2.5; }
 .f0-insignia-in { fill: var(--blue-bg, #eef5ff); stroke: var(--blue-border, #b8d4f2); stroke-width: 1; }
 .f0-insignia-out { fill: var(--orange-bg, #fff3e6); stroke: var(--orange-border, #ffbf75); stroke-width: 1; }
 .f0-ico { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -137,7 +140,16 @@
 .f0-particula--in { fill: var(--f0-info); }
 .f0-particula--out { fill: var(--f0-naranja); }
 
+/* Las fuentes nacen desplazadas (--fx/--fy) y se alinean al entrar la base: DC-030. */
+.f0-flota { translate: var(--fx, 0) var(--fy, 0); scale: var(--sc, 1); transform-origin: var(--ox, 0) var(--oy, 0); transition: translate 1.1s var(--f0-ease) .15s, scale 1.1s var(--f0-ease) .15s, --amp 1.1s var(--f0-ease) .15s; --amp: 3px; }
+.f0-unidas .f0-flota { translate: 0 0; scale: 1; --amp: 0px; }
+/* La amplitud se anima a 0 al unirse: la flotación se apaga sin el salto de 3 px. */
+@property --amp { syntax: '<length>'; inherits: true; initial-value: 3px; }
+@keyframes f0-flota { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--amp) * -1)); } }
+
 @media (prefers-reduced-motion: no-preference) {
+  .f0-flota { animation: f0-flota 3.6s ease-in-out var(--fd, 0s) infinite; }
+  .f0-root.f0-pausada .f0-flota { animation-play-state: paused; }
   .f0-hub.f0-on .f0-onda { animation: f0-onda 2.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
   .f0-hub.f0-on .f0-onda + .f0-onda { animation-delay: 1.4s; }
 }
@@ -149,8 +161,8 @@
 
 @media (max-width: 640px) {
   .f0-etapas { gap: 6px; padding: 10px 10px 4px; }
-  .f0-etapa { flex-direction: column; align-items: center; text-align: center; gap: 4px; }
-  .f0-etapa { position: relative; }
+  .f0-etapa { position: relative; flex-direction: column; align-items: center; gap: 4px; }
+  .f0-etapa-b { flex-direction: column; align-items: center; text-align: center; gap: 4px; padding-right: 2px; }
   .f0-etapa::after { position: absolute; top: 15px; left: calc(50% + 22px); right: calc(-50% + 22px); margin: 0; }
   .f0-etapa-t { font-size: .75rem; padding-right: 0; }
   .f0-etapa-k { display: none; }

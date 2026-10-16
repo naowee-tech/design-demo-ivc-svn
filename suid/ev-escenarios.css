@@ -31,3 +31,22 @@
 .exs-sec-fila .pb-input { text-align: right; font-variant-numeric: tabular-nums; }
 .exs-sec-fila--res { grid-template-columns: 14px minmax(0, 1fr); }
 .exs-sec-fila--res .exs-sec-fila__t { gap: 2px; }
+
+/* DC-008: lista de escenarios como tabla densa, una fila por lugar. */
+.exs-scroll { overflow-x: auto; }
+.exs-tabla { min-width: 860px; }
+.pb-fila.exs-fila { min-height: 60px; color: var(--text-primary); text-decoration: none; }
+.pb-fila.exs-fila:hover { background: var(--bg-soft); }
+.exs-fila:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.exs-fila__nom { display: flex; align-items: center; gap: var(--naotech-sizing-12); min-width: 0; }
+.exs-th { position: relative; flex: none; display: grid; place-items: center; width: 56px; height: 40px; overflow: hidden; border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); color: var(--naotech-app-color-700); font-size: 12px; }
+.exs-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.exs-enviado { background: var(--green-bg); color: var(--naotech-app-color-900); }
+
+/* DC-010: documentos y certificaciones del escenario, con la tarjeta de carga del sistema. */
+.exs-docs { display: grid; gap: var(--naotech-sizing-12); }
+.exs-docs__n { margin: 0 0 var(--naotech-sizing-12); font-size: 14px; color: var(--naotech-app-color-800); }
+.exs-doc { align-items: center; cursor: default; }
+.exs-doc:hover { transform: none; box-shadow: none; border-color: var(--border); }
+.exs-doc.is-uploaded:hover { border-color: var(--green-border); }
+.exs-doc .pb-btn { flex: none; }

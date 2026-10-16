@@ -27,7 +27,7 @@
 #gsEstLb li.is-act, #gsEstLb li:hover, #gsOriLb li.is-act, #gsOriLb li:hover { background: var(--accent-bg); }
 
 /* Con el panel abierto el encabezado (y el contador) queda a su izquierda, como la barra de filtros. */
-@media (min-width: 768px) { body.has-gpn .gs-page .gi-head { padding-right: calc(var(--gpn-w) - 20px); } }
+@media (min-width: 1100px) { body.has-gpn .gs-page .gi-head { padding-right: calc(var(--gpn-w) - 20px); } }
 @media (min-width: 768px) { .gs-page .gi-head { flex-wrap: nowrap; } .gs-page .gi-head .page-title-block { flex: 1 1 auto; min-width: 0; } }
 
 /* Con el panel abierto la barra no hace wrap: el buscador cede y los selects se estrechan. */

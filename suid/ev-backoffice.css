@@ -199,3 +199,16 @@
 .ev-page .pb-cols, .ev-page .ev-aud-cols { background: var(--bg-soft); border-color: var(--border); }
 .ev-page .pb-fila:nth-child(even of .pb-fila), .ev-page .ev-aud-fila:nth-child(even of .ev-aud-fila) { background: #f7f8fc; }
 .ev-page .pb-fila, .ev-page .ev-aud-fila { border-bottom-color: var(--border); }
+
+/* DC-012: tabs Eventos | Escenarios y, en la misma línea, buscador y botón de crear de la tab activa. */
+.ev-page .ev-cab { border-bottom: 1px solid var(--border); }
+.ev-page .ev-herr { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; margin: 16px 0; }
+.ev-page .ev-herr .pb-evl__herr { margin: 0; }
+.ev-page .ev-cab .gi-tabs { flex: 0 1 auto; margin: 0; border-bottom: 0; }
+.ev-page .ev-cab .gi-tab { margin-bottom: -1px; text-decoration: none; }
+.ev-page .ev-cab__acc { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.ev-page .ev-cab__q { flex: 0 1 340px; width: 340px; min-width: 200px; }
+@container ev (max-width: 800px) {
+  .ev-page .ev-cab__acc { flex: 1 1 100%; margin-left: 0; }
+  .ev-page .ev-cab__q { flex: 1 1 auto; width: auto; }
+}

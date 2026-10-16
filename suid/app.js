@@ -102,9 +102,7 @@
         }
       });
     });
-    // Publicado dentro del SVN (/ivc/), «Cambiar de perfil» vuelve al inicio del sitio; suelto, al login.
-    var salida = /\/ivc\//.test(location.pathname) ? location.pathname.replace(/\/ivc\/.*$/, '/index.html') : '../index.html';
-    html += '</nav><div class="sidebar-bottom"><a class="nav-row" href="' + salida + '"><div class="icon">' + I.out + '</div><span class="lbl">Cambiar de perfil</span></a></div>';
+    html += '</nav><div class="sidebar-bottom"><a class="nav-row" href="../index.html"><div class="icon">' + I.out + '</div><span class="lbl">Cerrar sesión</span></a></div>';
     d.getElementById('sidebar').innerHTML = html;
     d.querySelectorAll('#sidebar [data-toggle]').forEach(function (a) {
       a.addEventListener('click', function (e) {
@@ -126,9 +124,29 @@
       '<nav class="suid-bc" aria-label="Migas de pan">' + bc + '</nav>' +
       '<div class="top-header__right">' +
         '<button class="suid-bell" type="button" aria-label="Notificaciones">' + I.bell + '</button>' +
-        '<div class="suid-avatar"><span class="suid-avatar__ring">' + SUID.user.initials + '</span>' + I.chevD + '</div>' +
+        '<div class="suid-user">' +
+          '<button class="suid-avatar" type="button" aria-haspopup="menu" aria-expanded="false"><span class="suid-avatar__ring">' + SUID.user.initials + '</span>' + I.chevD + '</button>' +
+          '<div class="suid-user__menu" role="menu" hidden>' +
+            '<a role="menuitem" href="../svn/index.html">Ir a SVN · Platform</a>' +
+            '<a role="menuitem" href="../index.html">Cerrar sesión</a>' +
+          '</div>' +
+        '</div>' +
       '</div>';
   }
+
+  // El encabezado se repinta en cada ruta: los eventos van delegados una sola vez.
+  function cierraMenuUsuario() {
+    var m = d.querySelector('.suid-user__menu'), b = d.querySelector('.suid-avatar');
+    if (m) { m.hidden = true; }
+    if (b) { b.setAttribute('aria-expanded', 'false'); }
+  }
+  d.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.suid-avatar');
+    var abierto = b && !d.querySelector('.suid-user__menu').hidden;
+    cierraMenuUsuario();
+    if (b && !abierto) { d.querySelector('.suid-user__menu').hidden = false; b.setAttribute('aria-expanded', 'true'); }
+  });
+  d.addEventListener('keydown', function (e) { if (e.key === 'Escape') { cierraMenuUsuario(); } });
 
   var tok = 0;
   /* quiet: re-pintado tras una acción (sin esqueleto). La navegación sí pasa por el estado de carga. */

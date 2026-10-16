@@ -1,18 +1,12 @@
-/* Panel derecho (GI.panel): sin scrim, fijo bajo el encabezado. Sin transform/filter al estar abierto: la lista de GI.selectGrafico es fixed. */
-:root { --gpn-w: 440px; }
-@media (max-width: 1099px) { :root { --gpn-w: 380px; } }
+/* Panel derecho (GI.panel): NO modal (sin velo ni scrim, DC-068), fijo bajo el encabezado. Sin transform/filter al estar abierto: la lista de GI.selectGrafico es fixed. */
+:root { --gpn-w: 660px; }
+@media (max-width: 1099px) { :root { --gpn-w: min(660px, 100vw); } }
 @media (max-width: 767px) { :root { --gpn-w: 100vw; } }
 
 .gpn { position: fixed; top: var(--header-h); right: 0; bottom: 0; z-index: 150; width: min(var(--gpn-w), 100vw); box-sizing: border-box; display: flex; flex-direction: column; background: #fff; border-left: 1px solid var(--border); box-shadow: -12px 0 32px -16px rgba(40, 40, 52, .28); transform: translateX(100%); visibility: hidden; transition: transform var(--duration-normal) var(--ease-out), visibility 0s linear var(--duration-normal); }
 .gpn[data-open] { transform: none; visibility: visible; transition: transform var(--duration-normal) var(--ease-out), visibility 0s linear 0s; }
 .gpn [hidden] { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .gpn, .gpn[data-open] { transition: none; } }
-
-/* Velo hermano (no filtra #view: la lista de GI.selectGrafico es fixed y se re-anclaría). Queda bajo los selects (z 1200). */
-.gpn-velo { position: fixed; top: var(--header-h); left: 0; bottom: 0; right: min(var(--gpn-w), 100vw); z-index: 140; background: rgba(255, 255, 255, .55); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); will-change: backdrop-filter; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--duration-normal) var(--ease-out), visibility 0s linear var(--duration-normal); }
-.gpn-velo[data-open] { opacity: 1; visibility: visible; transition: opacity var(--duration-normal) var(--ease-out), visibility 0s linear 0s; }
-@media (max-width: 767px) { .gpn-velo { display: none; } }
-@media (prefers-reduced-motion: reduce) { .gpn-velo, .gpn-velo[data-open] { transition: none; } }
 
 /* Cabecera fija (cerrar, acciones, título); solo el cuerpo se desplaza. */
 .gpn__cab { flex: none; padding: 16px 20px; border-bottom: 1px solid var(--border); }

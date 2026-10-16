@@ -654,5 +654,41 @@
   B.boletas = boletas;
   // El mapa del evento se reutiliza en Escenarios: mismos colores por estado, sin duplicar la geometría.
   B.mapaSectores = function (secs, sec, red) { return mapa({ sec: sec, red: red, abierta: { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 }, sinVis: false, sillas: [], restr: {} }, secs); };
+  // ================= RESUMEN DE PREPARACIÓN (publicado) =================
+  // Misma estructura que el Resumen de en vivo y pasado (aviso, 5 cifras, gráfica y línea de tiempo), con cifras de preparación.
+  function renderPreparacion(ctx) {
+    var e = ctx.ev(), V = boletas(ctx), af = entero(e.aforo) || 1, p0 = (e.partidos || [])[0] || {};
+    var pk = function (a, b) { return a + ' de ' + b; };
+    var kpi = function (tono, t, n, ayuda) {
+      return '<div class="pb-card pbe-card ev-aud-kpi"><span class="pbe-card__s"><span class="ev-aud-pt ev-aud-pt--' + tono + '"></span>' + t + '</span><span class="pbe-kpi"><b>' + n + '</b></span><span class="pbe-ayuda">' + ayuda + '</span></div>';
+    };
+    var sem = e.id === 'e1' ? evaluar(ctx) : null;
+    var kpis = '<div class="ev-aud-kpis">' +
+      kpi('verde', 'Boletas generadas', fmt(V.gen), pct(V.gen, af) + ' del aforo de ' + fmt(af)) +
+      kpi('operativo', 'Con titular', fmt(V.con), pct(V.con, V.gen) + ' de las boletas generadas') +
+      kpi('amarillo', 'Sin titular', fmt(V.sin), 'Se asignan antes de la apertura') +
+      kpi('consulta', 'Puertas listas', sem ? pk(sem.okK.length, sem.N) : '—', sem ? 'Con dispositivo, partido y paquete descargado' : 'Se preparan desde Configuración') +
+      kpi('policia', 'Apertura de puertas', esc(e.apertura || '—'), esc(fechaCorta(e.fecha + 'T' + (e.apertura || '00:00')))) + '</div>';
+    var max = Math.max.apply(null, V.filas.map(function (f) { return f.gen; })) || 1;
+    var barras = V.filas.map(function (f) {
+      return '<span class="ev-aud-barra" style="height:' + Math.max(2, Math.round(f.gen / max * 100)) + '%" title="' + f.s.nombre + ' · ' + fmt(f.gen) + ' boletas"></span>';
+    }).join('');
+    var eje = V.filas.map(function (f) { return '<span>' + f.s.nombre + ' · ' + fmt(f.gen) + '</span>'; }).join('');
+    var grafica = '<section class="pb-card ev-aud-graf" aria-label="Boletas generadas por sector"><div class="pb-card__cab"><h2 class="pb-h2">Boletas generadas por sector</h2>' +
+      '<span class="pb-sub ev-aud-graf__n">' + fmt(V.ta) + ' de la comercializadora A · ' + fmt(V.tb) + ' de la B</span></div>' +
+      '<div class="pb-card__cuerpo"><div class="ev-aud-barras ev-aud-barras--sector" role="img" aria-label="Boletas generadas en cada sector">' + barras + '</div><div class="ev-aud-eje">' + eje + '</div></div></section>';
+    var hitos = [
+      ['venta', 'Publicado', 'Evento publicado', e.pub || 'Publicado'],
+      ['verde', esc(e.apertura || '—'), 'Apertura de puertas', 'Prevista · ' + fmt(PUERTAS.length) + ' puertas'],
+      p0.hora ? ['policia', esc(p0.hora), 'Pitazo inicial', esc(p0.local && p0.visita ? p0.local + ' vs. ' + p0.visita : e.nombre)] : null,
+      ['consulta', 'Al terminar', 'Cierre del registro', 'Desde ahí el evento solo se consulta']
+    ].filter(Boolean);
+    var linea = '<section class="pb-card ev-aud-linea" aria-label="Línea de tiempo"><div class="pb-card__cab"><h2 class="pb-h2">Línea de tiempo</h2></div><ol class="ev-aud-hitos">' + hitos.map(function (h) {
+      return '<li><span class="ev-aud-pt ev-aud-pt--' + h[0] + '"></span><span class="ev-aud-hitos__h pb-num">' + h[1] + '</span><span class="ev-aud-hitos__t"><b>' + h[2] + '</b><span class="pb-sub">' + h[3] + '</span></span></li>';
+    }).join('') + '</ol></section>';
+    var aviso = '<div class="pb-aviso">' + svg(I.info, 16) + '<span>Evento publicado: las cifras son de preparación y se actualizan al ajustar Cupos y Configuración. Al abrir las puertas pasa a En vivo.</span></div>';
+    return '<div class="ev-aud">' + aviso + kpis + '<div class="ev-aud-dos">' + grafica + linea + '</div></div>';
+  }
+  B.registrar('preparacion', { label: 'Resumen', orden: 0.1, render: renderPreparacion });
   B.registrar('boleteria', { label: 'Boletería', orden: 4.5, render: renderBoleteria, onClick: function (a, ev, ctx) { if (a.dataset.acc === 'bol-ir') { ctx.ir(a.dataset.id); } return false; } });
 })();

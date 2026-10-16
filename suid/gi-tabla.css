@@ -24,6 +24,10 @@
 .gt-table td strong { font-weight: 600; }
 .gt-empty { text-align: center; color: var(--text-secondary); padding: 36px 20px !important; }
 .gt-actions { text-align: right; white-space: nowrap; }
+.gt-actions .naowee-btn { padding-left: 10px; padding-right: 10px; }
+.gt-ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 4px; vertical-align: middle; border: 0; border-radius: var(--radius-sm, 6px); background: transparent; color: var(--text-secondary); cursor: pointer; }
+.gt-ico:hover { background: var(--accent-bg-warm); color: var(--accent); }
+.gt-ico:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .gt-pag { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 24px 20px 14px; border-top: 1px solid var(--border); }
 .gt-pag[hidden] { display: none; }
 .gt-pag__n { margin: 0; grid-column: 3; grid-row: 1; font-size: 14px; font-weight: 600; color: var(--text-secondary); justify-self: end; }
@@ -36,8 +40,7 @@
 .gt-pg__gap { min-width: 24px; text-align: center; color: var(--text-secondary); }
 .gt-foot { display: flex; justify-content: flex-end; padding: 0 20px 12px; }
 /* Con el panel derecho abierto la barra de herramientas se acorta para que los filtros no queden bajo él. */
-@media (min-width: 768px) { body.has-gpn .gt-toolbar { padding-right: calc(var(--gpn-w) - 20px); } }
-@media (min-width: 768px) and (max-width: 900px) { body.has-gpn .gt-toolbar { padding-right: calc(var(--gpn-w) - 4px); } }
+@media (min-width: 1100px) { body.has-gpn .gt-toolbar { padding-right: calc(var(--gpn-w) - 20px); } }
 @media (max-width: 700px) { .gt-head, .gt-toolbar { padding-left: 16px; padding-right: 16px; } .gt-pag { grid-template-columns: 1fr; justify-items: center; } .gt-pag__n, .gt-pag__b { grid-column: 1; justify-self: center; } .gt-search { max-width: none; } }
 
 /* Título fuera de la tarjeta (DC-044): queda entre los dos bloques, con aire arriba. */

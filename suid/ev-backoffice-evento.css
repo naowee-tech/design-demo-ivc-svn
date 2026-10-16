@@ -262,3 +262,7 @@
   .pbe-sl { grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr) 132px; }
   .pbe-sl > :nth-child(4), .pbe-sl--cab > :nth-child(4) { display: none; }
 }
+
+/* Pocas barras (una por sector): ancho acotado para que no parezcan bloques. */
+.ev-aud-barras--sector { justify-content: space-around; gap: var(--naotech-sizing-16); }
+.ev-aud-barras--sector .ev-aud-barra { flex: 0 1 96px; }

@@ -1,4 +1,4 @@
-/* Panel derecho único de la demo: ficha rápida sin scrim (solo un velo difuso, sin bloquear clics). Lo usan Gestión y Solicitudes. */
+/* Panel derecho único de la demo: ficha rápida NO modal (DC-068): sin velo ni foco atrapado; clicar otra fila reemplaza el contenido. */
 (function (w, d) {
   'use strict';
   var GI = w.GI;
@@ -6,7 +6,7 @@
   function qs(s) { return String(s).replace(/["\\]/g, '\\$&'); }
 
   var X = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  var root = null, velo = null, st = null; /* st = { id, o, origen } mientras está abierto */
+  var root = null, st = null; /* st = { id, o, origen } mientras está abierto */
   var HTML = { tag: '.gpn__tag', chip: '.gpn__chip', resumen: '.gpn__res', cuerpo: '.gpn__cuerpo', acciones: '.gpn__acc' };
   var TEXTO = { meta: '.gpn__meta', titulo: '#gpnT', sub: '.gpn__sub', nota: '.gpn__nota' };
 
@@ -19,8 +19,6 @@
       '<div class="gpn__est"><span class="gpn__tag"></span><span class="gpn__meta"></span></div>' +
       '<div class="gpn__ttl"><h2 id="gpnT" tabindex="-1"></h2><span class="gpn__chip"></span></div><p class="gpn__sub"></p><div class="gpn__res"></div></header>' +
       '<div class="gpn__cuerpo"></div>';
-    velo = d.createElement('div'); velo.className = 'gpn-velo'; velo.setAttribute('aria-hidden', 'true');
-    (d.getElementById('overlays') || d.body).appendChild(velo);
     (d.getElementById('overlays') || d.body).appendChild(root);
     root.addEventListener('click', function (e) { if (e.target.closest('[data-gpn-x]')) cerrar('x'); });
   }
@@ -38,8 +36,6 @@
     var a = d.activeElement; if (!a || !root.contains(a) || a === root) return null;
     return a.id ? '#' + a.id : a.getAttribute('data-k') ? '[data-k="' + qs(a.getAttribute('data-k')) + '"]' : '';
   }
-  /* El velo arranca donde empieza el contenido: ni el menú lateral ni su estado colapsado lo cubren. */
-  function ajustaVelo() { var v = d.getElementById('view'); if (velo && v) velo.style.left = Math.max(0, v.getBoundingClientRect().left) + 'px'; }
   function titulo() { return root.querySelector('#gpnT'); }
 
   function abrir(o) {
@@ -52,7 +48,7 @@
     root.querySelector('.gpn__cuerpo').scrollTop = 0;
     d.body.classList.add('has-gpn');
     void root.offsetWidth; /* sin este reflujo no hay deslizamiento al entrar */
-    ajustaVelo(); root.setAttribute('data-open', ''); velo.setAttribute('data-open', '');
+    root.setAttribute('data-open', '');
     titulo().focus({ preventScroll: true });
     sincronizar();
     return root;
@@ -79,7 +75,7 @@
     if (!st) return;
     var s = st, m = motivo || 'api';
     st = null;
-    root.removeAttribute('data-open'); velo.removeAttribute('data-open');
+    root.removeAttribute('data-open');
     d.body.classList.remove('has-gpn');
     sincronizar();
     if (m === 'x' || m === 'esc') {
@@ -107,7 +103,6 @@
     cerrar('esc');
   });
   w.addEventListener('hashchange', function () { cerrar('ruta'); });
-  w.addEventListener('resize', function () { if (st) ajustaVelo(); });
 
   /* Piezas de contenido para vistas que aún no usan GI.expediente: el valor de las filas es HTML ya escapado. */
   function sec(t, h) { return '<section class="gpn-sec"><h3 class="gpn-sec__h">' + esc(t) + '</h3>' + h + '</section>'; }

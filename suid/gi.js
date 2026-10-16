@@ -381,7 +381,7 @@
         '<div class="gt-toolbar"><div class="gc-field">' + svg('search') + '<input type="text" id="giQ" aria-label="Buscar por documento, nombre o acto" title="Buscar por documento, nombre o acto" placeholder="Buscar" value="' + esc(filt.q) + '"></div>' +
         filtrosHtml() +
         '<button type="button" class="gs-reset gc-reset" id="giFReset" aria-label="Reiniciar filtros" title="Reiniciar filtros">' + svg('reset') + '</button></div>' +
-        '<div class="gt-wrap"><table class="gt-table gi-reg"><thead><tr><th>Registro</th><th>Infractor</th><th>Origen de la obligación</th><th>Acto administrativo</th><th>Fin de vigencia</th><th>Registro</th><th>Restricción</th><th></th></tr></thead><tbody id="giBody"></tbody></table></div>' +
+        '<div class="gt-wrap"><table class="gt-table gi-reg"><thead><tr><th>Registro</th><th>Infractor</th><th>Origen de la obligación</th><th>Acto administrativo</th><th>Fin de vigencia</th><th>Registro</th><th>Restricción</th><th class="gt-actions">Ver expediente</th></tr></thead><tbody id="giBody"></tbody></table></div>' +
         '<nav id="giPag"></nav></section></div>' + solHtml() + '</div>';
 
     /* En una solicitud en trámite, Tramitar abre el alta con sus datos precargados. */
@@ -410,7 +410,7 @@
           '<td>' + esc(r.numActo) + '<small>Ejecutoria ' + U.fmt(r.fechaEjecutoria) + '</small></td>' +
           '<td>' + U.fmt(D.finVigencia(r)) + ((res === 'Activa' || res === 'Cumplida') && dias != null ? '<small>' + GI.fmtDias(dias) + '</small>' : '') + '</td>' +
           '<td>' + badgeReg(r.estadoRegistro) + '</td><td>' + badgeRes(res) + '</td>' +
-          '<td class="gt-actions"><button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small" data-abrir aria-label="Ver expediente de ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '">Ver expediente</button></td></tr>';
+          '<td class="gt-actions"><button type="button" class="gt-ico" data-abrir aria-label="Ver en panel lateral: ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '" title="Ver en panel lateral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button> <a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="#/control-acceso/infractores/' + encodeURIComponent(r.id) + '" aria-label="Ver expediente completo de ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '">Completo</a></td></tr>';
       }).join('') : '<tr><td colspan="8" class="gt-empty">Ningún registro coincide con los filtros.</td></tr>';
       /* Si el registro abierto salió del resultado al filtrar, el panel se cierra; si no, su fila sigue marcada. */
       var abierto = GI.panel.id();
@@ -436,7 +436,7 @@
     initChart(cc, !chartQuiet); chartQuiet = 0; initTips(view);
     var tb = d.getElementById('giBody');
     GI.filasClicables(tb, abrirPanel);
-    /* filasClicables ignora los botones: el de «Ver expediente» de cada fila abre el mismo panel. */
+    /* filasClicables ignora los botones: el ojito de cada fila abre el mismo panel. */
     tb.addEventListener('click', function (e) { var b = e.target.closest('[data-abrir]'); if (b) abrirPanel(b.closest('tr').getAttribute('data-id'), b); });
   }
 
@@ -472,16 +472,27 @@
     }
     /* El cuerpo es el expediente interno (mismo componente que el panel); aquí solo van el encabezado y las acciones. */
     view.innerHTML = '<div class="page-inner gi-page">' +
-      '<a class="gi-back" href="' + BASE + '">' + svg('back') + ' Volver a la bandeja</a>' +
+      '<a class="gi-back" href="' + BASE + '" aria-label="Volver a la bandeja" title="Volver a la bandeja">' + svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(D.nombreCompleto(r)) + (menor ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">Menor de edad</span>' : '') + '</h1>' +
       '<p class="page-subtitle"><span class="gi-mono">' + r.id + '</span> · ' + esc(r.tipoId) + ' ' + esc(GI.fmtDoc(r.tipoId, r.numId)) + '</p></div>' +
-      '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--quiet" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' + acciones + '</div></header>' +
+      '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' + acciones + '</div></header>' +
       X.interno(X.deRegistro(r)) + '</div>';
 
-    var aVal = d.getElementById('aVal'), aSub = d.getElementById('aSub');
-    if (aVal) aVal.addEventListener('click', function () {
-      var m = modal({ title: 'Validar registro', sub: r.id, body: '<p class="gi-p">Se confirma que el expediente cumple los requisitos formales. La restricción pasará a <strong>Activa</strong> si su vigencia está corriendo.</p><label class="gi-lbl">Observación (opcional)<textarea class="gi-ta" id="vObs" rows="3"></textarea></label>',
-        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="vOk">Validar</button>' });
+    var aVal = d.getElementById('aVal'), aSub = d.getElementById('aSub'), aEdit = d.getElementById('aEdit');
+    /* Toda operación se confirma a nombre de quien la hace (DC-019); Validar y Devolver lo llevan en su propio modal. */
+    function aNombre(accion) {
+      return '<p class="gi-p">Vas a ' + accion + ' el registro <strong>' + r.id + '</strong>. Esta operación quedará registrada a nombre de <strong>' + esc(SUID.user.name) + '</strong>. Confirma que quieres realizar esta operación.</p>';
+    }
+    if (aEdit) aEdit.addEventListener('click', function (e) {
+      e.preventDefault();
+      var c = modal({ title: 'Confirma la operación', sub: r.id, body: aNombre('editar'),
+        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="cfOk">Confirmar</button>' });
+      c.el.querySelector('#cfOk').addEventListener('click', function () { c.close(); location.hash = BASE + '/' + r.id + '/editar'; });
+    });
+    if (aVal) aVal.addEventListener('click', abreValidar);
+    function abreValidar() {
+      var m = modal({ title: 'Confirma la operación', sub: r.id, body: aNombre('validar') + '<p class="gi-p">Se confirma que el expediente cumple los requisitos formales. La restricción pasará a <strong>Activa</strong> si su vigencia está corriendo.</p><label class="gi-lbl">Observación (opcional)<textarea class="gi-ta" id="vObs" rows="3"></textarea></label>',
+        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="vOk">Confirmar</button>' });
       var okBtn = m.el.querySelector('#vOk');
       okBtn.addEventListener('click', function () {
         SUID.busy(okBtn, 'Validando…', function () {
@@ -489,10 +500,11 @@
           m.close(); toast('Registro validado. La restricción quedó ' + D.estadoRestriccion(GI.get(r.id)).toLowerCase() + '.'); viewFicha(view, ctx, id); SUID.render();
         }, 800);
       });
-    });
-    if (aSub) aSub.addEventListener('click', function () {
-      var m = modal({ title: 'Devolver por subsanar', sub: r.id, body: '<p class="gi-p">El expediente se devuelve a la inspección municipal. Indica qué falta.</p><label class="gi-lbl gi-lbl--req">Motivo<textarea class="gi-ta" id="sMot" rows="3"></textarea></label><p class="gi-err" id="sErr" hidden>El motivo es obligatorio.</p>',
-        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="sOk">Devolver</button>' });
+    }
+    if (aSub) aSub.addEventListener('click', abreDevolver);
+    function abreDevolver() {
+      var m = modal({ title: 'Confirma la operación', sub: r.id, body: aNombre('devolver por subsanar') + '<p class="gi-p">El expediente se devuelve a la inspección municipal. Indica qué falta.</p><label class="gi-lbl gi-lbl--req">Motivo<textarea class="gi-ta" id="sMot" rows="3"></textarea></label><p class="gi-err" id="sErr" hidden>El motivo es obligatorio.</p>',
+        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button class="naowee-btn naowee-btn--loud" id="sOk">Confirmar</button>' });
       m.el.querySelector('#sOk').addEventListener('click', function () {
         var mot = m.el.querySelector('#sMot').value.trim();
         if (!mot) { m.el.querySelector('#sErr').hidden = false; return; }
@@ -501,7 +513,7 @@
           m.close(); toast('Registro devuelto por subsanar.', 'warn'); SUID.render();
         }, 800);
       });
-    });
+    }
   }
 
   /* ───────── rutas ───────── */

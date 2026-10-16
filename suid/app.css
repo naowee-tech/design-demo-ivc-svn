@@ -29,7 +29,12 @@ body { background: var(--surface-alt); font-family: var(--font-sans); }
 .suid-bc__sep { display: inline-flex; color: var(--text-secondary); margin: 0 4px; }
 .suid-bell { border: 0; background: transparent; color: var(--text-primary); width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 .suid-bell:hover { background: #f5f6fa; }
-.suid-avatar { display: inline-flex; align-items: center; gap: 4px; color: var(--text-primary); cursor: pointer; }
+.suid-avatar { display: inline-flex; align-items: center; gap: 4px; color: var(--text-primary); cursor: pointer; border: 0; background: transparent; padding: 0; font: inherit; }
+.suid-user { position: relative; }
+.suid-user__menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 200; min-width: 220px; padding: 6px; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px -12px rgba(40, 40, 52, .3); }
+.suid-user__menu[hidden] { display: none; }
+.suid-user__menu a { display: block; padding: 10px 12px; border-radius: 8px; color: var(--text-primary); font-size: 14px; font-weight: 500; text-decoration: none; }
+.suid-user__menu a:hover { background: #f5f6fa; }
 .suid-avatar__ring { width: 44px; height: 44px; border-radius: 50%; background: var(--blue-bg); color: var(--accent); font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; }
 
 .suid-ph { align-items: flex-start; padding-top: 40px; }

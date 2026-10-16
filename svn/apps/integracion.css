@@ -210,7 +210,8 @@
 .ig-integ__grupo { display: flex; flex-direction: column; gap: var(--naotech-sizing-12); }
 .ig-integ { gap: var(--naotech-sizing-10); }
 .ig-integ__cab { display: flex; align-items: center; gap: var(--naotech-sizing-12); }
-.ig-integ__ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--naotech-radius-circle); background: var(--naotech-app-color-100); color: var(--naotech-app-color-900); --naotech-icon-dimension: var(--naotech-sizing-20); }
+.ig-integ__ico { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--naotech-radius-lg); background: var(--naotech-color-blue-100); color: var(--naotech-color-blue-900); --naotech-icon-dimension: 28px; }
+@media (max-width: 600px) { .ig-integ__ico { width: 48px; height: 48px; --naotech-icon-dimension: 24px; } }
 .ig-integ__nom { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ig-integ__bloque { display: flex; flex-direction: column; gap: var(--naotech-sizing-8); padding: var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-200); border-radius: var(--naotech-radius-lg); background: var(--naotech-app-color-050); }
 .ig-integ__nunca { display: flex; gap: var(--naotech-sizing-8); align-items: flex-start; color: var(--naotech-app-color-700); line-height: 1.45; --naotech-icon-dimension: var(--naotech-sizing-16); }

@@ -3,8 +3,10 @@
 .gi-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .gi-head__actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .gi-ico { flex-shrink: 0; vertical-align: -3px; margin-right: 2px; }
-.gi-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-weight: 600; font-size: 14px; text-decoration: none; width: fit-content; }
-.gi-back:hover { color: var(--accent); }
+/* Volver = solo ícono; el texto va en aria-label/title (DC-016). Área táctil 44 px. */
+.gi-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -10px; border-radius: 8px; color: var(--text-secondary); text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
+.gi-back:hover { color: var(--accent); background: var(--bg-soft); }
+.naowee-modal .gb-check { justify-content: flex-start; text-align: left; }
 .gi-mono { font-family: var(--font-sans);font-variant-numeric:tabular-nums; font-weight: 700; font-size: 13px; letter-spacing: -.2px; }
 
 /* Panorama: insights a la izquierda, gráfica mes a mes a la derecha; apila en pantallas angostas. */
@@ -227,7 +229,7 @@ span.gt-trend--eq { color: var(--text-secondary); background: var(--bg-soft); }
 .gt-table.gi-reg th:first-child, .gt-table.gi-reg td:first-child { padding-left: 20px; }
 .gt-table.gi-reg th:last-child, .gt-table.gi-reg td:last-child { padding-right: 20px; }
 .gi-reg td:first-child, .gi-reg th:first-child { white-space: nowrap; }
-.gi-reg td:nth-child(2) { min-width: 170px; }
+.gi-reg td:nth-child(2) { min-width: 130px; }
 .gi-reg td:nth-child(5) small { white-space: nowrap; }
 
 

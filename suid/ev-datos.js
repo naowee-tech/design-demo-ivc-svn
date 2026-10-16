@@ -18,6 +18,24 @@ window.EV_DATOS = {
       { id: 'jaime-moron', nombre: 'Estadio Jaime Morón', ciudad: 'Cartagena', aforo: '16.068', foto: 'img/estadios/jaime-moron.jpg', eventos: 1, restricciones: [] },
       { id: 'palogrande', nombre: 'Estadio Palogrande', ciudad: 'Manizales', aforo: '31.611', eventos: 0, restricciones: [] }
     ],
+    // Soportes que pide el IVC para revisar un escenario nuevo (la carga es simulada). `obligatorio`: sin él no se envía a revisión.
+    documentosEscenario: [
+      { id: 'existencia', nombre: 'Certificado de existencia y representación legal', detalle: 'Cámara de Comercio, con vigencia no mayor a 30 días. Aplica si lo administra una empresa.', obligatorio: true, archivo: 'certificado-existencia.pdf', peso: '412 KB' },
+      { id: 'rut', nombre: 'RUT del administrador', detalle: 'Registro Único Tributario actualizado.', obligatorio: true, archivo: 'rut-administrador.pdf', peso: '186 KB' },
+      { id: 'estructural', nombre: 'Concepto técnico de estabilidad estructural', detalle: 'Firmado por un ingeniero estructural con matrícula profesional vigente.', obligatorio: true, archivo: 'concepto-estructural.pdf', peso: '3,4 MB' },
+      { id: 'bomberos', nombre: 'Concepto de seguridad humana y contra incendios', detalle: 'Expedido por el cuerpo oficial de bomberos de la ciudad.', obligatorio: true, archivo: 'concepto-bomberos.pdf', peso: '1,1 MB' },
+      { id: 'emergencia', nombre: 'Plan de emergencia y contingencia', detalle: 'Evacuación, atención de primeros auxilios y puntos de encuentro.', obligatorio: true, archivo: 'plan-emergencia.pdf', peso: '2,8 MB' },
+      { id: 'poliza', nombre: 'Póliza de responsabilidad civil extracontractual', detalle: 'Vigente durante todo el calendario de eventos.', obligatorio: true, archivo: 'poliza-rce.pdf', peso: '640 KB' },
+      { id: 'comision', nombre: 'Acta de la Comisión Local de Seguridad, Comodidad y Convivencia', detalle: 'Solo si el escenario recibe partidos de fútbol profesional.', obligatorio: false, archivo: 'acta-comision-local.pdf', peso: '298 KB' },
+      { id: 'accesibilidad', nombre: 'Certificación de accesibilidad', detalle: 'Rutas, rampas y sillas para personas con discapacidad.', obligatorio: false, archivo: 'certificacion-accesibilidad.pdf', peso: '905 KB' }
+    ],
+    // Escenarios de ejemplo con los que «Siguiente» completa el asistente de agregar escenario.
+    escenariosEjemplo: [
+      { nombre: 'Estadio Hernán Ramírez Villegas', ciudad: 'Pereira', aforo: '30.297' },
+      { nombre: 'Estadio Departamental Libertad', ciudad: 'Pasto', aforo: '20.665' },
+      { nombre: 'Estadio Alfonso López', ciudad: 'Bucaramanga', aforo: '28.000' },
+      { nombre: 'Estadio Centenario', ciudad: 'Armenia', aforo: '20.000' }
+    ],
     // Identidad de cada club para la lista: sin `escudo` se pinta la sigla sobre su color.
     equipos: {
       'Nacional': { sigla: 'NAC', color: '#0b7a3e', escudo: 'img/escudos/nacional.png' },
