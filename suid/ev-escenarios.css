@@ -1,0 +1,25 @@
+/* Eventos › Escenarios: estados heredados (sancionado, limitado) con los tokens del IVC. */
+.exs-mapa .pbe-m--cerrado rect { fill: var(--naotech-color-red-050); stroke: var(--naotech-color-red-900); stroke-width: 3; stroke-dasharray: none; }
+.exs-mapa .pbe-m--cerrado text { fill: var(--naotech-color-red-900); }
+.exs-mapa .pbe-pm--off circle { fill: var(--naotech-color-red-900); }
+.exs-mapa .pbe-pm--off text { fill: var(--naotech-color-white-alpha-100); }
+.exs-sector--sancionado span { color: var(--naotech-color-red-900); font-weight: 700; }
+.exs-sector--limitado span { color: var(--naotech-color-yellow-900); font-weight: 700; }
+.exs-pn--mal { background: var(--naotech-color-red-900); }
+.exs-fijo { min-height: 44px; display: flex; align-items: center; padding: 0 var(--naotech-sizing-14); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); font-weight: 600; }
+.exs-form { margin-top: var(--naotech-sizing-8); }
+.pbe-heredada--mal, .pbe-heredada--w { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: var(--naotech-radius-md); font-size: var(--naotech-sizing-12); font-weight: 700; }
+.pbe-heredada--mal { background: var(--naotech-color-red-050); color: var(--naotech-color-red-900); }
+.pbe-heredada--w { background: var(--naotech-color-yellow-100); color: var(--naotech-app-color-900); }
+
+/* Asistente de evento: tarjetas de escenario elegibles y estado del escenario elegido. */
+.exs-opcion { font: inherit; text-align: left; padding: 0; border: 0; cursor: pointer; background: none; color: inherit; }
+.exs-opcion[aria-pressed='true'] { box-shadow: 0 0 0 3px var(--naotech-color-blue-900); border-radius: var(--naotech-radius-lg); }
+.exs-pick { margin-bottom: var(--naotech-sizing-20); }
+.exs-estado__cab { display: flex; align-items: center; gap: var(--naotech-sizing-12); margin-bottom: var(--naotech-sizing-12); }
+.exs-estado__cab .pb-btn { margin-left: auto; }
+.exs-chk { width: 10px; height: 10px; border-radius: 50%; background: var(--naotech-color-green-700); }
+.exs-chk--alerta { background: var(--naotech-color-yellow-900); }
+.exs-chk--error { background: var(--naotech-color-red-900); }
+.ev-asist .gi-step small { display: block; font-size: 12px; font-weight: 400; }
+.ev-asist [data-acc='evp-publicar'].pb-btn { display: none; }

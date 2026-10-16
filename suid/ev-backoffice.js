@@ -86,8 +86,12 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     // Sin id se presentan los eventos; con id (…/eventos/e1) se entra a uno. Un id que ya no existe vuelve a la lista.
     var idRuta = (route.rest || [])[0], detalle = !!idRuta && st.eventos.some(function (e) { return e.id === idRuta; });
     if (detalle) { st.evento = idRuta; }
-    route.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, detalle ? { label: 'Eventos', href: LISTA } : { label: 'Eventos' }];
+    // …/eventos/escenarios[/id]: el catálogo de escenarios, aparte del selector de momentos de la lista.
+    var modoEsc = idRuta === 'escenarios', escId = (route.rest || [])[1], escActual = modoEsc && escId ? w.EV_ESCENARIOS.porId(escId) : null;
+    route.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, detalle || modoEsc ? { label: 'Eventos', href: LISTA } : { label: 'Eventos' }];
     if (detalle) { route.crumbs.push({ label: evActual().nombre || 'Evento sin nombre' }); }
+    if (modoEsc) { route.crumbs.push(escActual ? { label: 'Escenarios', href: LISTA + '/escenarios' } : { label: 'Escenarios' }); }
+    if (escActual) { route.crumbs.push({ label: escActual.nombre }); }
     // Deep link: …/eventos?momento=pasados elige el filtro (lo usa la app Auditoría del SVN).
     var pedido = ((route.route || {}).query || {}).momento;
     if (!detalle && pedido) { evpEst().filtro = MOMENTOS.some(function (m) { return m[0] === pedido; }) ? pedido : null; }
@@ -109,7 +113,8 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     function cabeceraLista() {
       return '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Eventos</h1>' +
         '<p class="page-subtitle">Los eventos del organizador y el estado de cada uno. Elija uno para ver su escenario, partidos, cupos y boletería.</p></div>' +
-        '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--loud" data-acc="lst-crear">' + ico('add') + 'Crear evento</button></div></header>';
+        '<div class="gi-head__actions"><button type="button" class="pb-btn" data-acc="lst-escenarios">' + ico('pin') + 'Escenarios</button>' +
+        '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="lst-crear">' + ico('add') + 'Crear evento</button></div></header>';
     }
 
     function lista() {
@@ -212,7 +217,73 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       return '<div class="pb-vacio">' + ico('settings') + '<b>En preparación</b><span>' + esc(v.label) + ' se está armando y aparece en esta pestaña.</span></div>';
     }
 
+    /* ---------- Asistente: un borrador se arma paso a paso, como el alta de una sanción ---------- */
+
+    var PASOS = [['escenario', 'Escenario', 'Elija el lugar y revise su estado', null], ['evento', 'Evento y partidos', 'Partido, fecha y hora', 'evento'],
+      ['config', 'Configuración', 'Sectores, puertas y horarios', 'config'], ['cupos', 'Cupos', 'Reparto entre comercializadoras', 'cupos'],
+      ['revisar', 'Revisar y publicar', 'Lo que falta antes de abrirlo a la venta', 'evento']];
+    function pasoDe(e) { st.asist = st.asist || {}; return st.asist[e.id] || (st.asist[e.id] = { i: 0, max: 0 }); }
+    function faltaHora(e) { return e.partidos.some(function (p) { return !p.hora; }); }
+
+    function revisar(e) {
+      var cf = st.cfg, cu = st.cupos, r = w.EV_ESCENARIOS.mapa(e.escenario), nr = Object.keys(r).length;
+      var fila = function (t, d, tag, tipo) { return '<div class="pb-puerta"><span class="exs-chk exs-chk--' + tipo + '" aria-hidden="true"></span><span><b>' + esc(t) + '</b><span class="pb-sub">' + esc(d) + '</span></span>' +
+        '<span><span class="pb-badge pb-badge--' + tipo + '">' + tag + '</span></span></div>'; };
+      return '<div class="pb-sec">' +
+        fila('Escenario', e.escenario + ', ' + e.ciudad, nr ? nr + (nr === 1 ? ' restricción' : ' restricciones') : 'Sin restricciones', nr ? 'alerta' : 'ok') +
+        fila('Evento y partidos', e.partidos.length + (e.partidos.length === 1 ? ' partido' : ' partidos') + ' el ' + fecha(e.fecha), faltaHora(e) ? 'Falta la hora' : 'Completo', faltaHora(e) ? 'error' : 'ok') +
+        fila('Configuración', 'Sectores, puertas y horarios del evento', cf && cf.sucio ? 'Sin guardar' : 'Lista', cf && cf.sucio ? 'alerta' : 'ok') +
+        fila('Cupos', 'Reparto entre comercializadoras homologadas', cu && cu.guardado ? 'Repartidos' : 'Sin repartir', cu && cu.guardado ? 'ok' : 'alerta') + '</div>' +
+        '<div class="pb-aviso"><span>Al publicarlo, las comercializadoras homologadas lo ven y se generan las boletas. Configuración y cupos se pueden ajustar después.</span></div>';
+    }
+
+    function asistente() {
+      var e = evActual(), a = pasoDe(e), p = PASOS[a.i], last = a.i === PASOS.length - 1;
+      st.vista = p[3] || 'evento';
+      var v = activa(), sembrado = e.id === 'e1', cuerpo = a.i === 0 ? w.EV_ESCENARIOS.elegir(ctx, e) : last ? revisar(e) : (v.def ? v.def.render(ctx) : preparacion(v));
+      // Configuración y Cupos solo traen datos para el evento sembrado; con otro se muestra lo heredado del escenario.
+      if (!sembrado && (p[0] === 'config' || p[0] === 'cupos')) { cuerpo = w.EV_ESCENARIOS.heredado(e, p[0] === 'config' ? 'Los sectores y las puertas parten del escenario. Aquí se ajustan los horarios, las sillas bloqueadas y el estado de cada sector para este evento.' : 'El reparto entre comercializadoras no puede pasar de lo que deja cada sector del escenario.'); }
+      var acc = sembrado && v.def && v.def.accion; if (typeof acc === 'function') { acc = acc(ctx); }
+      var guardar = acc && !last && a.i > 0 ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="' + esc(acc.acc) + '"' + (acc.disabled ? ' disabled' : '') + '>' + esc(acc.label) + '</button>' : '';
+      var pasos = PASOS.map(function (x, k) {
+        var cls = k === a.i ? 'is-on' : k < a.i ? 'is-done' : k <= a.max ? '' : 'is-locked';
+        return '<a role="button" tabindex="' + (k > a.max ? -1 : 0) + '" class="gi-step ' + cls + '" data-acc="as-paso" data-id="' + k + '"' + (k === a.i ? ' aria-current="step"' : '') + (k > a.max ? ' aria-disabled="true"' : '') + '><span>' + (k + 1) + '</span><div><b>' + x[1] + '</b><small class="pb-sub">' + x[2] + '</small></div>' +
+          '<svg class="gf-ck" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
+      }).join('');
+      var pct = Math.round(a.i / (PASOS.length - 1) * 100);
+      return '<a class="gi-back" href="' + LISTA + '">' + ico('arrow-left') + 'Volver a Eventos</a>' +
+        '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(e.nombre || 'Evento nuevo') + '</h1><p class="page-subtitle pb-evsub"><span class="pb-badge pb-badge--borrador">Borrador</span><span class="pb-num">' + esc(e.codigo) + '</span>' +
+        '<span>' + esc(e.escenario) + ', ' + esc(e.ciudad) + '</span><span>Aforo ' + esc(e.aforo) + '</span></p></div></header>' +
+        '<div class="gi-layout"><nav class="gi-steps" aria-label="Pasos para crear el evento"><div class="gf-total"><div class="gf-total__pct"><strong>Paso ' + (a.i + 1) + '</strong><span>de ' + PASOS.length + '</span></div>' +
+        '<div class="gf-bar" role="progressbar" aria-label="Avance" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div><small>' + esc(p[1]) + '</small></div>' + pasos + '</nav>' +
+        '<div class="gi-formcol"><section class="gi-sec"><header class="gi-sec__head"><span class="gi-sec__tag">' + (a.i + 1) + '</span><div class="gf-sec__txt"><p class="gf-kicker">Paso ' + (a.i + 1) + ' de ' + PASOS.length + '</p><h2 tabindex="-1">' + esc(p[1]) + '</h2></div>' +
+        '<div class="gf-sec__st">' + guardar + '</div></header><div class="pb-app"><div class="pb-vista" data-sc="v-as" role="tabpanel" aria-label="' + esc(p[1]) + '">' + cuerpo + '</div></div></section></div></div>' +
+        '<div class="gi-bar"><div class="gi-bar__inner"><span class="gi-bar__hint">Se guarda como borrador al avanzar.</span><div>' +
+        '<a class="naowee-btn naowee-btn--mute" href="' + LISTA + '">Cancelar</a>' +
+        (a.i ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="as-atras">' + ico('arrow-left') + ' Atrás</button>' : '') +
+        (last ? '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="evp-publicar"' + (faltaHora(e) ? ' disabled' : '') + '>Publicar evento</button>'
+          : '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="as-sig">Siguiente ' + ico('arrow-right') + '</button>') + '</div></div></div>';
+    }
+
+    function asistenteClick(ds) {
+      var e = evActual(), a = pasoDe(e), m = d.querySelector('.main-scroll');
+      if (ds.acc === 'as-sig') { a.i = Math.min(PASOS.length - 1, a.i + 1); a.max = Math.max(a.max, a.i); }
+      else if (ds.acc === 'as-atras') { a.i = Math.max(0, a.i - 1); }
+      else if (ds.acc === 'as-paso') { if (+ds.id <= a.max) { a.i = +ds.id; } }
+      else if (ds.acc === 'as-esc') {
+        var x = w.EV_ESCENARIOS.porId(ds.id);
+        e.escenario = x.nombre; e.ciudad = x.ciudad; e.aforo = x.aforo;
+        mostrarToast('Escenario elegido', x.nombre + ': ' + w.EV_ESCENARIOS.resumenTexto(x) + '.', 'informative');
+        pintar(); return;
+      }
+      if (m) { m.scrollTop = 0; }
+      pintar();
+    }
+
     function contenido() {
+      raiz.classList.remove('gi-form', 'ev-asist');
+      if (detalle && !modoEsc && evActual().estado === 'borrador') { raiz.classList.add('gi-form', 'ev-asist'); return asistente(); }
+      if (modoEsc) { return escId ? w.EV_ESCENARIOS.detalle(ctx, escId) : w.EV_ESCENARIOS.lista(ctx); }
       if (!detalle) { return lista(); }
       var v = activa(), html = '';
       if (v.def) {
@@ -289,9 +360,16 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
         case 'lst-abrir': st.vista = 'evento'; return; // el enlace navega solo; se entra por el evento, no por la última pestaña
         case 'lst-filtro': evpEst().filtro = ds.id === 'todos' ? null : ds.id; marcarFiltro(); pintar(); return;
         case 'lst-crear': crear(); return;
+        case 'lst-escenarios': location.hash = LISTA + '/escenarios'; return;
       }
-      var v = activa();
-      if (!detalle || (v && v.def && v.def.onClick && v.def.onClick(el, ev, ctx) === false)) { return; }
+      if (modoEsc) { if (w.EV_ESCENARIOS.click(el, ctx, escId) !== false) { pintar(); } return; }
+      if (ds.acc.indexOf('as-') === 0) { asistenteClick(ds); return; }
+      var v = activa(), antes = detalle && evActual().estado;
+      if (!detalle || (v && v.def && v.def.onClick && v.def.onClick(el, ev, ctx) === false)) {
+        // Publicar un borrador cambia su vista: sale del asistente y entra por Configuración.
+        if (antes === 'borrador' && evActual().estado !== 'borrador') { st.vista = 'config'; pintar(); }
+        return;
+      }
       pintar();
     }
 
@@ -306,6 +384,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     // El texto avisa en `input`; selects, casillas, fechas y horas confirman con `change`.
     function onInput(ev) {
       var el = ev.target, texto = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && TEXTO.test(el.type));
+      if (modoEsc && texto) { if (w.EV_ESCENARIOS.entrada(ev, escId)) { pintar(); } return; }
       if (texto && el.dataset.s === 'lst') { evpEst().q = el.value; pintar(); return; }
       if (texto) { delegar(ev, 'onInput'); }
     }
@@ -320,7 +399,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     // El filtro viaja en el hash sin recargar: replaceState no agrega pasos al atrás ni dispara hashchange.
     function marcarFiltro() {
       var f = evpEst().filtro, h = LISTA + (f ? '?momento=' + f : '');
-      if (!detalle && location.hash !== h && w.history.replaceState) { w.history.replaceState(w.history.state, '', h); }
+      if (!detalle && !modoEsc && location.hash !== h && w.history.replaceState) { w.history.replaceState(w.history.state, '', h); }
     }
 
     /* ---------- Montaje: los oyentes van en `raiz`, que se crea en cada entrada ---------- */

@@ -25,6 +25,7 @@ Menú del profesional del IVC (`suite-web-ivc`): "Mi bandeja" es relleno y lleva
 - `gi-catalogos.js`: catálogos reales de la Fuente 2. `gi-data.js`: reglas y 9 registros ficticios en `localStorage`.
 - `gi.js` (bandeja y ficha), `gi-form.js` (registro), `gi-bulk.js` (carga masiva), `gi.css`.
 - `ev-backoffice.js` (marco, Escenario y Evento y partidos), `ev-backoffice-evento.js` (Configuración, Cupos y Listo para abrir), `ev-datos.js`: **Eventos**, el backoffice traído del SVN. `ev-eventos.css` traduce los tokens `--naotech-*` del SDK a los del IVC.
+- `ev-escenarios.js` y `ev-escenarios.css`: **Eventos › Escenarios** (`#/control-acceso/eventos/escenarios[/id]`), el catálogo de lugares con sus sectores y puertas. Un sector puede estar *limitado* (tope de aforo) o *sancionado* (cerrado); Configuración y Cupos de cada evento heredan eso y no lo dejan pasar. Un evento en borrador se arma como asistente de 5 pasos (Escenario, Evento y partidos, Configuración, Cupos, Revisar y publicar), igual que el alta de una sanción; al publicarlo pasa a las pestañas de siempre.
 - `gi-panel.js` / `gi-panel.css`: panel derecho único (`GI.panel`). `gi-perfil.js` / `gi-perfil.css`: perfil y afinidad (`GI.perfilDe`, `GI.perfilHtml`).
 - `login/`: CSS e imágenes del login real.
 

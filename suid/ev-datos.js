@@ -4,13 +4,19 @@ window.EV_DATOS = {
     hoy: '2026-09-28',
     usuario: { nombre: 'Laura Cárdenas Mejía', cargo: 'Organizadora' },
     competencias: ['Liga profesional 2026-II', 'Torneo de ascenso 2026-II', 'Copa nacional 2026'],
+    // Restricciones vigentes por sector (id del sector: norte, occ, ori, sur). `tope` es el aforo máximo de un sector limitado.
     escenarios: [
-      { nombre: 'Estadio Atanasio Girardot', ciudad: 'Medellín', aforo: '38.000', foto: 'img/estadios/atanasio.jpg' },
-      { nombre: 'Estadio Metropolitano', ciudad: 'Barranquilla', aforo: '46.692', foto: 'img/estadios/metropolitano.jpg' },
-      { nombre: 'Estadio El Campín', ciudad: 'Bogotá', aforo: '36.343', foto: 'img/estadios/campin.jpg' },
-      { nombre: 'Estadio Pascual Guerrero', ciudad: 'Cali', aforo: '35.405', foto: 'img/estadios/pascual-guerrero.jpg' },
-      { nombre: 'Estadio Jaime Morón', ciudad: 'Cartagena', aforo: '16.068', foto: 'img/estadios/jaime-moron.jpg' },
-      { nombre: 'Estadio Palogrande', ciudad: 'Manizales', aforo: '31.611' }
+      { id: 'atanasio', nombre: 'Estadio Atanasio Girardot', ciudad: 'Medellín', aforo: '38.000', foto: 'img/estadios/atanasio.jpg', eventos: 3,
+        restricciones: [
+          { sector: 'occ', estado: 'sancionado', motivo: 'Sanción del IVC · Resolución 0412 de 2026', hasta: 'Hasta nueva orden' },
+          { sector: 'ori', estado: 'limitado', tope: 7080, motivo: 'Obras en las graderías', hasta: '30 nov 2026' }
+        ] },
+      { id: 'metropolitano', nombre: 'Estadio Metropolitano', ciudad: 'Barranquilla', aforo: '46.692', foto: 'img/estadios/metropolitano.jpg', eventos: 1, restricciones: [] },
+      { id: 'campin', nombre: 'Estadio El Campín', ciudad: 'Bogotá', aforo: '36.343', foto: 'img/estadios/campin.jpg', eventos: 2,
+        restricciones: [{ sector: 'sur', estado: 'limitado', tope: 5950, motivo: 'Obras de accesibilidad', hasta: '15 dic 2026' }] },
+      { id: 'pascual-guerrero', nombre: 'Estadio Pascual Guerrero', ciudad: 'Cali', aforo: '35.405', foto: 'img/estadios/pascual-guerrero.jpg', eventos: 1, restricciones: [] },
+      { id: 'jaime-moron', nombre: 'Estadio Jaime Morón', ciudad: 'Cartagena', aforo: '16.068', foto: 'img/estadios/jaime-moron.jpg', eventos: 1, restricciones: [] },
+      { id: 'palogrande', nombre: 'Estadio Palogrande', ciudad: 'Manizales', aforo: '31.611', eventos: 0, restricciones: [] }
     ],
     // Identidad de cada club para la lista: sin `escudo` se pinta la sigla sobre su color.
     equipos: {
