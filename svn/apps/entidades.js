@@ -294,10 +294,21 @@ window.PANTALLAS = window.PANTALLAS || {};
     function consultarAni(x) {
       var d = digitos(x.numero);
       if (d.length < 5) { return { ok: false, msg: 'Escribe el número completo del documento.' }; }
+      // Casos de prueba (shared/demo-casos.js): la cédula de la demo devuelve a su persona.
+      var caso = window.DemoCasos && window.DemoCasos.buscar(x.tipo, x.numero);
+      if (caso) { return caso.menor ? { ok: true, menor: true, nombre: caso.nombre, iniciales: caso.nombre.split(' ').map(function (w) { return w.charAt(0); }).join('. ') + '.' } : { ok: true, nombre: caso.nombre }; }
       if (/0000$/.test(d)) { return { ok: false, msg: 'El ANI no encontró este documento. Revisa el número o el tipo.' }; }
       var nombre = NOMBRES[+d.slice(-1)];
       if (x.tipo === 'TI') { return { ok: true, menor: true, nombre: nombre, iniciales: nombre.split(' ').map(function (w) { return w.charAt(0); }).join('. ') + '.' }; }
       return { ok: true, nombre: nombre };
+    }
+    // Con una cédula de la demo el reporte llega casi hecho: persona verificada, conducta y relato sugeridos.
+    function autoReporte(x) {
+      var c = window.DemoCasos && window.DemoCasos.buscar(x.tipo, x.numero);
+      if (!c) { return; }
+      x.ani = consultarAni(x); x.conductas = {};
+      c.origen.forEach(function (i) { x.conductas[i < 6 ? '97-' + (i + 1) : '98-' + 'abc'.charAt(i - 6)] = true; });
+      x.descripcion = c.descripcion;
     }
     function faltaReporte(x) {
       var f = [];
@@ -640,10 +651,15 @@ window.PANTALLAS = window.PANTALLAS || {};
       var conductas = [];
       C97.forEach(function (c) { if (x.conductas['97-' + c[0]]) { conductas.push(c[1] + ' (art. 97, ' + c[0] + ')'); } });
       C98.forEach(function (c) { if (x.conductas['98-' + c[0]]) { conductas.push(c[1] + ' (art. 98, ' + c[0] + ')'); } });
-      var r = { id: 'R-2026-04' + n, estado: 'enviado', nombre: a.menor ? a.iniciales : a.nombre, doc: a.menor ? x.tipo + ' ••••' + digitos(x.numero).slice(-4) : x.tipo + ' ' + x.numero, corto: ev.corto, hechos: ev.fecha, autoridad: ev.autoridad,
+      var r = { id: window.DemoCasos ? window.DemoCasos.siguienteId() : 'R-2026-04' + n, estado: 'enviado', nombre: a.menor ? a.iniciales : a.nombre, doc: a.menor ? x.tipo + ' ••••' + digitos(x.numero).slice(-4) : x.tipo + ' ' + x.numero, corto: ev.corto, hechos: ev.fecha, autoridad: ev.autoridad,
         conductas: conductas, evid: { fot: x.evid.filter(function (e) { return !e.v; }).length, vid: x.evid.some(function (e) { return e.v; }) }, descripcion: x.descripcion.trim(), motivoArchivo: '', fecha: '29 sep · 10:14',
         historial: [{ f: '29 sep 2026', t: 'Enviado por tu entidad', q: 'Tu entidad' }] };
       RP.unshift(r);
+      // Llega a Solicitudes del IVC (suid/gi-solicitudes.js lo lee de shared/demo-casos.js).
+      if (window.DemoCasos) {
+        var fot = r.evid.fot, evi = [fot ? fot + (fot === 1 ? ' foto' : ' fotos') : '', r.evid.vid ? '1 video' : ''].filter(Boolean).join(' · ');
+        window.DemoCasos.registrarSolicitud({ id: r.id, tipo: 'Club de fútbol', origen: CLUB, nombre: a.nombre, menor: !!a.menor, iniciales: a.iniciales || '', doc: r.doc, evento: ev.largo, hechos: ev.fecha, autoridad: ev.autoridad, conductas: conductas, evid: evi, descripcion: r.descripcion });
+      }
       st.club.ultimo = r; st.club.sel = r.id; st.club.filtro = 'todos';
       st.club.rep = nuevoReporte();
       st.vista = 'enviado'; scr = {}; pintar();
@@ -719,7 +735,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       if (d.k.indexOf('c:') === 0) { x.conductas[d.k.slice(2)] = val; return true; }
       x[d.k] = val;
       if (d.k === 'tipo') { x.numero = val === 'TI' ? '1.021.998.406' : '1.037.512.884'; x.ani = null; }
-      if (d.k === 'numero') { x.ani = null; }
+      if (d.k === 'numero') { x.ani = null; autoReporte(x); }
       return true;
     }
 

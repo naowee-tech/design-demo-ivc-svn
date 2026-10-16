@@ -1,11 +1,10 @@
 /* Solicitudes de control: reportes de entidades deportivas e inspecciones. Un reporte nunca bloquea por sí solo. */
 (function (w, d) {
   'use strict';
-  var GI = w.GI, U = GI.util, D = GI.derive, UI = w.GIUI, esc = SUID.esc;
+  var GI = w.GI, U = GI.util, UI = w.GIUI, esc = SUID.esc;
   var KEY = 'suid.gs.v5';
   var ESTADOS = [['enviado', 'Enviado'], ['recibido', 'Recibido'], ['tramite', 'En trámite'], ['derivo', 'Derivó en medida'], ['archivado', 'Archivado']];
   var BADGE = { enviado: 'informative', recibido: 'neutral', tramite: 'caution', derivo: 'negative', archivado: 'neutral' };
-  var MOTIVOS = ['La autoridad no abrió procedimiento', 'No se pudo identificar a la persona', 'Duplicado de otra solicitud', 'Falta de evidencia', 'Otro'];
   var USER = SUID.user.name;
   var PAGE = 8;
   var filt = { q: '', est: '', ori: '', pag: 1 };
@@ -84,8 +83,10 @@
   var data = null;
   function load() {
     if (data) return data;
-    try { var raw = localStorage.getItem(KEY); if (raw) { data = JSON.parse(raw); return data; } } catch (e) {}
-    data = seed();
+    try { var raw = localStorage.getItem(KEY); if (raw) { data = JSON.parse(raw); } } catch (e) {}
+    if (!data) data = seed();
+    /* Casos de prueba: reportes enviados desde Entidades o preparados en shared/demo-casos.js. */
+    ((w.DemoCasos && w.DemoCasos.solicitudes()) || []).forEach(function (x) { if (!data.some(function (r) { return r.id === x.id; })) data.unshift(x); });
     return data;
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
@@ -182,15 +183,18 @@
   function ruta(r) { return LISTA + '/' + encodeURIComponent(r.id); }
   function cerrada(r) { return r.estado === 'archivado' || r.estado === 'derivo'; }
   function bt(a, t, cls) { return '<button type="button" class="naowee-btn naowee-btn--' + (cls || 'mute') + '" data-gs="' + a + '">' + t + '</button>'; }
-  function paso(r) {
-    return r.estado === 'enviado' ? bt('rec', 'Marcar como recibida', 'quiet') : r.estado === 'recibido' ? bt('tra', 'Pasar a trámite', 'quiet') : r.estado === 'tramite' ? bt('enl', 'Enlazar a medida', 'quiet') : '';
+  function paso(r, cls) {
+    return r.estado === 'enviado' ? bt('rec', 'Marcar como recibida', cls) : r.estado === 'recibido' ? bt('tra', 'Pasar a trámite', cls) : r.estado === 'tramite' ? bt('med', 'Crear medida', cls) : '';
   }
-  function accionesPanel(r) { return '<a class="naowee-btn naowee-btn--loud" href="' + ruta(r) + '">Abrir expediente</a>' + (cerrada(r) ? '' : bt('arc', 'Archivar')); }
+  /* Las solicitudes no se archivan en esta demo (DC-021): solo avanzan hasta la medida. */
+  function accionesPanel(r) { return '<a class="naowee-btn naowee-btn--' + (cerrada(r) ? 'loud' : 'mute') + '" href="' + ruta(r) + '">Abrir solicitud</a>' + paso(r, 'loud'); }
   function accionesInterno(r) {
-    var ficha = r.medida && GI.get(r.medida) ? '<a class="naowee-btn naowee-btn--mute" href="' + UI.BASE + '/' + esc(r.medida) + '">Abrir la ficha en Gestión</a>' : '';
-    return ficha + (cerrada(r) ? '' : bt('arc', 'Archivar') + (paso(r) ? paso(r).replace('naowee-btn--quiet', 'naowee-btn--loud') : ''));
+    var ficha = r.medida && GI.get(r.medida) ? '<a class="naowee-btn naowee-btn--mute" href="' + UI.BASE + '/' + esc(r.medida) + '">Abrir la medida ' + esc(r.medida) + '</a>' : '';
+    return ficha + paso(r, 'loud');
   }
-  function modelo(r) { return GI.expediente.deSolicitud(r, { acciones: accionesPanel(r), siguiente: cerrada(r) ? '' : '<a class="naowee-btn naowee-btn--loud" href="' + ruta(r) + '">Abrir expediente</a>' }); }
+  var PISTA = { enviado: 'Confirma que el IVC recibió el reporte.', recibido: 'Cuando la autoridad abra procedimiento, pásala a trámite.', tramite: 'Crea la medida con los datos que llegaron; la solicitud queda adjunta como su origen.' };
+  function pista(r) { return PISTA[r.estado] ? '<p class="gx-nota">' + PISTA[r.estado] + '</p>' : ''; }
+  function modelo(r) { return GI.expediente.deSolicitud(r, { acciones: accionesPanel(r), siguiente: pista(r) }); }
   /* Contenido del panel; se vuelve a pedir tras cada cambio de estado y el panel no se cierra. */
   function compacto(r, repaint) {
     var o = GI.expediente.compacto(modelo(r)), propio = o.onPintar;
@@ -210,7 +214,7 @@
     if (!r) { location.hash = LISTA; return; }
     ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Solicitudes', href: LISTA }, { label: r.id }];
     var nombre = r.menor ? 'Menor de edad · ' + r.iniciales : r.nombre;
-    view.innerHTML = '<div class="page-inner gi-page gs-page gs-int"><a class="gi-back" href="' + LISTA + '">' + UI.svg('back') + ' Volver</a>' +
+    view.innerHTML = '<div class="page-inner gi-page gs-page gs-int"><a class="gi-back" href="' + LISTA + '" aria-label="Volver a Solicitudes" title="Volver a Solicitudes">' + UI.svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(nombre) + ' ' + badge(r.estado) + '</h1>' +
       '<p class="page-subtitle"><span class="gi-mono">' + esc(r.id) + '</span> · ' + esc(r.doc) + ' · reportado por ' + esc(r.origen) + '</p></div>' +
       '<div class="gi-head__actions">' + accionesInterno(r) + '</div></header>' +
@@ -229,43 +233,36 @@
     function on(a, fn) { [].forEach.call(el.querySelectorAll('[data-gs="' + a + '"]'), function (b) { b.addEventListener('click', function () { fn(b); }); }); }
     on('rec', function (b) { SUID.busy(b, 'Guardando…', function () { mover('recibido', 'Recibido por el IVC', {}, 'Solicitud ' + r.id + ' marcada como recibida.'); }, 600); });
     on('tra', function (b) { SUID.busy(b, 'Guardando…', function () { mover('tramite', 'La autoridad abrió procedimiento', {}, 'Solicitud ' + r.id + ' en trámite.'); }, 600); });
-    on('enl', function () {
-      var digs = r.doc.replace(/\D/g, ''), med = '';
-      var mismas = GI.all().filter(function (x) { return D.estadoRestriccion(x) !== 'Inactiva'; }).sort(function (a, b) { return (b.numId === digs) - (a.numId === digs); });
-      var m = UI.modal({ title: 'Enlazar a una medida', sub: r.id, body: '<div class="gs-field"><label class="gs-field__l gs-field__l--req">Medida a enlazar</label><div id="gsMedH"></div></div><p class="gi-err" id="gsErr" hidden>Selecciona la medida a enlazar.</p>',
-        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button type="button" class="naowee-btn naowee-btn--loud" id="gsEnlOk">Confirmar enlace</button>' });
-      GI.selectGrafico({ host: m.el.querySelector('#gsMedH'), id: 'gsMed', label: 'Medida a enlazar', campo: true,
-        onPick: function (v) { med = v; if (v) m.el.querySelector('#gsErr').hidden = true; },
-        items: [{ v: '', n: 'Selecciona una medida', av: '' }].concat(mismas.slice(0, 14).map(function (x) {
-          return { v: x.id, av: '', n: x.id + ' · ' + (D.esMenor(x) ? 'Menor de edad' : D.nombreCompleto(x)) + (x.numId === digs ? ' (misma persona)' : '') };
-        })) });
-      m.el.querySelector('#gsEnlOk').addEventListener('click', function () {
-        if (!med) { m.el.querySelector('#gsErr').hidden = false; return; }
-        var v = med;
-        SUID.busy(m.el.querySelector('#gsEnlOk'), 'Enlazando…', function () { m.close(); mover('derivo', 'Derivó en la medida ' + v, { medida: v }, 'Solicitud enlazada a la medida ' + v + '.'); }, 700);
-      });
-    });
-    on('arc', function () {
-      var mot = '';
-      var m = UI.modal({ title: 'Archivar solicitud', sub: r.id, body: '<div class="gs-mform"><div class="gs-field"><label class="gs-field__l gs-field__l--req">Motivo del archivo</label><div id="gsMotH"></div></div>' +
-        '<label class="gs-field__l" for="gsNota">Nota (opcional)</label><textarea id="gsNota" rows="2"></textarea><p class="gi-err" id="gsErr" hidden>Selecciona un motivo para archivar.</p></div>',
-        footer: '<button class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button type="button" class="naowee-btn naowee-btn--loud" id="gsArcOk">Archivar solicitud</button>' });
-      GI.selectGrafico({ host: m.el.querySelector('#gsMotH'), id: 'gsMot', label: 'Motivo del archivo', campo: true,
-        onPick: function (v) { mot = v; if (v) m.el.querySelector('#gsErr').hidden = true; },
-        items: [{ v: '', n: 'Selecciona un motivo', av: '' }].concat(MOTIVOS.map(function (x) { return { v: x, n: x, av: '' }; })) });
-      m.el.querySelector('#gsArcOk').addEventListener('click', function () {
-        if (!mot) { m.el.querySelector('#gsErr').hidden = false; return; }
-        var v = mot, nota = m.el.querySelector('#gsNota').value.trim();
-        SUID.busy(m.el.querySelector('#gsArcOk'), 'Archivando…', function () { m.close(); mover('archivado', 'Archivado · ' + v.charAt(0).toLowerCase() + v.slice(1), { motivoArchivo: v, notaArchivo: nota }, 'Solicitud archivada.'); }, 700);
-      });
+    /* La medida se arma en el alta de Gestión con los datos de la solicitud; al guardarla, GS.derivar cierra el vínculo. */
+    on('med', function () {
+      var m = /^(\S+)\s+(.*)$/.exec(r.doc || '');
+      try { sessionStorage.setItem('suid.gi.prefill', JSON.stringify({ solicitud: r.id, tipo: m ? m[1] : '', doc: m && !r.menor ? m[2] : '' })); } catch (e) { /* sin almacenamiento: el alta abre vacía */ }
+      location.hash = UI.BASE + '/nuevo';
     });
   }
 
   /* La ruta con id abre la vista interna; sin id, la bandeja. */
   SUID.views['control-acceso/solicitudes'] = function (view, ctx) { return ctx.rest[0] ? interno(view, ctx, decodeURIComponent(ctx.rest[0])) : open(view, ctx); };
   /* La ficha de Gestión consulta aquí qué solicitudes derivaron en su medida. */
+  function adjuntos(r) {
+    var out = [], n = 0;
+    String(r.evid || '').split('·').forEach(function (p) {
+      var m = /(\d+)\s+(foto|video)/i.exec(p); if (!m) return;
+      for (var i = 1; i <= +m[1]; i++) out.push(r.id + '_' + m[2].toLowerCase() + '-' + i + (/foto/i.test(m[2]) ? '.jpg' : '.mp4'));
+    });
+    return out;
+  }
   w.GS = {
     lista: function () { return load().slice().sort(function (a, b) { return a.iso < b.iso ? 1 : a.iso > b.iso ? -1 : a.id < b.id ? 1 : -1; }).map(function (x) { return { id: x.id, fecha: x.fecha, origen: x.origen, nombre: x.menor ? (x.iniciales || 'Persona menor de edad') : x.nombre, doc: x.doc, menor: !!x.menor, estado: label(x.estado), medida: x.medida || '' }; }); },
+    get: function (id) { var r = load().filter(function (x) { return x.id === id; })[0]; return r ? Object.assign({ adjuntos: adjuntos(r), ruta: ruta(r) }, r) : null; },
+    ruta: function (id) { return LISTA + '/' + encodeURIComponent(id); },
+    /* Lo llama el alta de Gestión al guardar una medida creada desde esta solicitud. */
+    derivar: function (id, medida) {
+      var r = load().filter(function (x) { return x.id === id; })[0]; if (!r || cerrada(r)) return;
+      r.estado = 'derivo'; r.medida = medida;
+      r.hist.push(h(stamp(), 'Se creó la medida ' + medida + ' con los datos de esta solicitud', USER, 'rojo'));
+      save();
+    },
     porMedida: function (id) { return load().filter(function (x) { return x.medida === id; }); },
     enTramite: function () { return load().filter(function (x) { return x.estado === 'tramite'; }).map(function (x) { return { id: x.id, nombre: x.nombre, doc: x.doc, origen: x.origen, menor: !!x.menor, iniciales: x.iniciales || '' }; }); }
   };

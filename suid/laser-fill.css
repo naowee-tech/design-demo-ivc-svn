@@ -1,0 +1,14 @@
+/* Barrido de relleno (laser-fill.js): línea fina en el acento, sobre fondo blanco. */
+.lf-line { position: absolute; z-index: 40; height: 0; pointer-events: none; }
+.lf-line::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: var(--accent); opacity: .85; }
+.lf-line::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 14%, transparent)); }
+
+/* Mientras espera la línea, solo se ve la etiqueta; el control aparece al cruzarla. */
+.gi-f.lf-wait > :not(.gi-lbl):not(.gi-ferr),
+.pb-campo.lf-wait > input, .exs-sec-fila.lf-wait > input,
+.doc-upload-card.lf-wait .doc-upload-card__check, .doc-upload-card.lf-wait .doc-upload-card__meta { opacity: 0; }
+.gi-f.lf-rev > *, .pb-campo.lf-rev > input, .exs-sec-fila.lf-rev > input,
+.doc-upload-card.lf-rev .doc-upload-card__check, .doc-upload-card.lf-rev .doc-upload-card__meta { transition: opacity .35s ease; }
+.lf-lit { background: var(--accent-bg); transition: background .3s ease; }
+
+@media (prefers-reduced-motion: reduce) { .lf-line { display: none; } }

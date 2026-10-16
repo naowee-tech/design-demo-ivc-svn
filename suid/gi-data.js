@@ -321,7 +321,7 @@
       r.id = nextId();
       r.fechaRegistro = n.fecha;
       r.estadoRegistro = 'Recibido';
-      r.historial = [{ fecha: n.fecha, hora: n.hora, usuario: USER, de: '', a: 'Recibido', nota: 'Registro creado.' }];
+      r.historial = [{ fecha: n.fecha, hora: n.hora, usuario: USER, de: '', a: 'Recibido', nota: r.solicitud ? 'Registro creado desde la solicitud ' + r.solicitud.id + ', reportada por ' + r.solicitud.origen + '.' : 'Registro creado.' }];
       load().unshift(r);
       persist();
       return r;
@@ -342,6 +342,11 @@
       persist();
       return r;
     },
-    reset: function () { cache = seed(); persist(); }
+    reset: function () { cache = seed(); persist(); },
+    /* Ganchos de los casos de prueba (shared/demo-casos.js). */
+    insertRaw: function (r) { r.id = nextId(); load().unshift(r); persist(); return r; },
+    removeWhere: function (fn) { cache = load().filter(function (r) { return !fn(r); }); persist(); },
+    save: persist,
+    reload: function () { cache = null; }
   };
 })(window);

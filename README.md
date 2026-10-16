@@ -19,9 +19,19 @@ Dentro del panel del IVC, la sección **Control de acceso** tiene cuatro pantall
 
 El resto del menú (Bandeja, Aprobación de actos, etc.) es el del IVC real y no tiene contenido en esta demo.
 
+## Casos de prueba ocultos
+
+Con **Ctrl/⌘ + Shift + L** (en el IVC y en el SVN) se abre un panel con 20 personas ficticias: 10 con caso (libres de antecedentes, vigente, por vencer, cumplida, registro recibido, menor, reincidente, extranjero) y 10 cédulas libres que nunca han estado en el sistema. Tocar una fila copia la cédula; el chevron fuerza su estado; el selector de arriba salta a otra vista de la demo; ↺ reinicia todo.
+
+- Los datos viven en `shared/demo-casos.data.js` (JSON) y la lógica en `shared/demo-casos.js`. Las sanciones se guardan en el mismo almacén de Gestión, así que IVC, comercializadora y reportes ven lo mismo.
+- Al escribir una de esas cédulas en el alta de sanciones (o en «Reportar incidente» de Entidades) el formulario se completa solo.
+- Un reporte enviado desde Entidades llega a Solicitudes; de ahí se tramita hasta la sanción, que bloquea la compra en la comercializadora.
+- Cada persona trae un historial fijo (devoluciones, validación y, si aplica, antecedentes ya cumplidos).
+- La puerta aún no lee este estado.
+
 ## Datos
 
-Todos los datos son **ficticios** y se guardan en el `localStorage` del navegador. Nada sale de tu equipo. El botón "Restablecer datos de la demo" (pie de la bandeja de Gestión) los devuelve al estado inicial.
+Todos los datos son **ficticios** y se guardan en el `localStorage` del navegador. Nada sale de tu equipo. El botón "Restablecer datos de la demo" (pie de la bandeja de Gestión) los devuelve al estado inicial; los casos de prueba se reponen solos.
 
 ## Estructura
 

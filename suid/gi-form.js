@@ -2,7 +2,7 @@
 (function (w, d) {
   'use strict';
   var GI = w.GI, U = GI.util, D = GI.derive, C = GI.cat, UI = w.GIUI, esc = SUID.esc;
-  var st, editId, view, ctxRef;
+  var st, editId, view, ctxRef, sol = null;
   var lastDep = {}, auto = {}, touched = {}, evs = [], pcache = {}, cur = 'start', visited = {}, tried = null;
   var SECS = ['inf', 'rep', 'hec', 'san', 'int'];
   /* La fecha de registro es automática: no es un paso, se muestra como dato al final (DC-155). */
@@ -63,7 +63,7 @@
   }
   function sw(path, label, o) {
     o = o || {};
-    return '<div class="gi-f gi-c' + (o.c === 0 ? 0 : o.c || 12) + ' gf-swf' + (o.cls ? ' ' + o.cls : '') + '">' + (o.lbl ? '<span class="gi-lbl">' + o.lbl + '</span>' : '') + '<button type="button" class="gf-sw" role="switch"' + (o.aria ? ' aria-label="' + o.aria + '"' : '') + ' aria-checked="false" data-sw="' + path + '"' + (o.help ? ' aria-describedby="' + o.help[0] + '"' : '') + '><i class="gf-sw__trk" aria-hidden="true"><i></i></i><b>' + label + '</b><em>No</em></button>' +
+    return '<div class="gi-f gi-c' + (o.c === 0 ? 0 : o.c || 12) + ' gf-swf' + (o.cls ? ' ' + o.cls : '') + '">' + (o.lbl ? '<span class="gi-lbl">' + o.lbl + '</span>' : '') + '<button type="button" class="gf-sw" role="switch"' + (o.aria ? ' aria-label="' + o.aria + '"' : '') + ' aria-checked="false"' + (o.lock ? ' aria-disabled="true"' : '') + ' data-sw="' + path + '"' + (o.help ? ' aria-describedby="' + o.help[0] + '"' : '') + '><i class="gf-sw__trk" aria-hidden="true"><i></i></i><b>' + label + '</b><em>No</em></button>' +
       (o.help ? '<p class="gi-help" id="' + o.help[0] + '">' + o.help[1] + '</p>' : '') + '</div>';
   }
   function chips(path, opts) {
@@ -79,7 +79,7 @@
 
   function personHtml(k, n0) {
     var num = function (i) { return String(n0 + i); }, h = '', R = k === 'r', AD = R ? ' gf-addr-r' : '';
-    h += fld(num(0), 'Tipo de identificación', seg(k + '.tipoId', C.tiposId.map(function (t) { return [t, codeOf(t), t]; }), 'Tipo de identificación') + '<p class="gi-help" data-tiponame="' + k + '">Elige el tipo de documento.</p>', { c: 12, req: 1, err: k + '.tipoId' });
+    h += fld(num(0), 'Tipo de identificación', seg(k + '.tipoId', C.tiposId.filter(function (t) { return !R || !/\(TI\)/.test(t); }).map(function (t) { return [t, codeOf(t), t]; }), 'Tipo de identificación') + '<p class="gi-help" data-tiponame="' + k + '">Elige el tipo de documento.</p>', { c: 12, req: 1, err: k + '.tipoId' });
     h += fld(num(1), 'Número de identificación', inp(k + '.numId', { max: 20, ph: 'Solo números para CC, CE y TI' }), { c: 4, req: 1, err: k + '.numId' });
     h += fld(num(2), 'Nombre(s)', inp(k + '.nombres', { max: 60 }), { c: 4, req: 1, err: k + '.nombres' });
     h += fld(num(3), 'Apellido(s)', inp(k + '.apellidos', { max: 60 }), { c: 4, req: 1, err: k + '.apellidos' });
@@ -115,12 +115,19 @@
     h += fld(num(10), 'Número de teléfono', inp(k + '.telefono', { max: 10, attr: 'inputmode="numeric"', ph: 'Máximo 10 dígitos' }), { c: 4, err: k + '.telefono' });
     h += fld(num(11), 'Correo electrónico', inp(k + '.correo', { type: 'email', max: 100, ph: 'correo@ejemplo.com' }), { c: 6, err: k + '.correo' });
     h += fld(num(12), 'Fecha de nacimiento', inp(k + '.fechaNac', { type: 'date', attr: 'max="' + U.today() + '"' }), { c: 4, req: 1, err: k + '.fechaNac' });
-    h += fld(num(13), 'Edad', '<strong class="gf-val" data-edad="' + k + '">—</strong>', { c: 2, calc: 1 });
+    h += fld(num(13), 'Edad', '<strong class="gf-val" data-edad="' + k + '">—</strong>' + (R ? '' : '<span class="naowee-badge naowee-badge--negative gf-menor-tag" data-menortag hidden>Menor de edad</span>'), { c: 2, calc: 1 });
     h += fld(num(14), 'Sexo', seg(k + '.sexo', C.sexo.map(function (x) { return [x, x]; }), 'Sexo'), { c: 6, req: 1, err: k + '.sexo' });
-    if (k === 'i') h += sw('menor', '¿Es menor de edad?', { help: ['menorHelp', 'Se calcula con la fecha de nacimiento y la de los hechos.'], cls: 'gf-menor' });
     return h;
   }
 
+  /* Un solo bloque: el interruptor y el valor que depende de él; sin multa el valor queda deshabilitado. */
+  function multaHtml() {
+    return '<div class="gi-f gi-c12 gf-multa" data-req="valor"><button type="button" class="gf-sw" role="switch" aria-checked="false" data-sw="ui.multaOn" aria-describedby="gfMultaHelp"><i class="gf-sw__trk" aria-hidden="true"><i></i></i><b>¿La sanción incluye multa?</b><em>No</em></button>' +
+      '<p class="gi-help" id="gfMultaHelp">Toda sanción incluye multa. Su cobro no se gestiona aquí.</p>' +
+      '<div class="gf-multa__val"><label class="gi-lbl gi-lbl--req"><span class="gi-n">46</span>Valor de la sanción</label>' +
+      '<div class="gf-money gi-money"><span>$</span><input class="gi-in" data-p="valor" inputmode="numeric" aria-label="Valor de la multa en pesos" value="' + esc(st.f.valor) + '"></div>' +
+      '<p class="gi-help" id="gfValorHelp">Multa en pesos.</p><p class="gi-ferr" data-err="valor"></p></div></div>';
+  }
   function build() {
     var f = '', PROF = UI.PROFESIONALES;
     f += section('inf', LET.inf, 'Identificación y contacto del infractor', '', personHtml('i', 2));
@@ -144,12 +151,11 @@
       fld('41', 'Fecha del acto administrativo', inp('fechaActo', { type: 'date', attr: 'max="' + U.today() + '"' }), { c: 4, req: 1, err: 'fechaActo' }) +
       fld('42', 'No. del acto administrativo', inp('numActo', { max: 20, ph: 'Alfanumérico, máx. 20' }), { c: 4, req: 1, err: 'numActo' }) +
       fld('43', 'Fecha de la constancia de ejecutoria', inp('fechaEjecutoria', { type: 'date', attr: 'max="' + U.today() + '"' }), { c: 4, req: 1, err: 'fechaEjecutoria' }) +
-      fld('44', 'Tiempo de sanción en meses', '<div class="gf-meses">' + seg('meses', [6, 12, 24, 36, 48, 60].map(function (m) { return [String(m), m + ' meses']; }), 'Meses de sanción') + '<input class="gi-in gf-mesesin" data-p="meses" inputmode="numeric" maxlength="3" placeholder="Otro" aria-label="Meses de sanción, otro valor" value="' + esc(st.f.meses) + '"></div>', { c: 12, req: 1, err: 'meses', tag: 'meses', helpId: 'mesesHelp', help: 'Mínimo 6 meses.' }) +
+      fld('44', 'Tiempo de sanción en meses', '<div class="gf-meses">' + seg('meses', [6, 12, 24, 36, 48, 60].map(function (m) { return [String(m), m + ' meses']; }), 'Meses de sanción') + '<input class="gi-in gf-mesesin" data-p="meses" inputmode="numeric" maxlength="3" min="6" placeholder="Otro (mín. 6)" aria-label="Meses de sanción, otro valor" value="' + esc(st.f.meses) + '"></div>', { c: 12, req: 1, err: 'meses', tag: 'meses', helpId: 'mesesHelp', help: 'Mínimo 6 meses.' }) +
       '<div class="gi-c12 gf-vig" id="vigLive"><div class="gf-vig__c"><div class="gf-vig__k"><span class="gi-n">45</span>Fin de vigencia de la prohibición de ingreso</div><strong class="gf-val" id="finVig" aria-live="polite" title="Día siguiente a la ejecutoria más los meses.">—</strong></div>' +
       '<div class="gf-vig__c"><div class="gf-vig__k">Estado según las fechas</div><div id="vigEst" aria-live="polite">—</div><span class="gf-val gf-val--sub" id="vigDias">Falta la ejecutoria o los meses.</span></div>' +
       '<div class="gf-vig__c"><div class="gf-vig__k"><span class="gi-n">47</span>Estado de la restricción</div><div id="estRes" title="Inactiva mientras el registro esté Recibido o Por Subsanar; Activa al Validarse; Cumplida un día después del fin de vigencia."></div></div></div>' +
-      sw('ui.multaOn', '¿La sanción incluye multa?', { help: ['gfMultaHelp', 'Su cobro no se gestiona aquí.'] }) +
-      fld('46', 'Valor de la sanción', '<div class="gf-money gi-money"><span>$</span><input class="gi-in" data-p="valor" inputmode="numeric" value="' + esc(st.f.valor) + '"></div>', { c: 4, err: 'valor', cls: 'js-multa', help: 'Multa en pesos.' }));
+      multaHtml());
     f += section('int', LET.int, 'Gestión interna', '',
       fld('48', 'Fecha de radicado de entrada', inp('fechaRadicado', { type: 'date', attr: 'max="' + U.today() + '"' }), { c: 4, req: 1, err: 'fechaRadicado', tag: 'fechaRadicado' }) +
       fld('49', 'Radicado de entrada en Mindeporte', inp('radEntrada', { max: 40, ph: 'Según GESDOC' }), { c: 4, req: 1, err: 'radEntrada', tag: 'radEntrada' }) +
@@ -162,13 +168,13 @@
       fld('55', 'Observaciones del procedimiento del IVC', '<textarea class="gi-in gi-ta" data-p="observaciones" rows="3">' + esc(st.f.observaciones) + '</textarea>', { c: 12 }) +
       '<div class="gi-c12 gf-regdate">Fecha de registro: <strong>' + U.fmt(editId ? GI.get(editId).fechaRegistro : U.today()) + '</strong> · la genera el sistema</div>');
 
-    var back = editId ? UI.BASE + '/' + editId : UI.BASE;
+    var back = editId ? UI.BASE + '/' + editId : sol ? sol.ruta : UI.BASE;
     view.innerHTML = '<div class="page-inner gi-page gi-form">' +
-      '<a class="gi-back" href="' + back + '">' + UI.svg('back') + ' Volver</a>' +
-      '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + (editId ? 'Editar registro ' + editId : 'Registrar infractores') + '</h1>' +
-      '<p class="page-subtitle">' + (editId ? 'Actualiza los datos de la decisión en firme registrada.' : 'Registra decisiones en firme una por una o con la carga masiva.') + '</p></div>' +
-      (editId ? '' : '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + UI.BASE + '/carga-masiva">' + UI.svg('upload') + ' Carga masiva</a></div>') + '</header>' +
-      '<div class="gi-banner gi-banner--danger" id="errSum" hidden></div>' +
+      '<a class="gi-back" href="' + back + '" aria-label="Volver" title="Volver">' + UI.svg('back') + '</a>' +
+      '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + (editId ? 'Editar registro ' + editId : sol ? 'Registrar medida desde una solicitud' : 'Registrar infractores') + '</h1>' +
+      '<p class="page-subtitle">' + (editId ? 'Actualiza los datos de la decisión en firme registrada.' : sol ? 'Es el mismo registro de una decisión en firme, armado con lo que reportó la entidad.' : 'Registra decisiones en firme una por una o con la carga masiva.') + '</p></div>' +
+      (editId || sol ? '' : '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + UI.BASE + '/carga-masiva">' + UI.svg('upload') + ' Carga masiva</a></div>') + '</header>' +
+      origenHtml() + '<div class="gi-banner gi-banner--danger" id="errSum" hidden></div>' +
       '<div class="gi-layout"><nav class="gi-steps" aria-label="Bloques del formulario">' +
       '<div class="gf-total"><div class="gf-total__pct"><strong id="gfPct">0 %</strong><span>completo</span></div>' +
       '<div class="gf-bar" id="gfTotBar" role="progressbar" aria-label="Avance total del formulario" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 % completo"><i></i></div>' +
@@ -237,7 +243,7 @@
     return s.replace(/\s+/g, ' ').trim();
   }
   function menorNow() { return D.esMenor({ fechaNac: st.i.fechaNac, fechaHechos: st.f.fechaHechos }); }
-  /* Si las fechas dicen menor, no se puede apagar a mano: la reserva reforzada no es opcional. */
+  /* menorOn solo viene de un registro guardado con representante y sin fechas que lo confirmen. */
   function menorEff() { return menorNow() === true || st.ui.menorOn; }
 
   /* Valores de las dos "opciones" que no son un campo directo del estado. */
@@ -424,13 +430,8 @@
       txt(q('[data-tiponame="' + k + '"]'), tn);
     });
     q('.js-adic-r').hidden = !st.r.a.adicOn;
-    var mc = menorNow(), m = menorEff();
-    var mb = q('[data-sw="menor"]'); setSw(mb, m);
-    mb.setAttribute('aria-disabled', mc === true ? 'true' : 'false');
-    var yrs = st.i.fechaNac ? U.ageAt(st.i.fechaNac, f.fechaHechos || U.today()) : null;
-    txt(q('#menorHelp'), mc === true ? 'Tiene ' + yrs + ' años a la fecha ' + (f.fechaHechos ? 'de los hechos' : 'de hoy (provisional)') + '. Se pide representante y no se puede apagar.' :
-      mc === false && m ? 'Activado a mano: se pedirá representante o tutor.' : mc === false ? 'Es mayor de edad. Puedes activarlo a mano si hace falta un representante.' :
-      m ? 'Activado a mano: se pedirá representante o tutor.' : 'Se calcula al ingresar la fecha de nacimiento.');
+    var m = menorEff(), tag = q('[data-menortag]');
+    tag.hidden = menorNow() !== true; tag.closest('.gf-ro').classList.toggle('gf-ro--menor', !tag.hidden);
     q('#sec-rep').hidden = !m; q('#go-rep').hidden = !m;
     if (lastDep.rep !== m) { lastDep.rep = m; if (cur === 'rep' && !m) cur = 'inf'; applyStep(); }
 
@@ -448,7 +449,11 @@
     }
     q('.js-localtxt').hidden = !(otra && f.local === 'Otro');
     q('.js-visittxt').hidden = !(otra && f.visitante === 'Otro');
-    q('.js-agr').hidden = !st.ui.agrOn; q('.js-multa').hidden = !st.ui.multaOn;
+    q('.js-agr').hidden = !st.ui.agrOn;
+    var mu = q('.gf-multa'), mi = mu.querySelector('[data-p="valor"]');
+    mi.disabled = !st.ui.multaOn; mu.classList.toggle('is-off', !st.ui.multaOn);
+    if (st.ui.multaOn) mu.setAttribute('data-req', 'valor'); else mu.removeAttribute('data-req');
+    txt(q('#gfValorHelp'), st.ui.multaOn ? 'Multa en pesos.' : 'Se habilita al marcar que la sanción incluye multa.');
     q('.js-prof-txt').hidden = !st.ui.profOtro;
 
     /* conductas: contador y sugerencia de meses a partir del rango */
@@ -480,7 +485,7 @@
     put(q('#estReg'), UI.badgeReg(tmp.estadoRegistro));
 
     syncSegs();
-    view.querySelectorAll('[data-sw]').forEach(function (b) { var p = b.getAttribute('data-sw'); if (p !== 'menor') setSw(b, !!get(p)); });
+    view.querySelectorAll('[data-sw]').forEach(function (b) { var p = b.getAttribute('data-sw'); setSw(b, !!get(p)); });
     refreshInputs(); updateHelp(); progress();
   }
 
@@ -500,6 +505,8 @@
       fechaRadicado: f.fechaRadicado, radEntrada: f.radEntrada, respuesta: f.respuesta, radContab: f.radContab, radJuridica: f.radJuridica, profesional: f.profesional.trim(), observaciones: f.observaciones,
       rep: menorEff() ? person(st.r) : null
     });
+    /* Solo en el alta desde una solicitud: al editar, Object.assign no debe borrar el origen guardado. */
+    if (sol) rec.solicitud = { id: sol.id, origen: sol.origen, tipo: sol.tipo, fecha: sol.fecha, adjuntos: sol.adjuntos };
     return rec;
   }
   function validate() {
@@ -519,6 +526,8 @@
       if (p.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.correo)) errs.push([k + '.correo', tag + ': el correo no tiene un formato válido.']);
       if (p.telefono && p.telefono.length > 10) errs.push([k + '.telefono', tag + ': el teléfono admite máximo 10 dígitos.']);
       if (p.fechaNac && p.fechaNac > today) errs.push([k + '.fechaNac', tag + ': la fecha de nacimiento no puede ser futura.']);
+      if (k === 'r' && p.fechaNac && p.fechaNac <= today && U.ageAt(p.fechaNac, today) < 18) errs.push([k + '.fechaNac', 'El representante o tutor debe ser mayor de edad (18 años o más).']);
+      if (k === 'r' && /\(TI\)/.test(p.tipoId)) errs.push([k + '.tipoId', 'La tarjeta de identidad es solo para menores; elige otro tipo para el representante.']);
     }
     person('i', 'Infractor');
     if (menorEff()) person('r', 'Representante');
@@ -538,7 +547,8 @@
     req('fechaEjecutoria', 'Fecha de ejecutoria', f.fechaEjecutoria);
     if (f.fechaActo && f.fechaEjecutoria && f.fechaEjecutoria < f.fechaActo) errs.push(['fechaEjecutoria', 'La ejecutoria no puede ser anterior a la fecha del acto.']);
     req('meses', 'Tiempo de sanción', f.meses);
-    if (f.meses && +f.meses < 6) errs.push(['meses', 'La sanción debe ser de 6 meses o más.']);
+    if (f.meses && +f.meses < 6) errs.push(['meses', 'El mínimo es 6 meses; escribe 6 o más.']);
+    if (st.ui.multaOn) req('valor', 'Valor de la multa', +String(f.valor).replace(/\D/g, '') > 0);
     req('fechaRadicado', 'Fecha de radicado de entrada', f.fechaRadicado); req('radEntrada', 'Radicado de entrada', f.radEntrada.trim()); req('profesional', 'Profesional responsable', f.profesional.trim());
     return errs;
   }
@@ -557,10 +567,10 @@
     });
     progress();
   }
-  function banner(errs, soft) {
+  function banner(errs, soft, stay) {
     var sum = view.querySelector('#errSum');
     sum.hidden = !errs.length;
-    sum.innerHTML = errs.length ? '<strong>' + (soft ? 'Este bloque está incompleto.' : 'No se puede guardar todavía.') + '</strong> Corrige ' + errs.length + ' punto(s):<ul>' + errs.slice(0, 6).map(function (e) { return '<li>' + esc(e[1]) + '</li>'; }).join('') + (errs.length > 6 ? '<li>… y ' + (errs.length - 6) + ' más.</li>' : '') + '</ul>' + (soft ? '<small>Pulse Siguiente de nuevo para continuar sin completar este bloque.</small>' : '') : '';
+    sum.innerHTML = errs.length ? '<strong>' + (stay ? 'No se puede avanzar todavía.' : soft ? 'Este bloque está incompleto.' : 'No se puede guardar todavía.') + '</strong> Corrige ' + errs.length + ' punto(s):<ul>' + errs.slice(0, 6).map(function (e) { return '<li>' + esc(e[1]) + '</li>'; }).join('') + (errs.length > 6 ? '<li>… y ' + (errs.length - 6) + ' más.</li>' : '') + '</ul>' + (soft && !stay ? '<small>Pulse Siguiente de nuevo para continuar sin completar este bloque.</small>' : '') : '';
   }
   function firstInvalid() {
     var bad = secEl(cur).querySelector('.is-invalid'); if (!bad) return;
@@ -619,7 +629,7 @@
       if (!p.ciudad) p.ciudad = 'Ciudad de ejemplo';
       if (!p.dirLibre.trim()) p.dirLibre = 'Calle 1 # 2 - 3';
     }
-    if (!p.fechaNac || p.fechaNac > U.today()) p.fechaNac = U.addDays(U.today(), inf ? -10950 : -14600);
+    if (inf ? (!p.fechaNac || p.fechaNac > U.today()) : !p.fechaNac) p.fechaNac = U.addDays(U.today(), inf ? -10950 : -14600);
     if (!p.sexo) p.sexo = inf ? C.sexo[0] : C.sexo[1];
     if (p.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.correo)) p.correo = '';
     if (p.telefono && p.telefono.length > 10) p.telefono = p.telefono.slice(0, 10);
@@ -651,7 +661,8 @@
     if (!f.fechaActo || f.fechaActo > today || (f.fechaHechos && f.fechaActo <= f.fechaHechos)) f.fechaActo = minD(U.addDays(f.fechaHechos || U.addDays(today, -60), 15), today);
     if (!f.numActo.trim()) f.numActo = 'RES-2026-' + pad4(412 + GI.all().length);
     if (!f.fechaEjecutoria || f.fechaEjecutoria < f.fechaActo) f.fechaEjecutoria = minD(U.addDays(f.fechaActo, 7), today);
-    if (!f.meses || +f.meses < 6) f.meses = '12';
+    if (!f.meses) f.meses = '12';
+    if (!(+String(f.valor).replace(/\D/g, '') > 0)) f.valor = (Math.max(+f.meses, 6) * 150000).toLocaleString('es-CO');
   }
   function fillInterna() {
     var f = st.f;
@@ -664,6 +675,12 @@
     else if (id === 'hec') fillHechos(); else if (id === 'san') fillSancion(); else if (id === 'int') fillInterna();
     sync();
   }
+  /* El barrido solo revela lo que se completó; lo que ya venía lleno (p. ej. desde una solicitud) no se toca. */
+  function autofillAnimado(id) {
+    var s = w.LaserFill && secEl(id) ? w.LaserFill.snap(secEl(id)) : null;
+    autofill(id);
+    if (s) w.LaserFill.play(secEl(id), s);
+  }
   function aviso() { showErrors([]); banner([]); UI.toast('Completamos los datos de ejemplo; revise y pulse ' + (view.querySelector('#giSave').hidden ? 'Siguiente' : 'Guardar registro') + ' de nuevo.'); }
   /* Con faltantes no hay error: se rellena el bloque y el siguiente clic ya avanza. */
   function guard(from, to) {
@@ -671,7 +688,10 @@
     for (var i = from; i < to; i++) {
       if (!blockErrors(list[i]).length) continue;
       if (list[i] !== cur) go(list[i]);
-      autofill(list[i]); aviso();
+      autofillAnimado(list[i]);
+      var left = blockErrors(list[i]);
+      if (left.length) { showErrors(left, secEl(list[i])); banner(left, true, true); firstInvalid(); return false; }
+      aviso();
       return false;
     }
     return true;
@@ -681,7 +701,9 @@
     if (errs.length) {
       var at = steps().filter(function (id) { return errs.some(function (e) { return secOf(e[0]) === id; }); })[0] || cur;
       if (at !== cur) go(at);
-      SECS.forEach(function (id) { if (!secEl(id).hidden && blockErrors(id).length) autofill(id); });
+      SECS.forEach(function (id) { if (!secEl(id).hidden && blockErrors(id).length) autofillAnimado(id); });
+      var rest = validate();
+      if (rest.length) { showErrors(rest); banner(rest); firstInvalid(); return; }
       return aviso();
     }
     var rec = toRec(), dup = GI.duplicado(rec, editId);
@@ -693,20 +715,38 @@
     SUID.busy(view.querySelector('#giSave'), editId ? 'Guardando cambios…' : 'Guardando registro…', function () {
       var out;
       if (editId) { out = GI.update(editId, rec, 'Registro actualizado por el profesional.'); UI.toast('Cambios guardados.'); }
-      else { out = GI.add(rec); UI.toast('Registro ' + out.id + ' creado en estado Recibido.'); }
+      else {
+        out = GI.add(rec);
+        if (sol && w.GS) w.GS.derivar(sol.id, out.id);
+        UI.toast(sol ? 'Medida ' + out.id + ' creada desde la solicitud ' + sol.id + '.' : 'Registro ' + out.id + ' creado en estado Recibido.');
+      }
       location.hash = UI.BASE.slice(1) + '/' + out.id;
     }, 900);
   }
 
   /* ───────── eventos ───────── */
   function toggleSw(path) {
-    if (path === 'menor') { if (menorNow() === true) return; st.ui.menorOn = !st.ui.menorOn; return; }
     var on = !get(path); set(path, on);
     if (!on) {
       if (path === 'ui.agrOn') st.f.agravantes = [];
-      if (path === 'ui.multaOn') { st.f.valor = ''; delete auto.valor; }
+      if (path === 'ui.multaOn') st.f.valor = '';
       if (/\.a\.adicOn$/.test(path)) { var a = st[path[0]].a; a.adic = ''; a.indic = ''; }
     }
+  }
+  /* Casos de prueba: una cédula conocida (shared/demo-casos.js) completa la persona, los hechos, el acto y lo interno. */
+  function porCedula(k) {
+    var o = w.DemoCasos && !editId && w.DemoCasos.autocompletar(st[k].tipoId, st[k].numId);
+    if (!o) return;
+    var s = w.LaserFill && secEl(cur) ? w.LaserFill.snap(secEl(cur)) : null;
+    Object.assign(st[k], o.persona);
+    if (k === 'i') {
+      if (o.rep) Object.assign(st.r, o.rep);
+      Object.keys(o.hechos || {}).forEach(function (c) { var v = st.f[c]; if (v == null || v === '' || (Array.isArray(v) && !v.length)) st.f[c] = o.hechos[c]; });
+      fillHechos(); fillSancion(); fillInterna();
+      if (menorEff() && o.rep) fillPerson('r');
+    }
+    sync();
+    if (s) w.LaserFill.play(secEl(cur), s, { defer: true });
   }
   function bind() {
     var form = view.querySelector('#giForm');
@@ -722,6 +762,7 @@
       if (t.value !== v) t.value = v;
       set(p, v); mark(p);
       if (/^[ir]\.ciudad$/.test(p)) inferDepto(p[0]);
+      if (/^[ir]\.numId$/.test(p)) porCedula(p[0]);
       sync();
     });
     form.addEventListener('change', function (e) {
@@ -780,7 +821,7 @@
     view.querySelector('#giSave').addEventListener('click', save);
   }
 
-  /* «Tramitar» desde Gestión deja {doc, tipo, solicitud}: rellena el infractor y se borra tras usarse. */
+  /* «Tramitar» o «Crear medida» dejan {doc, tipo, solicitud}: rellena el alta y se borra tras usarse. */
   function precarga(p) {
     var pf = null;
     try { pf = JSON.parse(sessionStorage.getItem('suid.gi.prefill') || 'null'); sessionStorage.removeItem('suid.gi.prefill'); } catch (e) { pf = null; }
@@ -788,17 +829,53 @@
     var t = C.tiposId.filter(function (x) { return x === pf.tipo || x.indexOf('(' + pf.tipo + ')') >= 0; })[0];
     if (t) p.tipoId = t;
     if (pf.doc) p.numId = /CC|CE|TI/.test(p.tipoId) ? String(pf.doc).replace(/\D/g, '') : String(pf.doc);
+    sol = pf.solicitud && w.GS && w.GS.get ? w.GS.get(pf.solicitud) : null;
+    if (sol) desdeSolicitud(sol);
+  }
+  /* Traduce el texto libre del reporte a los campos del alta; lo que no casa queda vacío para completarlo. */
+  var MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  function isoDe(t) { var m = /(\d{1,2})\s+([a-z]{3})\s+(\d{4})/i.exec(t || ''), k = m ? MES.indexOf(m[2].toLowerCase()) : -1; return k < 0 ? '' : m[3] + '-' + (k < 9 ? '0' : '') + (k + 1) + '-' + (m[1].length < 2 ? '0' : '') + m[1]; }
+  function origenDe(c) {
+    var m = /art\. 97, (\d)/i.exec(c), n = /art\. 98, ([abc])/i.exec(c);
+    return m ? +m[1] - 1 : n ? 6 + 'abc'.indexOf(n[1].toLowerCase()) : /derecho de admisi/i.test(c) ? 9 : -1;
+  }
+  function equipoDe(t) {
+    var q = norm(t.trim()); if (!q) return '';
+    var re = new RegExp('(^|\\s)' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s|$)');
+    return (C.equipos.Liga || []).filter(function (x) { return re.test(norm(x)); })[0] || '';
+  }
+  function ciudadDe(t) {
+    var m = /\bde ([^·]+)$/.exec(t || ''), c = m ? norm(m[1].trim()) : '', G = GEO(), hit = '';
+    if (c) Object.keys(G).forEach(function (k) { G[k].forEach(function (x) { if (!hit && norm(x).indexOf(c) === 0) hit = x; }); });
+    return hit;
+  }
+  function desdeSolicitud(s) {
+    var p = st.i, f = st.f, w0 = s.menor ? [] : String(s.nombre || '').trim().split(/\s+/), corte = w0.length >= 4 ? 2 : 1;
+    if (w0.length > 1) { p.nombres = w0.slice(0, w0.length - corte).join(' '); p.apellidos = w0.slice(-corte).join(' '); }
+    f.fechaHechos = isoDe(s.hechos);
+    var eq = String(s.evento || '').split(' · ')[0].split(/\s+vs\.?\s+/i);
+    f.competicion = 'Liga'; f.local = equipoDe(eq[0] || ''); f.visitante = equipoDe(eq[1] || '');
+    f.ciudadHechos = ciudadDe(s.autoridad);
+    f.origen = (s.conductas || []).map(origenDe).filter(function (i, k, a) { return i >= 0 && a.indexOf(i) === k; });
+    f.descripcion = s.descripcion || '';
+  }
+  function origenHtml() {
+    if (!sol) return '';
+    var adj = sol.adjuntos.length ? '<ul class="gf-origen__adj" aria-label="Adjuntos de la solicitud">' + sol.adjuntos.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' : '<span class="gf-origen__sin">Llegó sin evidencia adjunta.</span>';
+    return '<section class="gf-origen" role="note" aria-label="Origen de la medida"><div class="gf-origen__t"><span class="gf-origen__k">Origen</span>' +
+      '<p>Solicitud <a href="' + sol.ruta + '">' + esc(sol.id) + '</a> · reportada por <strong>' + esc(sol.origen) + '</strong> (' + esc(sol.tipo) + ') el ' + esc(sol.fecha) + '</p>' +
+      '<small>Los datos del infractor y de los hechos vienen del reporte; revísalos y completa lo que falte. Al guardar, la solicitud queda adjunta a esta medida.</small></div>' + adj + '</section>';
   }
 
   w.GIForm = {
     open: function (v, ctx, id) {
-      view = v; ctxRef = ctx; editId = id; lastDep = {}; auto = {}; touched = {}; pcache = {}; visited = {}; tried = null;
+      view = v; ctxRef = ctx; editId = id; sol = null; lastDep = {}; auto = {}; touched = {}; pcache = {}; visited = {}; tried = null;
       var rec = id ? GI.get(id) : null;
       if (id && !rec) { location.hash = UI.BASE; return; }
       /* Editar abre en el primer bloque con todo desbloqueado: los datos ya existen. */
       cur = id ? 'inf' : 'start';
       if (id) SECS.forEach(function (s) { visited[s] = true; });
-      st = { i: blankPerson(), r: blankPerson(), f: blankFlat(), ui: { menorOn: false, mismaDir: false, agrOn: false, multaOn: false, profOtro: false, paisOtro: { i: false, r: false } } };
+      st = { i: blankPerson(), r: blankPerson(), f: blankFlat(), ui: { menorOn: false, mismaDir: false, agrOn: false, multaOn: true, profOtro: false, paisOtro: { i: false, r: false } } };
       evs = buildEvents();
       if (rec) {
         st.i = personFromRec(rec); if (rec.rep) st.r = personFromRec(rec.rep);
@@ -815,19 +892,24 @@
         auto.fechaRadicado = 1;
         st.f.radEntrada = nextRad(); auto.radEntrada = 1;
         precarga(st.i);
+        if (sol) lastDep.fh = st.f.fechaHechos;
       }
       var u = st.ui;
       u.paisOtro.i = st.i.pais !== 'Colombia'; u.paisOtro.r = st.r.pais !== 'Colombia';
-      u.menorOn = !!(rec && rec.rep); u.agrOn = st.f.agravantes.length > 0; u.multaOn = !!st.f.valor;
+      u.menorOn = !!(rec && rec.rep) || !!(sol && sol.menor); u.agrOn = st.f.agravantes.length > 0; u.multaOn = true;
       u.profOtro = !!(st.f.profesional && UI.PROFESIONALES.indexOf(st.f.profesional) < 0);
-      ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión de sanciones', href: UI.BASE }, { label: id ? 'Editar ' + id : 'Registrar infractor' }];
+      ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Control de acceso' }, { label: 'Gestión de sanciones', href: UI.BASE }, { label: id ? 'Editar ' + id : sol ? 'Medida desde ' + sol.id : 'Registrar infractor' }];
       build(); bind();
-      if (rec) {
-        lastDep.comp = rec.competicion;
-        var eq = (C.equipos[rec.competicion] || C.equipos['Liga']).map(function (x) { return [x, GI.titulo(x)]; });
+      /* Sin esto, el primer sync() vacía los equipos que ya vienen cargados. */
+      var comp = rec ? rec.competicion : sol ? st.f.competicion : '';
+      if (comp) {
+        lastDep.comp = comp;
+        var eq = (C.equipos[comp] || C.equipos['Liga']).map(function (x) { return [x, GI.titulo(x)]; });
         fillSel(null, eq, 'local', 'Seleccionar equipo'); fillSel(null, eq, 'visitante', 'Seleccionar equipo');
       }
       sync();
+      /* Viene de una solicitud o del panel con la cédula puesta: se completa igual que al escribirla. */
+      if (!id && st.i.numId) porCedula('i');
     }
   };
 })(window, document);
