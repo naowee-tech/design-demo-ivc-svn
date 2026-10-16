@@ -19,6 +19,9 @@
   var ESTADOS = [['habilitado', 'Habilitado'], ['visitante', 'Visitante'], ['cerrado', 'Cerrado'], ['reducido', 'Reducido']];
   var COMERC = [['a', 'Comercializadora A'], ['b', 'Comercializadora B']];
 
+  // Las restricciones viven en EV_ESCENARIOS: editarlas allí se refleja en Configuración y Cupos sin recargar.
+  function restrDe(nombre) { return window.EV_ESCENARIOS ? window.EV_ESCENARIOS.mapa(nombre) : {}; }
+
   // ---------- Utilidades ----------
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fmt(n) { return (n < 0 ? '−' : '') + String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
@@ -85,7 +88,7 @@
       st.cfg = {
         tab: 'sectores', plazo: '2026-09-28T18:00', guardado: '15:58', sucio: false,
         sec: { norte: 'habilitado', occ: 'habilitado', ori: 'reducido', sur: 'visitante' },
-        red: { norte: 8500, occ: 9200, ori: 10600, sur: 8500 },
+        red: { norte: 8500, occ: 9200, ori: 7080, sur: 8500 },
         abierta: ab, horario: h, partido: pa, disp: di, paquete: pk, conexion: { 7: false },
         sillas: [
           { id: 's1', sector: 'Occidental', fila: 'A', sillas: '1-24', motivo: 'Prensa' },
@@ -97,6 +100,7 @@
       };
       // Una sola fuente: sinVis vive en los partidos del evento (Evento y partidos); solo aplica a los deportivos.
       var evAct = function () { return st.eventos.filter(function (e) { return e.id === st.evento; })[0] || st.eventos[0]; };
+      Object.defineProperty(st.cfg, 'restr', { get: function () { return restrDe(evAct().escenario); } });
       Object.defineProperty(st.cfg, 'dep', { get: function () { return (evAct().tipo || 'deportivo') === 'deportivo'; } });
       Object.defineProperty(st.cfg, 'sinVis', {
         get: function () { return this.dep && evAct().partidos.some(function (p) { return p.sinVis; }); },
@@ -106,7 +110,7 @@
     return st.cfg;
   }
   function cupos(st) {
-    if (!st.cupos) { st.cupos = { a: [5000, 6000, 7000, 0], b: [3000, 3000, 3500, 8500], guardado: null }; }
+    if (!st.cupos) { st.cupos = { a: [5000, 0, 4000, 0], b: [3000, 0, 3000, 8500], guardado: null }; }
     return st.cupos;
   }
   function listo(st) {
@@ -115,8 +119,14 @@
   }
 
   // ---------- Derivados del estado ----------
-  function eff(c, id) { return (c.sinVis && c.sec[id] === 'visitante') ? 'cerrado' : c.sec[id]; }
-  function aforoDe(c, s) { var e = eff(c, s.id); if (e === 'cerrado') { return 0; } if (e === 'reducido') { return Math.min(Number(c.red[s.id]) || 0, s.base); } return s.base; }
+  // Un sector sancionado queda cerrado; uno limitado nunca pasa de reducido. Lo que decida el evento va por debajo.
+  function eff(c, id) {
+    var e = (c.sinVis && c.sec[id] === 'visitante') ? 'cerrado' : c.sec[id], r = (c.restr || {})[id];
+    if (r && r.estado === 'sancionado') { return 'cerrado'; }
+    return r && e !== 'cerrado' ? 'reducido' : e;
+  }
+  function tope(c, s) { var r = (c.restr || {})[s.id]; return r && r.tope ? Math.min(r.tope, s.base) : s.base; }
+  function aforoDe(c, s) { var e = eff(c, s.id); if (e === 'cerrado') { return 0; } if (e === 'reducido') { return Math.min(Number(c.red[s.id]) || 0, tope(c, s)); } return s.base; }
   function abierta(c, n) { return eff(c, secDe(n)) !== 'cerrado' && !!c.abierta[n]; }
   function bloqueadas(c, s) {
     if (s.tipo !== 'Numerado' || eff(c, s.id) === 'cerrado') { return 0; }
@@ -166,16 +176,18 @@
   function tabSectores(c) {
     var aviso = c.sinVis ? '<div class="pb-aviso" role="status">' + svg(I.info, 18) + '<span>Sin hinchada visitante: ningún sector puede ser visitante. Sur quedó cerrado; puede habilitarlo para la hinchada local.</span></div>' : '';
     return aviso + SEC.map(function (s) {
-      var e = eff(c, s.id), red = Number(c.red[s.id]) || 0, mal = red > s.base;
+      var e = eff(c, s.id), red = Number(c.red[s.id]) || 0, r = (c.restr || {})[s.id], max = tope(c, s), mal = red > max;
       var ops = ESTADOS.map(function (o) {
-        var on = e === o[0] || (e === 'cerrado' && o[0] === 'cerrado'), off = o[0] === 'visitante' && c.sinVis;
+        var heredada = r && (r.estado === 'sancionado' ? o[0] !== 'cerrado' : o[0] === 'habilitado' || o[0] === 'visitante');
+        var on = e === o[0] || (e === 'cerrado' && o[0] === 'cerrado'), off = (o[0] === 'visitante' && c.sinVis) || heredada;
         return '<button type="button" class="pb-seg" aria-pressed="' + on + '"' + (off ? ' disabled' : '') + ' data-acc="cfg-sec" data-id="' + s.id + '.' + o[0] + '">' + o[1] + '</button>';
       }).join('');
       var der = e === 'reducido'
         ? '<label class="pb-campo">Aforo para este evento<input type="text" inputmode="numeric" autocomplete="off" value="' + red + '" class="pb-input pbe-in pbe-in--num' + (mal ? ' is-mal' : '') + '" data-acc="cfg-red" data-id="' + s.id + '"' + (mal ? ' aria-invalid="true"' : '') + '>' +
-          (mal ? '<span class="pb-error">No puede pasar de ' + fmt(s.base) + '.</span>' : '') + '</label>'
+          (mal ? '<span class="pb-error">No puede pasar de ' + fmt(max) + (r ? ' por la restricción del escenario' : '') + '.</span>' : '') + '</label>'
         : '<span class="pbe-aforo"><span class="pbe-aforo__l">Aforo para este evento</span><span class="pbe-aforo__v' + (e === 'cerrado' ? ' is-nulo' : '') + '">' + fmt(aforoDe(c, s)) + '</span></span>';
-      return '<div class="pbe-sec"><span class="pbe-sec__n"><b>' + s.nombre + '</b><span>' + s.tipo + ' · base ' + fmt(s.base) + '</span></span>' +
+      var nota = r ? '<span class="pb-etiqueta ' + (r.estado === 'sancionado' ? 'pbe-heredada--mal' : 'pbe-heredada--w') + '">' + (r.estado === 'sancionado' ? 'Escenario: sancionado' : 'Escenario: tope ' + fmt(r.tope)) + '</span>' : '';
+      return '<div class="pbe-sec"><span class="pbe-sec__n"><b>' + s.nombre + '</b><span>' + s.tipo + ' · base ' + fmt(s.base) + '</span>' + nota + '</span>' +
         '<div class="pb-segmento" role="group" aria-label="Estado de ' + s.nombre + '">' + ops + '</div>' + der + '</div>';
     }).join('');
   }
@@ -340,7 +352,7 @@
       var col = m[0], tot = sum(q[col]);
       var celdas = SEC.map(function (s, i) {
         var malc = e.cols[i].resto < 0;
-        return '<div class="pbe-cu__c"><input type="text" inputmode="numeric" autocomplete="off" class="pb-input pbe-in pbe-in--num' + (malc ? ' is-mal' : '') + '" aria-label="' + m[1] + ', sector ' + s.nombre + '" value="' + (Number(q[col][i]) || 0) + '" data-acc="cup-set" data-k="' + col + '" data-id="' + i + '"' + (malc ? ' aria-invalid="true"' : '') + '></div>';
+        return '<div class="pbe-cu__c"><input type="text" inputmode="numeric" autocomplete="off" class="pb-input pbe-in pbe-in--num' + (malc ? ' is-mal' : '') + '" aria-label="' + m[1] + ', sector ' + s.nombre + '" value="' + (Number(q[col][i]) || 0) + '" data-acc="cup-set" data-k="' + col + '" data-id="' + i + '"' + (malc ? ' aria-invalid="true"' : '') + (eff(c, s.id) === 'cerrado' ? ' disabled' : '') + '></div>';
       }).join('');
       return '<div class="pbe-cu"><span class="pbe-cu__m"><i class="pbe-cu__b pbe-cu__b--' + col + '"></i><span class="pbe-cu__t"><b>' + m[1] + '</b><span class="pbe-hom">' + svg(I.escudo, 14, 2.4) + 'Homologada · llave de API activa</span></span></span>' + celdas +
         '<span class="pbe-cu__tot"><b class="pb-num">' + fmt(tot) + '</b><span>' + (e.total ? (Math.round(tot / e.total * 1000) / 10).toString().replace('.', ',') : '0') + ' % del disponible</span></span></div>';
@@ -351,7 +363,12 @@
     var resto = '<div class="pbe-cu pbe-cu--pie pbe-cu--resto"><span><b>Sin repartir</b></span>' + e.cols.map(function (x) { return '<span class="pbe-r pb-num ' + (x.resto < 0 ? 'is-mal' : x.resto === 0 ? 'is-ok' : '') + '"><b>' + fmt(x.resto) + '</b></span>'; }).join('') + '<span class="pbe-r pb-num' + (ex ? ' is-mal' : '') + '"><b>' + fmt(e.resto) + '</b></span></div>';
     var err = ex ? '<div class="pb-aviso pbe-aviso--mal" role="alert">' + svg(I.alerta, 18) + '<span>' + e.exced.map(function (x) { return x.s.nombre + ' excede su disponible en ' + fmt(-x.resto); }).join(' · ') + '. Ajuste antes de guardar.</span></div>' : '';
     var sobra = -sum(e.exced.map(function (x) { return x.resto; }));
-    return '<div class="pbe pbe-cup">' +
+    var heredadas = SEC.filter(function (s) { return (c.restr || {})[s.id]; }).map(function (s) {
+      var r = c.restr[s.id];
+      return '<span class="pb-badge pb-badge--' + (r.estado === 'sancionado' ? 'error' : 'alerta') + '">' + s.nombre + (r.estado === 'sancionado' ? ' sancionado · cerrado' : ' limitado · tope ' + fmt(r.tope)) + '</span>';
+    }).join('');
+    var aviso = heredadas ? '<div class="pb-aviso" role="status">' + svg(I.info, 18) + '<span>Restricciones heredadas del escenario: ' + heredadas + '. El reparto no puede pasarlas.</span></div>' : '';
+    return '<div class="pbe pbe-cup">' + aviso +
       '<div class="pbe-kpis">' +
         '<div class="pb-card pbe-card"><span class="pbe-card__s">Aforo habilitado</span><span class="pbe-kpi"><b>' + fmt(hab) + '</b></span><button type="button" class="pb-btn pb-btn--enlace" data-acc="cup-ir" data-id="config">Ver sectores del evento</button></div>' +
         '<div class="pb-card pbe-card"><span class="pbe-card__s">Sillas bloqueadas</span><span class="pbe-kpi"><b>' + fmt(bloq) + '</b></span><span class="pbe-ayuda">Prensa, seguridad, dañadas y reservadas</span></div>' +
@@ -373,7 +390,7 @@
 
   function clickCupos(a, ctx) {
     var acc = a.dataset.acc, c = cfg(ctx.st), q = cupos(ctx.st);
-    if (acc === 'cup-reset') { q.a = [5000, 6000, 7000, 0]; q.b = [3000, 3000, 3500, 8500]; ctx.toast('Reparto restablecido', 'Volvió al último reparto de la maqueta.'); }
+    if (acc === 'cup-reset') { q.a = [5000, 0, 4000, 0]; q.b = [3000, 0, 3000, 8500]; ctx.toast('Reparto restablecido', 'Volvió al último reparto de la maqueta.'); }
     else if (acc === 'cup-ir') { ctx.ir(a.dataset.id); return false; }
     else if (acc === 'cup-guardar') {
       var e = estadoCupos(c, q);
@@ -635,5 +652,7 @@
   // Entre Cupos y Listo para abrir: son las boletas que salen del reparto. Va fuera de con() para que el borrador explique su vacío.
   // Las vistas de auditoría leen las mismas boletas con titular que esta pestaña.
   B.boletas = boletas;
+  // El mapa del evento se reutiliza en Escenarios: mismos colores por estado, sin duplicar la geometría.
+  B.mapaSectores = function (secs, sec, red) { return mapa({ sec: sec, red: red, abierta: { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 }, sinVis: false, sillas: [], restr: {} }, secs); };
   B.registrar('boleteria', { label: 'Boletería', orden: 4.5, render: renderBoleteria, onClick: function (a, ev, ctx) { if (a.dataset.acc === 'bol-ir') { ctx.ir(a.dataset.id); } return false; } });
 })();
