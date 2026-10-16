@@ -7,17 +7,19 @@
 | **Quién** | Equipos técnicos de las comercializadoras |
 | **Dispositivo** | Sus sistemas (API) y un portal web que construimos y operamos nosotros |
 | **Cuándo** | Al homologarse, y en cada venta, asignación y transferencia |
-| **Módulos** | 2 · Identidad y elegibilidad; 4 · Boletería |
-| **Pregunta que responde** | ¿Puedo vender, asignar o transferir esta boleta a esta persona? |
+| **Módulos** | 2 · Identidad y elegibilidad; 4 · Boletería y asignación |
+| **Pregunta que responde** | ¿Puedo vender, asignar o transferir este ingreso a esta persona? |
 
-**Paso del flujo:** 2 (vender la boleta).
+**Paso del flujo:** 2 (comprar y asignar ingresos).
+
+**Versión de la API** *(exploratorio, 16-oct-2026)*: la vigente es **v2**, con los nombres del modelo de documento (`/ingresos`, `ingreso_id`, `sector_id`, `YA_TIENE_INGRESO`). La **v1 queda en desuso y se mantiene como alias** con sus nombres de boleta (`/boletas`, `boleta_id`, `YA_TIENE_BOLETA`); el portal documenta el cambio en *Versiones y migración*.
 
 **Prototipo:** prototipo, ruta `#/compra` (celular y escritorio, con su panel de casos y la capa de las consultas); el portal, en `#/integracion` (escritorio): llaves y entornos, documentación, pruebas de homologación, registro de llamadas y estado del servicio, con panel de 9 casos.
 
 **En la compra el SVN se consulta tres veces** *(decisiones D1-D6 del modelo de compra)*:
-1. **Consulta 1 · al identificarse el comprador:** ¿puede comprar? Responde también su límite de boletas, que es lo que acota la cantidad.
-2. **Consulta 2 · por titular:** en la pantalla de titulares, una vez por boleta, al guardar su tipo, número de documento y nombre: ¿puede recibir esta boleta? No hay aceptación del titular.
-3. **Consulta 3 · al pagar:** revalida al comprador y a todos los titulares, porque el estado pudo cambiar durante la reserva; si todos siguen en sí, emite un token por boleta. Si alguno falla, no se cobra, la reserva se mantiene y la boleta vuelve a titulares marcada.
+1. **Consulta 1 · al identificarse el comprador:** ¿puede comprar? Responde también su límite de ingresos, que es lo que acota la cantidad.
+2. **Consulta 2 · por titular:** en la pantalla de titulares, una vez por ingreso, al guardar su tipo, número de documento y nombre: ¿puede recibir este ingreso? No hay aceptación del titular.
+3. **Consulta 3 · al pagar:** revalida al comprador y a todos los titulares, porque el estado pudo cambiar durante la reserva; si todos siguen en sí, emite un token por ingreso. Si alguno falla, no se cobra, la reserva se mantiene y el ingreso vuelve a titulares marcado.
 
 *(decisión de producto, 1-oct-2026)* En ninguna de las tres el SVN consulta al IVC: la medida se valida contra la base de medidas del SVN, donde el IVC la radicó.
 
@@ -29,23 +31,23 @@ El hincha nunca ve el motivo de un no, y el SVN nunca devuelve un nombre: la com
 
 | Punto (`dominio.md`) | Qué envía la comercializadora | Qué recibe |
 |---|---|---|
-| 1 · ¿Puede comprar? (consultas 1 y 3) | Documento y nombre del comprador, evento; al pagar, también cada titular | Autorizado + límite de boletas, o denegado + código; al pagar, un token por boleta |
-| 2 · ¿Puede recibir esta boleta? (consulta 2) | Tipo, número de documento y nombre del titular, por boleta | Autorizado o denegado + código |
+| 1 · ¿Puede comprar? (consultas 1 y 3) | Documento y nombre del comprador, evento; al pagar, también cada titular | Autorizado + límite de ingresos, o denegado + código; al pagar, un token por ingreso |
+| 2 · ¿Puede recibir este ingreso? (consulta 2) | Tipo, número de documento y nombre del titular, por ingreso | Autorizado o denegado + código |
 | 3 · ¿Puede transferir? | Quien entrega y quien recibe, hasta el inicio del partido | Ídem, para los dos |
 
-Además: registrar la boleta nominalizada con su token, y consultar el estado del escenario en vivo
+Además: **registrar el ingreso** (`POST /v2/ingresos`: token, evento, sector, propietario y titular por documento; la silla no viaja, es de la comercializadora) y consultar el estado del escenario en vivo
 *(decisión de producto)*. El cuarto punto (*¿Puede entrar?*) es de la puerta (5).
 
 **Códigos de motivo** (`dominio.md` §2): límite de venta excedido · medida restrictiva vigente ·
-documento no válido · identidad no coincide · ya tiene boleta para el evento (`YA_TIENE_BOLETA`,
-en cualquier comercializadora). Nunca el expediente.
+documento no válido · identidad no coincide · ya tiene ingreso para el evento (`YA_TIENE_INGRESO`,
+en cualquier comercializadora; en v1, `YA_TIENE_BOLETA`). Nunca el expediente.
 
 ## Pantallas del portal
 
 | Pantalla | Para qué | Contenido clave |
 |---|---|---|
-| **Documentación** | Integrarse sin llamar a nadie | Endpoints, códigos de motivo, ejemplos, límites |
-| **Ambiente de pruebas** | Pasar de *en pruebas* a *homologada* | Casos de prueba que dicen lo que hacen (vigente, cumplida, nombre no coincide, más de 5, titular con boleta para el evento), resultado de cada corrida |
+| **Documentación** | Integrarse sin llamar a nadie | Endpoints, códigos de motivo, ejemplos, límites y *Versiones y migración* (v1 en desuso → v2) |
+| **Ambiente de pruebas** | Pasar de *en pruebas* a *homologada* | Casos de prueba que dicen lo que hacen (vigente, cumplida, nombre no coincide, más de 5, titular con ingreso para el evento), resultado de cada corrida |
 | **Llaves** | Recibir y rotar credenciales | Llave de pruebas y de producción; se ve una sola vez; rotar y revocar |
 | **Traza de consultas** | Diagnosticar | Sus propias consultas: fecha, punto de validación, resultado, código. Sin hechos |
 
@@ -74,9 +76,11 @@ lugar es la *Traza de consultas* del portal.
 | Medio | Dos botones iguales para abrir el simulador móvil. | `index.html:161-173` |
 
 - *(decisión de producto, 1-oct-2026)* La comercializadora no nombra al SVN al usuario final; la consulta se presenta como consulta a base de datos.
-- *(decisiones D1-D6)* Asignar es firme y ocurre antes de pagar, en una sola pantalla de titulares con una tarjeta por boleta. Tras pagar, la persona queda en «Tus boletas»; cambiar titular después es una transferencia.
+- *(decisiones D1-D6)* Asignar es firme y ocurre antes de pagar, en una sola pantalla de titulares con una tarjeta por ingreso. Tras pagar, la persona ve «Tu ingreso a [partido]»; cambiar titular después es una transferencia, hasta el inicio del partido.
 
 ## Preguntas abiertas
 
 - ¿La comercializadora puede distinguir *documento no válido* de *identidad no coincide*? Ayuda a
   corregir un error de digitación, pero le dice algo más de la persona.
+- **Base legal del cambio de contrato de la API** *(exploratorio)*: hasta cuándo se mantiene el alias v1 y
+  con qué fundamento se les cambia el contrato a las comercializadoras que hoy están en pruebas.

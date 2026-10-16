@@ -43,9 +43,9 @@
 .pp-caso__punto--verde, .pp-caso--verde { --pp-punto: var(--naotech-color-green-600); }
 .pp-caso__punto--amarillo, .pp-caso--amarillo { --pp-punto: var(--naotech-color-yellow-800); }
 .pp-caso__punto--rojo, .pp-caso--rojo { --pp-punto: var(--naotech-color-red-700); }
-.pp-caso__punto--rostro, .pp-caso--rostro { --pp-punto: var(--naotech-color-blue-800); }
-/* En el panel el punto va en línea con la etiqueta (DC-321). */
-.pp-panel .pp-caso__punto { display: inline-block; width: var(--naotech-sizing-10); height: var(--naotech-sizing-10); margin-right: var(--naotech-sizing-8); vertical-align: middle; }
+/* DC-063: el punto va al extremo derecho de la fila, centrado en vertical. */
+.pp-panel nwt-detail-item[data-caso] .nwt-detail-item__label { display: flex; align-items: center; justify-content: space-between; gap: var(--naotech-sizing-12); width: 100%; }
+.pp-panel .pp-caso__punto { width: var(--naotech-sizing-10); height: var(--naotech-sizing-10); margin-left: auto; }
 
 /* ---------- Escenario y equipos (mismo marco que la app del conductor de uaesp) ---------- */
 
@@ -332,8 +332,6 @@
 @keyframes pp-entra { from { opacity: 0; } to { opacity: 1; } }
 .pp-r--verde { --pp-fondo: var(--naotech-color-green-800); }
 .pp-r--rojo { --pp-fondo: var(--naotech-color-red-900); }
-.pp-r--amarillo { --pp-fondo: var(--naotech-color-yellow-500); --pp-tinta: var(--naotech-app-color-900); }
-.pp-r--rostro { --pp-fondo: var(--naotech-color-blue-800); }
 
 .pp-r__top { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--naotech-sizing-16); padding: var(--naotech-sizing-24); }
 .pp-r__palabra { margin: 0; font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; text-align: center; }
@@ -354,10 +352,8 @@
 .pp-r__tipo { font-size: var(--naotech-sizing-16); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.85; }
 .pp-r__nombre { font-size: var(--naotech-sizing-24); font-weight: 700; line-height: 1.2; }
 .pp-r__num { font-size: var(--naotech-sizing-16); font-weight: 500; opacity: 0.85; font-variant-numeric: tabular-nums; }
-.pp-r--rostro .pp-r__doc { flex-direction: column; gap: var(--naotech-sizing-12); text-align: center; }
-.pp-r--rostro .pp-r__datos { align-items: center; }
 .pp-r__notas { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--naotech-sizing-8); text-align: center; }
-.pp-r__nota { margin: 0; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; text-align: left; padding: var(--naotech-sizing-10) var(--naotech-sizing-16); border-radius: var(--naotech-radius-md); background: rgba(0, 0, 0, 0.12); gap: var(--naotech-sizing-8); font-size: var(--naotech-sizing-14); font-weight: 500; line-height: 1.4; }
+.pp-r__nota { margin: 0; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; text-align: left; padding: var(--naotech-sizing-10) var(--naotech-sizing-16); border-radius: var(--naotech-radius-md); background: rgba(0, 0, 0, 0.12); width: fit-content; max-width: 100%; box-sizing: border-box; gap: var(--naotech-sizing-8); font-size: var(--naotech-sizing-14); font-weight: 500; line-height: 1.4; }
 .pp-r__nota svg { flex: none; width: 28px; height: 28px; }
 .pp-r__nota--fuerte { font-weight: 700; }
 
@@ -451,7 +447,7 @@
 .pp-hoja .pp-turno__h { display: none; }
 .pp-turno__h { font-size: var(--naotech-sizing-12); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--naotech-app-color-700); }
 .pp-turno__sub { font-size: var(--naotech-sizing-12); font-weight: 600; color: var(--naotech-app-color-700); }
-.pp-turno__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--naotech-sizing-8); }
+.pp-turno__stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--naotech-sizing-8); }
 .pp-stat { padding: var(--naotech-sizing-12); border-radius: var(--naotech-radius-md); background: var(--naotech-app-background); border: 1px solid var(--naotech-app-color-200); }
 .pp-stat__v { font-size: var(--naotech-sizing-24); font-weight: 700; }
 .pp-stat__l { font-size: var(--naotech-sizing-12); color: var(--naotech-app-color-700); }
@@ -501,12 +497,16 @@
 .pp-hoja__cab i.naotech-icon-close { font-size: 24px; width: 24px; height: 24px; --naotech-icon-dimension: 24px; }
 .pp-hoja__cab { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: var(--naotech-sizing-18); }
 .pp-tipos { display: flex; gap: var(--naotech-sizing-8); flex-wrap: wrap; }
+.pp-tipo { min-width: 56px; height: 44px; padding: 0 var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-pill); background: var(--naotech-app-background); color: var(--naotech-app-font-color); font: inherit; font-size: var(--naotech-sizing-14); font-weight: 600; cursor: pointer; }
+.pp-tipo[aria-checked='true'] { background: var(--naotech-primary-color-600); border-color: var(--naotech-primary-color-600); color: var(--naotech-color-white-alpha-100); }
+.pp-tipo:focus-visible, .pp-tecla:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: 2px; }
 .pp-pantallita { height: 56px; border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); border: 1px solid var(--naotech-app-color-200); display: flex; align-items: center; padding: 0 var(--naotech-sizing-16); font-size: var(--naotech-sizing-28); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
 .pp-pantallita:empty::before { content: 'Número de documento'; font-size: var(--naotech-sizing-16); font-weight: 400; letter-spacing: 0; color: var(--naotech-app-color-600); }
 .pp-teclas { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--naotech-sizing-8); }
 .pp-tecla { height: 56px; border: 1px solid var(--naotech-app-color-200); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); color: var(--naotech-app-font-color); font-size: var(--naotech-sizing-24); font-weight: 500; cursor: pointer; }
 .pp-tecla[data-tecla='ok'] { height: var(--pp-boton-alto); font-size: var(--naotech-sizing-20); }
 .pp-tecla:active { background: var(--naotech-app-color-200); }
+.pp-tecla:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ---------- Vista de seguridad ---------- */
 
@@ -602,8 +602,6 @@
 @keyframes pp-c-sube { 0% { opacity: 0; transform: translate(-50%, 40px); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -12px); } }
 .pp-c__dato--ok, .pp-c__dato--verde { background: var(--naotech-color-green-700); }
 .pp-c__dato--falla, .pp-c__dato--rojo { background: var(--naotech-color-red-700); }
-.pp-c__dato--aviso, .pp-c__dato--amarillo { background: var(--naotech-color-yellow-500); color: var(--naotech-app-color-900); }
-.pp-c__dato--rostro { background: var(--naotech-color-blue-500); }
 
 .pp-c__pasos { display: flex; align-items: center; width: 100%; }
 .pp-c__punto { width: 10px; height: 10px; flex: none; border-radius: var(--naotech-radius-circle); background: var(--naotech-app-color-300); transition: background 250ms ease, box-shadow 250ms ease; }
@@ -613,8 +611,6 @@
 /* Definido el resultado, todos los pasos toman su color. */
 .pp-c__punto--verde, .pp-c__linea--verde { background: var(--naotech-color-green-700); }
 .pp-c__punto--rojo, .pp-c__linea--rojo { background: var(--naotech-color-red-700); }
-.pp-c__punto--amarillo, .pp-c__linea--amarillo { background: var(--naotech-color-yellow-800); }
-.pp-c__punto--rostro, .pp-c__linea--rostro { background: var(--naotech-color-blue-500); }
 
 .pp-c__label { display: flex; align-items: center; justify-content: center; gap: var(--naotech-sizing-8); height: 28px; font-size: var(--naotech-sizing-14); color: var(--naotech-app-color-800); text-align: center; }
 .pp-c__logo { width: 28px; height: 28px; flex: none; border-radius: var(--naotech-radius-circle); display: grid; place-items: center; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; background: var(--naotech-app-background); border: 1px solid var(--naotech-app-color-300); color: var(--naotech-app-color-900); }
@@ -639,17 +635,12 @@
   .pp-c__dato { animation-name: none; opacity: 1; transform: translate(-50%, 16px); }
 }
 
-.pp-hoja__ayuda { font-size: var(--naotech-sizing-12); color: var(--naotech-app-color-700); text-align: center; }
+.pp-hoja__ayuda { min-height: 2.6em; margin: 0; font-size: var(--naotech-sizing-14); color: var(--naotech-app-color-700); text-align: center; }
 .pp-hoja__ayuda--error { color: var(--naotech-color-red-700); font-weight: 600; }
 
 /* Casos del panel: 14 px regular; va después del tope de 12 px y lo reemplaza (DC-059). */
 .pp-panel .nwt-detail-item__label { font-size: var(--naotech-sizing-14); font-weight: var(--naotech-font-weight-regular); line-height: var(--naotech-sizing-20); }
 
-/* Verificación en columna: en tablet y consola las fotos se achican para que todo quepa sin scroll */
-.pp-equipo--tablet .pp-r--rostro .pp-r__doc, .pp-equipo--consola .pp-r--rostro .pp-r__doc { min-height: 0; gap: var(--naotech-sizing-6); }
-/* Verificación de identidad: las fotos de referencia y cámara se comparan a simple vista, así que van más grandes en tablet y consola (DC-077). */
-.pp-equipo--tablet .pp-r--rostro .pp-r__foto, .pp-equipo--consola .pp-r--rostro .pp-r__foto { width: 104px; height: auto; }
-.pp-equipo--tablet .pp-r--rostro .pp-r__rotulo, .pp-equipo--consola .pp-r--rostro .pp-r__rotulo { min-height: 0; }
 
 /* Tablet y consola: una sola línea. Logo a la izquierda, puerta y partido a su lado, "En línea" centrado en la barra (DC-067). */
 .pp-equipo--tablet .pp-barra, .pp-equipo--consola .pp-barra { position: relative; }
@@ -666,7 +657,6 @@
 .pp-equipo--tablet .pp-barra__lugar, .pp-equipo--consola .pp-barra__lugar { margin-left: auto; text-align: right; }
 .pp-equipo--tablet .pp-barra__partido, .pp-equipo--consola .pp-barra__partido { justify-content: flex-end; }
 
-.pp-equipo--consola .pp-r--rostro .pp-r__foto { width: 84px; height: auto; }
 
 /* Vista de seguridad: Naowee a la izquierda, escudo de la autoridad de seguridad centrado con el título (DC-078/079/080). */
 .pp-marca .pp-alianza__sep:first-child, .pp-policia__barra .pp-alianza__sep:first-child, .pa-barra .pp-alianza__sep:first-child { display: none; }
@@ -708,7 +698,7 @@
 
 .pp-faltan--alerta { align-self: flex-start; background: color-mix(in srgb, var(--naotech-color-white-alpha-100) 18%, transparent); color: var(--naotech-color-white-alpha-100); }
 
-/* Fotos reales del documento (verde, amarillo y rojo) y de la persona en la alerta de la autoridad de seguridad. */
+/* Fotos reales del documento (verde y rojo) y de la persona en la alerta de la autoridad de seguridad. */
 .pp-r__foto--img { padding: 0; overflow: hidden; background: none; }
 .pp-r__foto--img img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; }
 .pp-alerta__persona { display: flex; align-items: center; gap: var(--naotech-sizing-16); }
@@ -734,7 +724,6 @@
 .pp-r__doc > .pp-r__foto { width: 100px; }
 .pp-equipo--tablet .pp-r__doc > .pp-r__foto, .pp-equipo--consola .pp-r__doc > .pp-r__foto { width: 105px; }
 .pp-equipo--tablet .pp-r__doc, .pp-equipo--consola .pp-r__doc { min-height: 0; gap: var(--naotech-sizing-8); }
-/* Nota del amarillo en columna: la campana arriba y el texto debajo, centrados (DC-089). */
 
 /* Reparto vertical para que todo entre sin scroll con la foto grande (DC-088). */
 .pp-equipo--celular .pp-r__top { padding-top: var(--naotech-sizing-8); }
@@ -753,11 +742,11 @@
 .pp-equipo--celular .pp-r__rotulo { min-height: 56px; margin-top: 8px; }
 .pp-equipo--celular .pp-r__notas { margin-top: var(--naotech-sizing-8); gap: var(--naotech-sizing-6); }
 
-/* Nota del amarillo en dos líneas: lo importante arriba, hora y puerta debajo con menos peso (DC-095). */
+/* Nota en dos líneas: lo importante arriba, hora y puerta debajo con menos peso (DC-095). */
 .pp-r__nota-sub { display: block; font-size: var(--naotech-sizing-16); font-weight: 500; opacity: 0.8; }
 .pp-r__nota > span:not(.pp-r__nota-linea) { min-width: 0; font-size: var(--naotech-sizing-18); }
-/* Una sola frase: no se parte; si no cabe, puntos suspensivos (DC-343). */
-.pp-r__nota-linea { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* DC-058: el tag se ajusta al texto y, si es largo, parte en dos líneas en vez de salirse de la tarjeta. */
+.pp-r__nota-linea { min-width: 0; overflow-wrap: anywhere; text-wrap: balance; }
 .pp-r__nota--fuerte { justify-content: center; text-align: center; }
 
 /* Cada título de sección o de señal lleva su ícono a la izquierda (DC-100). */
@@ -1066,8 +1055,8 @@
 .pp-equipo .pp-r--cols .pp-r__palabra { grid-column: 2; grid-row: 1; text-align: left; font-size: 72px; margin-bottom: var(--naotech-sizing-16); }
 .pp-equipo .pp-r--cols .pp-r__rotulo { grid-column: 2; grid-row: 2; align-items: flex-start; text-align: left; }
 .pp-equipo .pp-r--cols .pp-r__datos { grid-column: 2; grid-row: 4; align-items: flex-start; text-align: left; margin-top: var(--naotech-sizing-16); }
-.pp-equipo .pp-r--cols .pp-r__notas { grid-column: 2; grid-row: 5; align-self: start; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--naotech-sizing-8); margin-top: var(--naotech-sizing-16); }
-.pp-equipo .pp-r--cols .pp-r__nota { max-width: none; }
+.pp-equipo .pp-r--cols .pp-r__notas { grid-column: 2; grid-row: 5; align-self: start; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--naotech-sizing-8); margin-top: var(--naotech-sizing-16); }
+.pp-equipo .pp-r--cols .pp-r__nota { max-width: 100%; }
 .pp-equipo .pp-r--cols .pp-r__acciones { grid-column: 2; grid-row: 6; padding: var(--naotech-sizing-16) 0 0; margin: 0; }
 .pp-equipo .pp-r--cols .pp-r__lector { grid-column: 2; grid-row: 7; margin: var(--naotech-sizing-16) 0 0; }
 .pp-equipo--consola .pp-r--cols .pp-r__palabra { font-size: 80px; }
@@ -1084,6 +1073,30 @@
 
 /* DC-169: con la capa abierta la franja cuelga del equipo (escalar() fija --capa-top), no del fondo. */
 .pp-escena--capa .pp-c { top: var(--capa-top); bottom: auto; }
+
+/* DC-067: casos del panel como acordeón de un grupo abierto; en escritorio la card llena el alto libre y scrollea por dentro. */
+.pp-casos { gap: 0; }
+.pp-grupo + .pp-grupo { border-top: 1px solid var(--naotech-app-color-200); }
+.pp-grupo__cab { display: flex; align-items: center; gap: var(--naotech-sizing-8); width: 100%; min-height: 36px; padding: 0 var(--naotech-sizing-8); border: 0; background: transparent; color: var(--naotech-app-color-800); font: inherit; font-size: var(--naotech-sizing-14); font-weight: 700; text-align: left; cursor: pointer; border-radius: var(--naotech-radius-md); }
+.pp-grupo__cab:hover { background: var(--naotech-app-color-100); }
+.pp-grupo__cab:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: -2px; }
+.pp-grupo__t { flex: 1; }
+.pp-grupo__n { font-size: var(--naotech-sizing-12); color: var(--naotech-app-color-700); }
+.pp-grupo__cab svg { transition: transform 200ms ease; flex: none; }
+.pp-grupo--abierto .pp-grupo__cab svg { transform: rotate(180deg); }
+.pp-grupo__lista { display: flex; flex-direction: column; padding-bottom: var(--naotech-sizing-4); }
+.pp-grupo__lista[hidden] { display: none; }
+.pp-grupo__lista > nwt-detail-item { justify-content: space-between; padding: var(--naotech-sizing-4) var(--naotech-sizing-8); border-radius: var(--naotech-radius-md); }
+.pp-grupo__lista > nwt-detail-item + nwt-detail-item { border-top: 1px solid var(--naotech-app-color-200); border-top-left-radius: 0; border-top-right-radius: 0; }
+.pp-grupo__lista > nwt-detail-item:hover, .pp-panel .pp-grupo__lista > nwt-detail-item.pp-caso--activo { background: var(--naotech-app-color-100); }
+@media (min-width: 901px) {
+  /* Piso de ~3 filas: en alturas muy bajas el panel scrollea antes que dejar la lista sin espacio. */
+  .pp-panel:has(#pp-casos) { overflow-y: auto; gap: var(--naotech-sizing-12); }
+  .pp-panel:has(#pp-casos) > .pp-panel__card:has(#pp-casos) { flex: 1 1 0; min-height: 190px; display: flex; flex-direction: column; }
+  .pp-panel__card:has(#pp-casos) .nwt-card__body { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .pp-panel:has(#pp-casos) .nwt-card__content:has(#pp-casos) { flex: 1 1 auto; min-height: 0; flex-direction: column; overflow: hidden; }
+  .pp-panel:has(#pp-casos) #pp-casos { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+}
 
 /* DC-168: bajo 900 px el demo apila; el panel es un desplegable y el escenario ocupa la pantalla. */
 .pp-panel__toggle { display: none; }
@@ -1120,21 +1133,51 @@
 .pp-r--cargando .pp-r__texto, .pp-equipo .pp-r--cargando .pp-r__texto { font-size: 20px; }
 @media (prefers-reduced-motion: reduce) { .pp-r--cargando .pp-splash__lleno, .pp-r--cargando .pp-splash__codigo::after { animation: none; } .pp-r--cargando .pp-splash__codigo::after { display: none; } }
 
-/* DC-352: las dos fotos crecen a lo ancho a partes iguales y el rótulo de debajo va a 18 px. */
-.pp-equipo .pp-r--rostro:not(.pp-r--cols) .pp-r__doc > .pp-r__fotos { align-self: stretch; width: 100%; gap: var(--naotech-sizing-16); }
-.pp-equipo .pp-r--rostro:not(.pp-r--cols) .pp-r__fotos .pp-r__fotoc { flex: 1 1 0; min-width: 0; }
-.pp-equipo .pp-r--rostro:not(.pp-r--cols) .pp-r__fotos .pp-r__foto { width: 100%; min-width: 0; height: auto; aspect-ratio: 3 / 4; }
-.pp-equipo .pp-r--rostro .pp-r__fotoc { font-size: 18px; }
 
 /* DC-349: el icon button de Mi turno mide lo mismo que Digitar documento (alto del botón vecino, cuadrado). */
 .pp-acciones > nwt-icon-button, .pp-acciones > nwt-icon-button .nwt-icon-button__content { flex: none; width: var(--pp-boton-alto); height: var(--pp-boton-alto); min-width: var(--pp-boton-alto); min-height: var(--pp-boton-alto); }
 
-/* Con biométrico: foto de referencia sola y grande; la huella o el rostro es un tag debajo (verde = coincide). */
+
+.pp-camara__tag--apagado { opacity: .6; }
+
+/* DC-062: campo de documento que se escribe solo antes del resultado de «Entra solo con cédula». */
+.pp-r--teclear { --pp-fondo: var(--naotech-app-background); --pp-tinta: var(--naotech-app-font-color); }
+.pp-teclear__campo { display: flex; align-items: center; gap: var(--naotech-sizing-12); width: min(100%, 320px); box-sizing: border-box; height: 64px; padding: 0 var(--naotech-sizing-20); border: 2px solid var(--naotech-primary-color-600); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); }
+.pp-teclear__tipo { padding: var(--naotech-sizing-4) var(--naotech-sizing-12); border-radius: var(--naotech-radius-pill); background: var(--naotech-primary-color-600); color: var(--naotech-color-white-alpha-100); font-size: var(--naotech-sizing-14); font-weight: 700; }
+.pp-teclear__num { font-size: var(--naotech-sizing-28); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.pp-teclear__cursor { width: 2px; height: 32px; margin-left: calc(var(--naotech-sizing-4) * -1); background: var(--naotech-primary-color-600); animation: pp-cursor 900ms steps(1) infinite; }
+@keyframes pp-cursor { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pp-teclear__cursor { animation: none; } }
+
+/* ---------- Huella (módulo): lectura transitoria, tag, hojas y panel ---------- */
+.pp-camara__punto--falla { background: var(--naotech-color-red-700); }
+.pp-r--huella { --pp-fondo: var(--naotech-color-red-800); }
+.pp-r--huella .pp-r__centro { gap: var(--naotech-sizing-16); }
+.pp-r__huella { display: grid; place-items: center; width: 120px; height: 120px; border-radius: var(--naotech-radius-circle); border: 2px solid color-mix(in srgb, currentColor 55%, transparent); background: rgba(255, 255, 255, .12); }
+.pp-r__huella--lee { animation: pp-huella 1.2s ease-in-out infinite; }
+@keyframes pp-huella { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .35); } 50% { box-shadow: 0 0 0 18px rgba(255, 255, 255, 0); } }
+@media (prefers-reduced-motion: reduce) { .pp-r__huella--lee { animation: none; } }
+.pp-r__sub { margin: 0; max-width: 30ch; font-size: var(--naotech-sizing-16); line-height: 1.4; opacity: .92; text-wrap: balance; }
+.pp-equipo--tablet .pp-r__sub, .pp-equipo--consola .pp-r__sub { font-size: var(--naotech-sizing-20); max-width: 40ch; }
+.pp-r--huella .pp-r__acciones { display: flex; flex-direction: column; gap: var(--naotech-sizing-12); }
 .pp-r__bio { display: inline-flex; align-items: center; gap: var(--naotech-sizing-6); padding: 6px 14px; border: 1px solid rgba(255, 255, 255, .5); border-radius: 999px; background: rgba(255, 255, 255, .16); font-size: var(--naotech-sizing-14); font-weight: 700; white-space: nowrap; }
 .pp-r__bio--ok { background: rgba(255, 255, 255, .26); }
-.pp-r__fotos--una { justify-content: center; }
-.pp-r__fotos--una .pp-r__fotoc { gap: var(--naotech-sizing-8); }
-.pp-r__fotos--una .pp-r__foto { width: 200px; }
-.pp-equipo .pp-r--rostro:not(.pp-r--cols) .pp-r__fotos--una .pp-r__fotoc { flex: 0 1 auto; width: min(64%, 260px); }
-.pp-equipo .pp-r--rostro:not(.pp-r--cols) .pp-r__fotos--una .pp-r__foto { width: 100%; }
-.pp-equipo .pp-r--rostro .pp-r__fotos--una .pp-r__bio { font-size: 16px; }
+.pp-hoja__txt { margin: 0; font-size: var(--naotech-sizing-14); line-height: 1.45; color: var(--naotech-app-color-800); text-wrap: pretty; }
+.pp-hoja__acciones { display: flex; flex-direction: column; gap: var(--naotech-sizing-8); }
+.pp-hoja__btn { width: 100%; min-height: 52px; border: 1.5px solid var(--naotech-primary-color-600); border-radius: var(--naotech-radius-lg); background: var(--naotech-primary-color-600); color: var(--naotech-color-white-alpha-100); font: inherit; font-size: var(--naotech-sizing-16); font-weight: 700; cursor: pointer; }
+.pp-hoja__btn--sec { background: transparent; color: var(--naotech-primary-color-600); }
+.pp-hoja__btn:disabled { opacity: .5; cursor: not-allowed; }
+.pp-hoja__btn:focus-visible { outline: 3px solid var(--naotech-primary-color-600); outline-offset: 2px; }
+.pp-hoja__campo { width: 100%; box-sizing: border-box; height: 48px; padding: 0 var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-md); background: var(--naotech-app-background); color: var(--naotech-app-font-color); font: inherit; font-size: var(--naotech-sizing-16); }
+.pp-hoja__campo:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: 1px; }
+.pp-panel__rotulo { margin: 0 0 var(--naotech-sizing-8); font-weight: 600; color: var(--naotech-app-color-800); }
+.pp-panel__ayuda { margin: var(--naotech-sizing-8) 0 0; font-size: var(--naotech-sizing-12); line-height: var(--naotech-sizing-16); color: var(--naotech-app-color-700); }
+.pp-panel__lab { display: inline-flex; align-items: center; gap: var(--naotech-sizing-8); font-size: var(--naotech-sizing-14); line-height: var(--naotech-sizing-20); }
+.pp-t__lector { margin-left: var(--naotech-sizing-8); padding: 2px var(--naotech-sizing-8); border-radius: var(--naotech-radius-pill); background: var(--naotech-color-yellow-100, #fdf3d0); color: var(--naotech-app-color-900); font-size: var(--naotech-sizing-12); font-weight: 600; white-space: nowrap; }
+
+/* Chips de la cámara en una fila (Torniquete + Lector); si no caben, bajan sin tapar los botones. */
+.pp-camara__estado { flex: 1 1 auto; min-width: 0; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--naotech-sizing-8); }
+
+/* DC-058: el tag de la foto no llega a los bordes; margen lateral con tokens y la línea se ajusta. */
+.pp-r__nota { box-sizing: border-box; margin-inline: var(--naotech-sizing-16); max-width: calc(100% - 2 * var(--naotech-sizing-16)); text-wrap: balance; overflow-wrap: anywhere; }
+.pp-equipo .pp-r--cols .pp-r__nota { margin-inline: 0; max-width: 100%; }

@@ -22,12 +22,12 @@ Rutas en el orden del flujo de la demo (30-sep-2026); el gate las numera distint
 1. Backoffice de eventos (superficie 4), organizador: vive en el IVC como **Control de acceso · Eventos**
   (`ivc/suid/app.html#/control-acceso/eventos`, desde el 8-oct-2026). La card del gate y el viejo `#/backoffice` abren ahí.
 
-2. `#/compra`: **Vender la boleta** (paso 6 del gate; superficies 6 y 7), solo en celular, sobre una comercializadora ficticia (*graderío*).
-  Flujo: **Evento y boletas** → **Identificarse** (consulta 1: ¿puede comprar?, valida al comprador) → **Cantidad** (1 a 5) → **Titulares** (cada boleta
-  se asigna con tipo, número de documento y nombre; cada una se valida con la consulta 2: ¿puede recibir?; «Yo también voy» ocupa la boleta 1 con el propio comprador) →
-  **Pago** (consulta 3: revalida al comprador y a todos los titulares, y emite un token por boleta) → **Compra aprobada** (2 s, verde, todo el equipo) → **Tus boletas**.
+2. `#/compra`: **Comprar y asignar ingresos** (paso 6 del gate; superficies 6 y 7), solo en celular, sobre una comercializadora ficticia (*graderío*).
+  Flujo: **Evento e ingresos** → **Identificarse** (consulta 1: ¿puede comprar?, valida al comprador) → **Cantidad** (1 a 5) → **Titulares** (cada ingreso
+  se asigna con tipo, número de documento y nombre; cada uno se valida con la consulta 2: ¿puede recibir?; «Yo también voy» ocupa el ingreso 1 con el propio comprador) →
+  **Pago** (consulta 3: revalida al comprador y a todos los titulares, y emite un token por ingreso) → **Compra aprobada** (2 s, verde, todo el equipo) → **Tu ingreso a [partido]**. Al pagar nace el derecho de ingreso (documento + evento + sector); la silla es dato de la comercializadora.
   La reserva (9:42) empieza al pasar la consulta 1, no en Pago; el reloj también corre en Titulares y, si vence, vuelve al evento con aviso.
-  Asignar es firme: no hay aceptación ni «No voy», y la boleta no queda «sin titular» después de pagar. Pagar está deshabilitado mientras haya una boleta sin titular validado.
+  Asignar es firme: no hay aceptación ni «No voy», y el ingreso no queda «sin titular» después de pagar ni hay paso de «Activar». Pagar está deshabilitado mientras haya un ingreso sin titular validado; el titular se puede cambiar hasta el inicio del partido.
   Cada consulta corre en la franja de la capa (a la persona se le presenta como consulta a DB):
   en *Slow motion* 1 s por paso; en *Tiempo real* la consulta completa dura 1,8 s y la franja no se muestra. Si una consulta corta, sale el
   componente «Resultado de la validación» sin motivo (salvo el límite, que sí se explica) y el flujo se detiene. El motivo de un no nunca se muestra al titular.
@@ -45,13 +45,13 @@ Rutas en el orden del flujo de la demo (30-sep-2026); el gate las numera distint
   | 7 | Medida durante el pago | consulta 3 · Medidas (SVN) |
   | 8 | Asignado tiene medida | consulta 2, en Titulares (antes de pagar) |
   | 9 | Invitado es hincha visitante (cierra Sur) | consulta 2, en Titulares |
-  | 10 | Invitado ya tiene boleta (`YA_TIENE_BOLETA`) | consulta 2, en Titulares |
+  | 10 | Invitado ya tiene ingreso (`YA_TIENE_INGRESO`) | consulta 2, en Titulares |
   | 11 | Afinidad dudosa: pasa | no corta |
   | 12 | Compro para otros | Titulares; «Yo también voy» apagado |
-  | 13 | Documento repetido | error en el campo, sin consulta («Este documento ya está en la boleta k») |
-  | 14 | Titular con medida al pagar | consulta 3 falla en ese titular: no se cobra, la reserva se mantiene y vuelve a Titulares con esa boleta marcada |
+  | 13 | Documento repetido | error en el campo, sin consulta («Este documento ya está en el ingreso k») |
+  | 14 | Titular con medida al pagar | consulta 3 falla en ese titular: no se cobra, la reserva se mantiene y vuelve a Titulares con ese ingreso marcado |
 
-  Los casos 8 a 10 fallan en Titulares, antes de pagar. Los 2 casos de «Quien recibe» (aceptación) se eliminan o se rehacen como casos de transferencia de titular, que pasan por «Cambiar titular» en Tus boletas.
+  Los casos 8 a 10 fallan en Titulares, antes de pagar. Los 2 casos de «Quien recibe» (aceptación) se eliminan o se rehacen como casos de transferencia de titular, que pasan por «Cambiar titular» en Tu ingreso.
   Menor con TI: se valida igual, con la nota «Si es menor, debe entrar con su representante» (exploratorio).
   Fuera de alcance: carga masiva (máx 5), devolución de dinero y el backoffice de eventos.
 
@@ -77,23 +77,23 @@ Rutas en el orden del flujo de la demo (30-sep-2026); el gate las numera distint
 
 7. `#/portal`: **Portal de la persona** (superficie 8), solo en celular (web móvil), persona y representante legal. **Identificarse** con documento y nombre
   (verificación simulada contra la Registraduría; el representante legal entra por el menor) → **Mi estado** (*Sin medidas vigentes*, o la medida con autoridad, acto,
-  desde, hasta, días restantes y los hechos) con **Cómo controvertirla** (exploratorio) y **Otros motivos de un no**; **Boletas** (asignadas por quien compró) y
-  **Vínculos** (revocar una comercializadora sin cortar lo que está en curso; foto de referencia y su permiso solo con el módulo biométrico encendido). Nunca muestra
+  desde, hasta, días restantes y los hechos) con **Cómo controvertirla** (exploratorio) y **Otros motivos de un no**; **Mis ingresos** (asignados por quien compró, a su nombre y documento) y
+  **Vínculos** (revocar una comercializadora sin cortar lo que está en curso; sin foto de referencia). Nunca muestra
   datos de otra persona ni la palabra SVN. Casos del panel: sin medidas, medida vigente, por vencer, menor con representante, entrada desde un bloqueo de la compra,
   documento no vigente y nombre que no coincide; «Adelantar el reloj» hace que la medida venza sola.
 
 8. `#/soporte`: **Consola de soporte** (superficie 9), en escritorio. Cola de reclamaciones (filtro por estado, búsqueda por caso, nombre o documento, plazo de asignación
-  que vence) y el detalle: lo que dice la persona, la boleta con su estado, su traza (validación, token, asignación, ingreso) y el historial. Acciones según el estado:
-  *Tomar el caso* → *Transferir boletas congeladas* (valida a quien entrega y a quien recibe), *Resolver* o *Rechazar* con motivo; un caso cerrado no se edita. No ve el expediente de
+  que vence) y el detalle: lo que dice la persona, el derecho de ingreso con su estado, su traza (validación, token, asignación, ingreso) y el historial. Acciones según el estado:
+  *Tomar el caso* → *Transferir ingresos congelados* (valida a quien entrega y a quien recibe), *Resolver* o *Rechazar* con motivo; un caso cerrado no se edita. No ve el expediente de
   una medida. «Pasar el inicio del encuentro» bloquea la transferencia (después del inicio no se transfiere nada).
 
 9. `#/entidades`: **Entidades y comercializadoras** (superficie 2), en escritorio. «Ver como» alterna **Club** (Atlético Nacional) y **Graderío** (comercializadora); Mindeporte no tiene cara en esta app. La barra lleva Naowee y la alianza Mindeporte + IVC a la izquierda.
   Club: **Reporte semestral** (elige su comercializadora y ve la respuesta a «¿puede vender este semestre?»), **Reportes de incidentes** (los del club en la bandeja del IVC, con su estado y sin
   ver la medida) y **Reportar incidente** (persona verificada con el ANI, un menor queda reservado, conductas de los art. 97 y 98, evidencia; no bloquea, llega a la autoridad y al IVC) y **Mis eventos** (cifras agregadas).
-  Graderío: **Certificación** (de solo lectura; abre por defecto y muestra también el estado de conexión con el API: *Conectada* o *Por conectar*), **Reportar** (incidentes y ventas hacia Mindeporte) y **Mis reportes** (con observaciones para corregir y reenviar).
+  Graderío: **Certificación** (de solo lectura; abre por defecto y muestra también el estado de conexión con el API: *Conectada* o *Por conectar*), **Reportar** (incidentes y ventas hacia Mindeporte; las cifras de ventas van en derechos de ingreso por sector) y **Mis reportes** (con observaciones para corregir y reenviar).
 
 10. `#/integracion`: **API y portal de integración** (superficie 6), en escritorio, para el equipo técnico de Graderío. **Llaves y entornos** (pruebas y producción; la llave se ve una sola vez y después queda enmascarada; rotar con 24 h de gracia y revocar;
-  la de producción solo existe si está homologada), **Documentación** (los 3 puntos de validación más registrar boleta y estado del escenario, con solicitud, respuestas y códigos de motivo; nunca motivo ni expediente),
+  la de producción solo existe si está homologada), **Documentación** (API v2: los 3 puntos de validación más registrar ingreso y estado del escenario, con solicitud, respuestas y códigos de motivo; nunca motivo ni expediente; incluye *Versiones y migración*: v1 en desuso, se mantiene como alias),
   **Homologación** (4 casos de prueba, la *cumplida* sale autorizada; solicitar la homologación), **Registro de llamadas** (con el documento enmascarado y solo códigos) y **Estado del servicio** (con un caso degradado).
 
 En *Por aplicación*, cada card entra por la ruta de su app con la sesión de su primer rol. La card muestra nombre y una línea de «quién» (`quien` en `datos.js`, solo etiqueta; sin `quien` une los `roles`); ya no pinta el dispositivo.
@@ -105,18 +105,18 @@ Los demás perfiles responden *Disponible próximamente*: ninguna card queda mud
 | Caso | Qué hace |
 |---|---|
 | Verde | *Entra*, vuelve solo a la lectura a los 3,5 s |
-| Verde solo con CC | La persona presenta solo la cédula: la capa consulta la boleta asignada a ese documento para el partido (la boleta es nominativa) y da verde con la ubicación. Distinto del rojo *sin boleta*, donde el documento no tiene ninguna asignada |
-| Amarillo (otro partido, sin boleta, ya usada) | *Revisar* → *Dejar entrar* / *No entra* → motivo → decisión registrada |
-| Rojo | *No entra · remitir a la autoridad*, alerta al PMU; solo lo cierra el operador |
-| Rojos operativos (otro partido, ya usada, sin boleta) | Solo *NO ENTRA*, la causa en una línea y el documento; sin notas explicativas |
-| Antecedentes (*Sanción cumplida*, *Antecedente por agresión*) | Amarillo *ENTRA* con el rótulo *Antecedente* y la sanción ya cumplida. En la vista de seguridad quedan como **Avisos de antecedentes** (datos `policia.tablero.antecedentes`), debajo de las alertas rojas: no se atienden, se tienen presentes |
+| Verde solo con cédula | El documento digitado (con tipo, borrar y longitud mínima; si no existe, *No encontramos ese documento*): la capa consulta su derecho de ingreso para el partido y da verde con la ubicación |
+| Rojo por medida | *No entra · remitir a la autoridad*, alerta al PMU; solo lo cierra el operador |
+| Rojos operativos (sin derecho de ingreso a este partido, ya ingresó, puerta equivocada) | Solo *NO ENTRA*, la causa en una línea y el documento; sin notas explicativas. *Puerta equivocada* dice *Diríjase a la Puerta X* y no llama a la Policía |
+| Antecedentes (*Sanción cumplida*, *Antecedente por agresión*, medida recién levantada, posible riesgo) | El operador ve verde *ENTRA*, sin rótulo. El PMU recibe un **aviso silencioso** (causa, puerta, hora) en la cola de avisos de la vista de seguridad (datos `policia.tablero.antecedentes`), debajo de las alertas rojas: *nuevo* → *revisado*, no se atienden |
 | Sin conexión | Valida con el paquete del evento y cuenta lo pendiente por sincronizar; el rojo queda en cola |
-| Condiciones | Cada switch (Sin conexión, Módulo biométrico, Torniquete) baja un toast breve y mueve su punto sobre la cámara: Conexión, Biométrico, Torniquete |
-| Capa oculta | En cada validación el equipo se achica y aparece debajo una franja sin fondo: los 6 pasos en una línea (lectura, ANI · Registraduría, boleta, autoridad, medidas del SVN y decisión: 2 consultas externas y 4 del SVN; el IVC solo radica las medidas, no se consulta), el sistema que responde y su label, el tag del resultado, y al final el reloj con play/pausa. En Slow motion dura 1 s por paso (6 s) y representa 1,5 s reales. En cada paso baja un dato del equipo a la línea y sube la respuesta, de a uno, con el color de lo que dio. Al definirse el resultado, todos los pasos toman ese color, y 2 s después la franja se va. Solo en Slow motion: en Tiempo real no aparece y el equipo conserva su tamaño |
-| Solo la boleta | Amarillo *ESCANEE*: la boleta es nominativa y sola no abre; **Escanear documento** vuelve a la lectura |
-| Posible cédula prestada | *VERIFICAR* con la **foto de referencia** (la de la compra) contra la huella o el rostro; *No coincide* → rojo «Posible cédula prestada» |
-| Biometría | Panel «Biometría»: **Huella** (lector táctil, estable hoy en Colombia) o **Rostro** (la apuesta a futuro). El verde con el módulo encendido muestra la referencia y «Huella/Rostro coincide» |
-| Digitar | Teclado numérico con los 7 tipos de documento. Un número que termine en `4447` da rojo |
+| Condiciones | Cada switch (Sin conexión, Torniquete) baja un toast breve y mueve su punto sobre la cámara: Conexión, Torniquete |
+| Capa oculta | En cada validación el equipo se achica y aparece debajo una franja sin fondo: los 7 pasos en una línea (lectura, ANI · Registraduría, derecho de ingreso, autoridad, medidas del SVN, huella *(exploratorio; dice «No aplica» con el módulo apagado)* y decisión; el IVC solo radica las medidas, no se consulta), el sistema que responde y su label, el tag del resultado, y al final el reloj con play/pausa. En Slow motion dura 1 s por paso (7 s) y representa ~1,8 s reales. En cada paso baja un dato del equipo a la línea y sube la respuesta, de a uno, con el color de lo que dio. Al definirse el resultado, todos los pasos toman ese color, y 2 s después la franja se va. Solo en Slow motion: en Tiempo real no aparece y el equipo conserva su tamaño |
+| Posible cédula prestada | El operador compara la **foto impresa del documento** con la persona y toca *No es la persona* → rojo operativo «Posible cédula prestada». No hay rostro (decisión del 16-oct-2026); con la huella en modo *Opcional*, *No es la persona* abre la verificación con huella *(exploratorio)* |
+| Huella (módulo) *(exploratorio)* | Switch **Lector de huella** en *Condiciones* (hay o no hay: encendido = Opcional; *Obligatoria* solo por sector configurado en el evento); el chip *Lector* de la cámara siempre se ve y se opaca si está apagado; tras un verde candidato del documento, una lectura simulada de hasta 3 intentos. La huella confirma quién es, nunca decide si puede entrar; sin color nuevo. 8 casos: huella coincide, no puede dar huella, sin huella de referencia, lector sin servicio, no coincide, válida sin derecho, válida con medida y primer ingreso (solo con enrolamiento propio). Base legal de la obligatoria: a verificar con jurídica |
+| Panel de casos | El panel *Leer una persona* es un **acordeón de 4 grupos**: *Entra* (abierto) · *No entra en la puerta* · *No entra por medida* · *Con huella*; el grupo del caso activo se abre solo |
+| Digitar | Hoja con selector de los 7 tipos de documento, teclado numérico, borrar y longitud mínima. Un número que termine en `4447` da rojo |
+| Sin boleta en la puerta | La boleta de la comercializadora no se lee: la puerta revisa el documento y su derecho de ingreso (decisión del 16-oct-2026) |
 
 El panel izquierdo es **del demo, no del producto**: dispara lo que llegaría por la cámara o el lector.
 Está hecho solo con componentes del SDK (`nwt-toolbar`, `nwt-title`, `nwt-alert`, `nwt-card`, `nwt-tabs`,
@@ -138,7 +138,7 @@ svn.css        gate y transición (prefijo sv-)
 apps/puerta.*  superficie 5: operador y vista de seguridad (prefijo pp-)
 apps/auditoria.*  superficie 3: auditoría (prefijo pa-); reusa el marco del demo y del equipo de pp-
 apps/compra.*  paso 6 del gate (superficies 6 y 7, prefijo pc-): estado, casos, consultas, Evento/Identificarse/Pago/Listo; reusa el marco del demo y del equipo de pp-
-apps/compra-asignar.*  paso 6: pantalla Titulares (lista de tarjetas y vista inmersiva por boleta, prefijo pca-); se registra en `COMPRA`
+apps/compra-asignar.*  paso 6: pantalla Titulares (lista de tarjetas y vista inmersiva por ingreso, prefijo pca-); se registra en `COMPRA`
 apps/portal.*  superficie 8: portal de la persona (prefijo pt-); reusa el marco del demo y del equipo de pp-
 apps/soporte.*  superficie 9: consola de soporte (prefijo sp-); reusa el marco del demo y del monitor de pp-
 apps/entidades.*  superficie 2: entidades y comercializadoras (prefijo en-); reusa el marco del demo y del equipo de pp-
@@ -152,8 +152,8 @@ vendor/        foundations 3.1.0 + nwt.js. NO SE EDITA
 `COMPRA.registrar(id, { render(ctx), onClick?(el, ev, ctx), onInput?(ev, ctx), alMontar?(ctx) })`. `ctx = { D, st, repintar, toast, esc, ir, consultar, reiniciar, raiz }`.
 `TIPOS_DOC` es la única constante de tipos de documento (CC, CE, TI, Pasaporte, PPT, PEP, RUMV) y se expone en `COMPRA`; el formato lo valida cada campo.
 `st` es el estado del flujo: `pantalla` (`identificar`, `cantidad`, `titulares`, `pago`, `aprobada`, `boletas`), `caso`, `persona` (propietario), `localidad {id, nombre}`,
-`cantidad` (1 a 5), `yoVoy` (interruptor «Yo también voy»), `reservaFin`, `cupos[N]{n, titular {tipo, num, nombre, doc} | null, estado: vacio | validando | ok | denegado, codigo?, esPropietario}` y `boletas[N]`, que se crean al pagar desde los cupos, cada una con su titular y su token.
-`consultar(n, alTerminar, extra?)` elige la definición por caso y llama `alTerminar({ ok, corte, codigo })`. Consultas: 1 «¿puede comprar?» (comprador); 2 «¿puede recibir?» (una por boleta, con documento y nombre en `extra.cupo`); 3 «revalida al pagar» (comprador y todos los titulares; devuelve un token por boleta).
+`cantidad` (1 a 5), `yoVoy` (interruptor «Yo también voy»), `reservaFin`, `cupos[N]{n, titular {tipo, num, nombre, doc} | null, estado: vacio | validando | ok | denegado, codigo?, esPropietario}` y `boletas[N]` (nombre interno de los derechos de ingreso), que se crean al pagar desde los cupos, cada uno con su titular y su token.
+`consultar(n, alTerminar, extra?)` elige la definición por caso y llama `alTerminar({ ok, corte, codigo })`. Consultas: 1 «¿puede comprar?» (comprador); 2 «¿puede recibir?» (una por ingreso, con documento y nombre en `extra.cupo`); 3 «revalida al pagar» (comprador y todos los titulares; devuelve un token por ingreso).
 Ayudas: `COMPRA.marco`, `resultado`, `ico`, `qr`, `dinero`. Acciones `data-acc`: `cmp-` (flujo de compra) y `asg-` (titulares). La aceptación del acompañante (`ace-`) no existe más.
 
 ## Actualizar el SDK

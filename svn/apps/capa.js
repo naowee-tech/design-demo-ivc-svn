@@ -1,37 +1,52 @@
-/* Capa oculta: la validación en 6 pasos (2 consultas externas y 4 del SVN), en una franja debajo del equipo. */
+/* Capa oculta: la validación en 7 pasos (2 consultas externas, 4 del SVN y la huella), en una franja debajo del equipo. */
 window.CAPA = (function () {
   var LENTITUD = 8;
   var velocidad = 'normal';
   var TIEMPO_REAL = 1800;
   var ESPERA_SALIDA = 2000;
   // Milisegundos simulados por paso; suman 1800 para que la consulta en tiempo real dure 1,8 s.
-  var DURACION = [240, 360, 240, 300, 360, 300];
+  var DURACION = [220, 300, 220, 260, 300, 260, 240];
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function segundos(ms) { return (ms / 1000).toFixed(2).replace('.', ',') + ' s'; }
 
   // Por paso: qué baja del equipo, qué sube como respuesta, y si esa respuesta pasó.
   function pasos(caso, o) {
-    var off = o.offline, id = caso.id;
-    var solo = id === 'solocc';
-    var boleta = solo ? ['Asignada al documento ✓', 'ok'] : { otro: ['Otro partido ✕', 'falla'], sin: ['Sin boleta ✕', 'falla'], usada: ['Ya usada ✕', 'falla'] }[id] || ['Del partido ✓', 'ok'];
+    // `base`: los casos con huella heredan la falla de un caso de siempre (sin derecho, medida).
+    var off = o.offline, id = caso.base || caso.id, digitado = !!caso.digitado, simult = caso.huella && caso.base ? ' · huella coincide (lectura simultánea)' : '';
+    // Derecho de ingreso: documento + partido + sector. Cada falla es un rojo operativo distinto.
+    var derecho = { sin: ['Sin derecho ✕', 'falla', 'Sin ingreso a este partido' + simult], usada: ['Ya ingresó ✕', 'falla', 'Ya ingresó'], puerta: ['Otro sector ✕', 'falla', 'Derecho en otro sector · puerta equivocada'] }[id] || ['Con derecho ✓', 'ok', 'Derecho de ingreso del partido y el sector · sin usar'];
     var lista = [
-      { n: 'Lectura', texto: solo ? 'Cédula leída · sin boleta presentada' : off ? 'Cédula leída · se valida en el equipo' : 'Cédula leída · consulta cifrada al SVN', baja: 'Cédula', sube: off ? 'Paquete local' : caso.doc, r: 'ok' },
+      { n: 'Lectura', texto: digitado ? 'Documento digitado · consulta cifrada al SVN' : off ? 'Cédula leída · se valida en el equipo' : 'Cédula leída · consulta cifrada al SVN', baja: 'Documento', sube: off ? 'Paquete local' : caso.doc, r: 'ok' },
       { n: 'Registraduría', logo: 'ANI', texto: off ? 'Verificada antes del evento' : 'Documento vigente · nombre coincide', baja: caso.doc, sube: 'Vigente ✓', r: 'ok' },
-      { n: 'Boleta', texto: solo ? 'Boleta asignada a este documento · sin usar' : boleta[1] === 'ok' ? 'Boleta del partido y la puerta · sin usar' : boleta[0].replace(' ✕', ''), baja: solo ? 'Documento · Partido' : 'Partido · Puerta', sube: boleta[0], r: boleta[1] },
+      { n: 'Derecho de ingreso', texto: derecho[2], baja: 'Documento · Partido · Sector', sube: derecho[0], r: derecho[1] },
       { n: 'Autoridad', logo: 'AUT', texto: off ? 'Medidas al corte del paquete del evento' : 'Sin actos de la autoridad competente pendientes', baja: 'Documento', sube: 'Sin pendientes ✓', r: 'ok' },
-      { n: 'Medidas', logo: 'SVN', texto: id === 'medida' ? 'Medida correctiva vigente: con medida' : caso.antecedente ? caso.antecedente.texto + ' · ' + caso.antecedente.res : id === 'veto' ? 'Medida levantada el 25 sep · Res. 0198' : 'Medida correctiva vigente: sin medida', baja: 'Documento', sube: id === 'medida' ? 'Medida vigente ✕' : caso.antecedente ? caso.antecedente.sube : id === 'veto' ? 'Levantada hace 3 días' : 'Sin medida ✓', r: id === 'medida' ? 'falla' : id === 'veto' || caso.antecedente ? 'aviso' : 'ok' },
-      { n: 'Decisión', logo: 'SVN', texto: id === 'prestada' ? 'Huella o rostro no coincide: pedir verificación' : caso.antecedente ? 'Sanción ya cumplida · queda registrado · aviso al supervisor' : id === 'riesgo' ? 'Posible riesgo en este partido · queda registrado' : id === 'veto' ? 'Queda registrado · aviso al supervisor' : 'Confianza alta · queda registrado', baja: 'Historial · Resultado', sube: null, r: 'final' }
+      { n: 'Medidas', logo: 'SVN', texto: id === 'medida' ? 'Medida correctiva vigente: con medida' + simult : 'Medida correctiva vigente: sin medida', baja: 'Documento', sube: id === 'medida' ? 'Medida vigente ✕' : 'Sin medida ✓', r: id === 'medida' ? 'falla' : 'ok' },
+      huella(caso, o),
+      { n: 'Decisión', logo: 'SVN', texto: id === 'prestada' ? (o.huella && o.huella !== 'apagada' ? 'La foto no coincide con la persona · no se verificó con huella' : 'La foto del documento no coincide con la persona') : caso.huella === 'no' && o.huella === 'obligatoria' ? 'La huella no coincide con el documento' : 'Documento con derecho de ingreso · queda registrado', baja: 'Historial · Resultado', sube: null, r: 'final' }
     ];
     var falla_en = lista.map(function (x) { return x.r; }).indexOf('falla');
     return { pasos: lista, falla_en: falla_en };
   }
 
+  // Paso 6: la huella no decide el derecho de ingreso, solo confirma quién es. Con el módulo apagado no corre.
+  function huella(caso, o) {
+    var m = o.huella || 'apagada', h = caso.huella;
+    var paso = { n: 'Huella', logo: 'ANI', baja: 'Lectura simulada', r: 'ok' };
+    if (m === 'apagada') { paso.texto = 'No aplica · módulo apagado'; paso.baja = null; paso.sube = 'No aplica'; }
+    else if (h === 'sinref') { paso.texto = 'Documento sin huella de referencia · exceptuada' + (m === 'obligatoria' ? ' · aviso al PMU' : ''); paso.sube = 'Sin referencia'; }
+    else if (m === 'opcional') { paso.texto = 'Opcional · solo se lee si el operador duda'; paso.baja = null; paso.sube = 'Sin lectura'; }
+    else if (o.offline) { paso.texto = 'Sin conexión · contingencia automática'; paso.sube = 'Contingencia'; }
+    else if (!o.lector) { paso.texto = o.contingencia ? 'Lector sin servicio · contingencia activa' : 'Lector sin servicio · espera al supervisor'; paso.sube = 'Contingencia'; }
+    else if (h === 'no') { paso.texto = 'La huella no coincide con la Registraduría'; paso.sube = 'No coincide ✕'; paso.r = 'falla'; }
+    else if (h === 'ilegible') { paso.texto = 'Lecturas ilegibles · exceptuada · aviso al PMU'; paso.sube = 'Exceptuada'; }
+    else { paso.texto = 'Coincide con la Registraduría'; paso.sube = 'Coincide ✓'; }
+    return paso;
+  }
+
   var FINAL = {
     verde: { clase: 'verde', texto: 'Verde · Entra', dato: 'Verde' },
-    amarillo: { clase: 'amarillo', texto: 'Amarillo · Entra con aviso', dato: 'Amarillo' },
-    rojo: { clase: 'rojo', texto: 'Rojo · No entra', dato: 'Rojo' },
-    rostro: { clase: 'rostro', texto: 'Verificar identidad', dato: 'Verificar' }
+    rojo: { clase: 'rojo', texto: 'Rojo · No entra', dato: 'Rojo' }
   };
 
   var ICONO_PAUSA = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="3" x2="5" y2="13"/><line x1="11" y1="3" x2="11" y2="13"/></svg>';
@@ -69,6 +84,8 @@ window.CAPA = (function () {
       label: escena.querySelector('#capa-label')
     };
     var raf = null, timers = [], corriendo = false, sim = 0, ultimo = 0;
+    // Retención: la capa espera en un paso mientras el operador resuelve algo que ella no controla (la lectura de huella).
+    var retenido = false, liberado = false;
     var lista = null, fin = null, final = null, actual = -1, alCambiar = null, dur = DURACION, total = 1000, escala = LENTITUD;
 
     function limpiar() { if (raf) { cancelAnimationFrame(raf); raf = null; } timers.forEach(clearTimeout); timers = []; }
@@ -121,6 +138,7 @@ window.CAPA = (function () {
       dur = lista.map(function (p, i) { return falla_en >= 0 && i > falla_en ? 0 : DURACION[i]; });
       total = dur.reduce(function (a, b) { return a + b; }, 0);
       fin = alTerminar; alCambiar = opciones.alCambiar;
+      var retener = opciones.retener == null ? -1 : opciones.retener; retenido = false; liberado = retener < 0;
       sim = 0; actual = -1; corriendo = true; pintarPlay();
       el.carril.innerHTML = '';
       // En tiempo real la franja no sale y el equipo conserva su tamaño; la validación corre igual.
@@ -131,9 +149,10 @@ window.CAPA = (function () {
       var corren = falla_en >= 0 ? falla_en + 1 : dur.length;
       var PASO_REAL = velocidad === 'normal' ? TIEMPO_REAL / corren : 1000, pasoMs = 0;
       raf = requestAnimationFrame(function cuadroConFalla(ahora) {
-        if (corriendo) { pasoMs += Math.max(0, ahora - ultimo); } // el primer cuadro puede venir antes que performance.now()
+        if (corriendo && !retenido) { pasoMs += Math.max(0, ahora - ultimo); } // el primer cuadro puede venir antes que performance.now()
         ultimo = ahora;
         var i = Math.floor(pasoMs / PASO_REAL);
+        if (!liberado && !retenido && i >= retener) { retenido = true; pasoMs = retener * PASO_REAL; i = retener; actual = i; pintarPaso(i, false); if (opciones.alRetener) { opciones.alRetener(); } }
         // Una falla corta el recorrido en ese paso: no se espera a los que ya no importan.
         if (i >= (falla_en >= 0 ? falla_en + 1 : dur.length)) { terminar(falla_en >= 0 ? falla_en : dur.length - 1); return; }
         if (i !== actual) { actual = i; pintarPaso(i, false); }
@@ -203,7 +222,9 @@ window.CAPA = (function () {
       corriendo = !corriendo; pintarPlay();
       el.carril.classList.toggle('pp-c__carril--pausa', !corriendo);
     });
-    return { correr: correr, correrDef: correrDef, detener: detener };
+    // Libera el paso retenido: la capa sigue y termina sola.
+    function seguir() { liberado = true; retenido = false; ultimo = performance.now(); }
+    return { correr: correr, correrDef: correrDef, detener: detener, seguir: seguir };
   }
 
   return { html: html, htmlDef: htmlDef, crear: crear, setVelocidad: function(v) { velocidad = v; } };

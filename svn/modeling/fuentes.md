@@ -71,6 +71,11 @@ con monitor del PMU).
 | Boleta digital | QR con el código de la boleta o el token del SVN |
 | Cualquiera | Número digitado a mano |
 
+> **Nota (16-oct-2026):** lo anterior describe el demo tal como llegó. El modelo cambió en la puerta:
+> se revisa el documento y su derecho de ingreso, no la boleta; no hay biometría de rostro (la huella queda como módulo); y el amarillo dejó de
+> ser un color del operador (ahora es un aviso al PMU). Ver `dominio.md` §5. Donde esta fuente dice
+> *boleta* o *amarillo* en la puerta, es el comportamiento del demo, no el del modelo.
+
 ### Estados que maneja
 
 - **Boleta**: emitida → ingresada, o anulada.

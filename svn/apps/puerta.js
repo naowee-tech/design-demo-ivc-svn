@@ -2,7 +2,9 @@
 window.PANTALLAS = window.PANTALLAS || {};
 
 (function () {
-  var TIPOS = ['CC', 'TI', 'CE', 'PPT', 'Pasaporte', 'PEP', 'RUMV'];
+  var TIPOS = ['CC', 'CE', 'TI', 'PPT', 'PEP', 'Pasaporte', 'RUMV'];
+  // Mínimo y máximo de dígitos al digitar un documento.
+  var MIN_DOC = 5, MAX_DOC = 12;
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function hora(min) { var h = 18 + Math.floor(min / 60), m = min % 60; return h + ':' + (m < 10 ? '0' : '') + m; }
@@ -11,9 +13,11 @@ window.PANTALLAS = window.PANTALLAS || {};
     var D = ctx.D, E = D.evento;
     var st = {
       disp: modo === 'policia' ? 'tablet' : 'celular',
-      offline: false, bio: true, metodo: 'huella', torn: true,
+      offline: false, torn: true,
+      // Huella: modo del evento, lector, contingencia del supervisor y lectura en curso (`hu`).
+      huella: (D.evento.huella || {}).modo || 'apagada', lector: true, lectorAuto: false, contingencia: false, hu: null, motivo: null, motivoNota: '',
       vista: 'lectura', caso: null,
-      apoyo: false, acomp: false, policia: false, luz: false, zoomCam: false, hoja: null, digitos: '', tipo: 'CC',
+      apoyo: false, policia: false, luz: false, zoomCam: false, hoja: null, hojaError: false, digitos: '', tipo: 'CC',
       reloj: 40, pendientes: 0,
       turno: JSON.parse(JSON.stringify(D.turno)),
       historial: D.historial.slice(),
@@ -22,9 +26,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       pvista: 'eventos', efiltro: 'vivo', ebusca: '', filtro: 'todas', abierta: null, min: 43, modal: null, tomaPrimero: false,
       alertas: JSON.parse(JSON.stringify(D.policia.tablero.alertas))
     };
-    // Orden propio de Puerta (DC-347): «solo con CC» va segundo.
     var CASOS = D.casos.slice();
-    CASOS.splice(1, 0, CASOS.splice(CASOS.map(function (c) { return c.id; }).indexOf('solocc'), 1)[0]);
     var temporizadores = [];
     function luego(fn, ms) { temporizadores.push(setTimeout(fn, ms)); }
     var capa = null;
@@ -35,16 +37,14 @@ window.PANTALLAS = window.PANTALLAS || {};
     // Tema e icono por caso, para que el panel hable el mismo semáforo que la app.
     var ASPECTO = {
       verde: { tema: 'positive', icono: 'positive' },
-      amarillo: { tema: 'warning', icono: 'attention' },
-      rojo: { tema: 'negative', icono: 'negative' },
-      rostro: { tema: 'informative', icono: 'avatar' }
+      rojo: { tema: 'negative', icono: 'negative' }
     };
 
     function toolbar() {
       var titulo = modo === 'policia' ? 'Vista de seguridad' : 'Acceso en puerta';
       var sub = modo === 'policia' ? 'Autoridad de seguridad · ' + E.escenario : 'Operador de puerta · ' + E.puerta;
       return '<nwt-toolbar class="pp-toolbar">' +
-        '<div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
+        '' +
         '<nwt-title class="pp-toolbar__titulo">' + esc(titulo) + '<span slot="subtitle">' + esc(sub) + '</span></nwt-title>' +
         '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
       '</nwt-toolbar>';
@@ -54,23 +54,70 @@ window.PANTALLAS = window.PANTALLAS || {};
       return '<nwt-card class="pp-panel__card" nwt-size="small"><span slot="header" class="nwt-body-font-bold">' + esc(titulo) + '</span>' + cuerpo + '</nwt-card>';
     }
 
+    // Grupos de la card «Leer una persona»: verdes primero, rojos después (DC-067).
+    var GRUPOS = [
+      ['Entra', ['verde', 'solocc']],
+      ['No entra en la puerta', ['sin', 'usada', 'puerta', 'prestada']],
+      ['No entra por medida', ['medida']],
+      ['Con huella', ['huella-ok', 'huella-excepcion', 'huella-sinref', 'huella-lector', 'huella-no', 'huella-sinderecho', 'huella-medida']]
+    ];
+    var MODOS = { apagada: 'Apagada', opcional: 'Opcional', obligatoria: 'Obligatoria' };
+    var AYUDA_MODO = {
+      apagada: 'Sin cambios: documento y foto impresa.',
+      opcional: 'Solo si el operador duda: «No es la persona» abre la lectura.',
+      obligatoria: 'Tras el documento se pide la huella. La enciende Mindeporte con la norma que la habilita.'
+    };
+    var casoActivo = null;
+    function itemCaso(c) {
+      var a = ASPECTO[c.punto];
+      return '<nwt-detail-item actionable nwt-theme="' + a.tema + '" data-caso="' + c.id + '"' + (c.id === casoActivo ? ' class="pp-caso--activo"' : '') + (c.que ? ' title="' + esc(c.que) + '"' : '') + '>' + esc(c.etiqueta) + '<span class="pp-caso__punto pp-caso__punto--' + c.punto + '" aria-hidden="true"></span></nwt-detail-item>';
+    }
+    function casosAgrupados() {
+      var usados = [];
+      var gs = GRUPOS.map(function (g) { usados = usados.concat(g[1]); return [g[0], CASOS.filter(function (c) { return g[1].indexOf(c.id) >= 0; })]; });
+      var otros = CASOS.filter(function (c) { return usados.indexOf(c.id) < 0; });
+      if (otros.length) { gs.push(['Otros', otros]); }
+      gs = gs.filter(function (g) { return g[1].length; });
+      return gs.map(function (g, k) {
+        var ab = casoActivo ? g[1].some(function (c) { return c.id === casoActivo; }) : k === 0;
+        return '<section class="pp-grupo' + (ab ? ' pp-grupo--abierto' : '') + '"><button type="button" class="pp-grupo__cab" data-grupo aria-expanded="' + ab + '">' +
+          '<span class="pp-grupo__t">' + g[0] + '</span><span class="pp-grupo__n">' + g[1].length + '</span>' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+          '<div class="pp-grupo__lista"' + (ab ? '' : ' hidden') + '>' + g[1].map(itemCaso).join('') + '</div></section>';
+      }).join('');
+    }
+    // Acordeón exclusivo: al abrir un grupo se cierran los demás.
+    function abrirGrupo(sec, ab) {
+      if (ab) { sec.parentNode.querySelectorAll('.pp-grupo--abierto').forEach(function (o) { if (o !== sec) { abrirGrupo(o, false); } }); }
+      sec.classList.toggle('pp-grupo--abierto', ab);
+      sec.querySelector('[data-grupo]').setAttribute('aria-expanded', String(ab));
+      sec.querySelector('.pp-grupo__lista').hidden = !ab;
+    }
+
+    // El caso activo abre su grupo solo, también el que llega digitando el documento.
+    function activarEnPanel(id) {
+      casoActivo = id;
+      raiz.querySelectorAll('#pp-casos nwt-detail-item[data-caso]').forEach(function (n) {
+        var on = n.dataset.caso === id; n.classList.toggle('pp-caso--activo', on);
+        if (on) { abrirGrupo(n.closest('.pp-grupo'), true); }
+      });
+    }
+
     function guion() {
       var casos = modo === 'policia'
         ? '<nwt-detail-item actionable icon="filter" nwt-theme="informative" data-acc="elegir-evento">Elegir el evento en vivo</nwt-detail-item>' +
           '<nwt-detail-item actionable icon="notification" nwt-theme="negative" data-acc="nueva-alerta">Recibir una alerta roja</nwt-detail-item>' +
           '<nwt-detail-item actionable icon="user" nwt-theme="informative" data-acc="agente-primero">Un agente la toma antes de asignarla</nwt-detail-item>'
-        : CASOS.map(function (c) {
-            var a = ASPECTO[c.punto];
-            return '<nwt-detail-item actionable nwt-theme="' + a.tema + '" data-caso="' + c.id + '"><span class="pp-caso__punto pp-caso__punto--' + c.punto + '" aria-hidden="true"></span>' + esc(c.etiqueta) + '</nwt-detail-item>';
-          }).join('');
+        : casosAgrupados();
       var fila = function (id, icono, texto, marcado) {
         return '<div class="pp-panel__fila"><nwt-icon-label icon="' + icono + '">' + texto + '</nwt-icon-label><nwt-switch id="' + id + '"' + (marcado ? ' checked' : '') + '></nwt-switch></div>';
       };
       return '<aside class="pp-panel" aria-label="Controles del demo">' + '<button type="button" class="pp-panel__toggle" aria-expanded="false"><span>Controles del demo</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
         tarjeta('Dispositivo', '<nwt-tabs id="tabs-disp" full-width></nwt-tabs>') +
-        tarjeta(modo === 'policia' ? 'Alertas' : 'Leer una persona', '<div class="pp-panel__lista">' + casos + '</div>') +
-        (modo === 'policia' ? '' : tarjeta('Biometría', '<nwt-tabs id="tabs-metodo" full-width></nwt-tabs>')) +
-        (modo === 'policia' ? '' : tarjeta('Condiciones', fila('sw-offline', 'refresh', 'Sin conexión', false) + '<nwt-divider></nwt-divider>' + fila('sw-bio', 'avatar', 'Módulo biométrico', true) + '<nwt-divider></nwt-divider>' + fila('sw-torn', 'padlock-open', 'Torniquete', true))) +
+        tarjeta(modo === 'policia' ? 'Alertas' : 'Leer una persona', '<div class="pp-panel__lista' + (modo === 'policia' ? '' : ' pp-casos') + '"' + (modo === 'policia' ? '' : ' id="pp-casos"') + '>' + casos + '</div>') +
+        (modo === 'policia' ? '' : tarjeta('Condiciones', fila('sw-offline', 'refresh', 'Sin conexión', false) + '<nwt-divider></nwt-divider>' +
+          '<div class="pp-panel__fila"><span class="pp-panel__lab">' + SVG(I.huella, 16) + 'Lector de huella</span><nwt-switch id="sw-lector"' + (st.huella !== 'apagada' ? ' checked' : '') + '></nwt-switch></div><nwt-divider></nwt-divider>' +
+          fila('sw-torn', 'padlock-open', 'Torniquete', true))) +
         '<p class="nwt-smalltext-font-regular pp-panel__pie">Datos e información de prueba.</p>' +
       '</aside>';
     }
@@ -143,18 +190,20 @@ window.PANTALLAS = window.PANTALLAS || {};
     // Estado de un equipo: solo la palabra; el punto lleva el estado y `estadoEquipos` lo mantiene en vivo (DC-192).
     var ESTADOS = {
       red: { nombre: 'Conexión', ok: 'en línea', off: 'sin conexión' },
-      bio: { nombre: 'Biométrico', ok: 'activo', off: 'apagado' },
-      torn: { nombre: 'Torniquete', ok: 'conectado', off: 'sin conexión', ocupado: 'respondiendo', apagado: 'apagado' }
+      torn: { nombre: 'Torniquete', ok: 'conectado', off: 'sin conexión', ocupado: 'respondiendo', apagado: 'apagado' },
+      huella: { nombre: 'Lector', ok: 'listo', off: 'sin conexión', ocupado: 'leyendo', falla: 'sin servicio', apagado: 'apagado' }
     };
     function puntoDe(clave) {
-      if (clave === 'bio') { return st.bio ? 'ok' : 'off'; }
       if (clave === 'red') { return st.offline ? 'alerta' : 'ok'; }
+      if (clave === 'huella') { return st.huella === 'apagada' ? 'apagado' : !st.lector ? 'falla' : st.offline ? 'off' : st.vista === 'huella' && st.hu && st.hu.est === 'leyendo' ? 'ocupado' : 'ok'; }
       // Precedencia: apagado > sin conexión > respondiendo > conectado.
       return !st.torn ? 'apagado' : st.offline ? 'off' : st.vista === 'validando' ? 'ocupado' : 'ok';
     }
+    // Un equipo apagado o sin conexión se opaca solo en su chip; el aria-label sigue diciendo el estado.
+    var APAGADOS = ['apagado', 'off'];
     function estadoCamara(clave) {
       var punto = puntoDe(clave), e = ESTADOS[clave], det = e.nombre + ': ' + e[punto];
-      return '<span class="pp-camara__tag pp-camara__tag--estado" data-equipo="' + clave + '" role="status" aria-label="' + det + '" title="' + det + '"><i class="pp-camara__punto pp-camara__punto--' + punto + '"></i>' + e.nombre + '</span>';
+      return '<span class="pp-camara__tag pp-camara__tag--estado' + (APAGADOS.indexOf(punto) >= 0 ? ' pp-camara__tag--apagado' : '') + '" data-equipo="' + clave + '" role="status" aria-label="' + det + '" title="' + det + '"><i class="pp-camara__punto pp-camara__punto--' + punto + '"></i>' + e.nombre + '</span>';
     }
     function lectorFijo(texto) { return '<span class="pp-camara__tag pp-camara__tag--estado"><i class="pp-camara__punto pp-camara__punto--ok"></i>' + texto + '</span>'; }
     // Cambia solo el punto y el nombre accesible: sin repintar el equipo no se reinicia láser ni validación.
@@ -163,17 +212,18 @@ window.PANTALLAS = window.PANTALLAS || {};
         var clave = t.dataset.equipo, punto = puntoDe(clave), e = ESTADOS[clave], det = e.nombre + ': ' + e[punto];
         t.querySelector('.pp-camara__punto').className = 'pp-camara__punto pp-camara__punto--' + punto;
         t.setAttribute('aria-label', det); t.title = det;
+        t.classList.toggle('pp-camara__tag--apagado', APAGADOS.indexOf(punto) >= 0);
       });
     }
 
     function camara() {
       return '<div class="pp-camara' + (st.luz ? ' pp-camara--luz' : '') + (st.zoomCam ? ' pp-camara--zoom' : '') + '" aria-label="Cámara leyendo">' +
         '<div class="pp-camara__herr">' +
-          '<div class="pp-camara__estado">' + estadoCamara('bio') + estadoCamara('torn') + '</div>' +
+          '<div class="pp-camara__estado">' + estadoCamara('torn') + estadoCamara('huella') + '</div>' +
           '<div class="pp-camara__botones">' + tagCamara('linterna', 'sun', 'Linterna', st.luz) + tagCamara('zoom', 'zoom-in', 'Zoom 2×', st.zoomCam) + '</div>' +
         '</div>' +
         '<div class="pp-camara__guia"><span class="pp-esquina pp-esquina--1"></span><span class="pp-esquina pp-esquina--2"></span><span class="pp-esquina pp-esquina--3"></span><span class="pp-esquina pp-esquina--4"></span><span class="pp-camara__laser"></span></div>' +
-        '<p class="pp-camara__ayuda">Escanee el documento · 15 a 20 cm · la boleta sola no abre</p>' +
+        '<p class="pp-camara__ayuda">Escanee el documento</p>' +
       '</div>';
     }
 
@@ -189,7 +239,6 @@ window.PANTALLAS = window.PANTALLAS || {};
       return '<div class="pp-turno"><p class="pp-turno__h">Mi turno</p>' +
         '<div class="pp-turno__stats">' +
           '<div class="pp-stat"><p class="pp-stat__v">' + t.ingresos + '</p><p class="pp-stat__l">Ingresos</p></div>' +
-          '<div class="pp-stat"><p class="pp-stat__v">' + t.avisos + '</p><p class="pp-stat__l">Avisos</p></div>' +
           '<div class="pp-stat"><p class="pp-stat__v">' + t.rojos + '</p><p class="pp-stat__l">Rojos</p></div>' +
         '</div>' +
         '<p class="pp-turno__sub">Últimas lecturas</p>' +
@@ -205,39 +254,31 @@ window.PANTALLAS = window.PANTALLAS || {};
     var SVG = function (d, t) { return '<svg width="' + t + '" height="' + t + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none">' + d + '</svg>'; };
     var I = {
       pin: '<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
-      boleta: '<path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M10 7v10"/>',
+      doc: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 16h5"/>',
       aviso: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.01"/>',
       escudo: '<path d="M12 3l7.5 3v6c0 4.4-3.1 7.7-7.5 9-4.4-1.3-7.5-4.6-7.5-9V6z"/>',
       flecha: '<path d="M5 12h14M13 6l6 6-6 6"/>',
       campana: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/>',
       candado: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
       refresh: '<path d="M20 12a8 8 0 1 1-2.5-5.8M20 4v5h-5"/>',
-      cara: '<circle cx="12" cy="9" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>',
-      huella: '<path d="M6 11a6 6 0 0 1 12 0v2M9 20c.5-1.5.8-3 .8-5a2.2 2.2 0 0 1 4.4 0c0 3-.7 5-1.7 6.5M5 15c.4-2 .4-3 .2-4M18 15c0 2-.3 3.500-1 5M12 11v4"/>',
-      x: '<path d="M6 6l12 12M18 6L6 18"/>'
+      persona: '<circle cx="12" cy="9" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>',
+      x: '<path d="M6 6l12 12M18 6L6 18"/>',
+      huella: '<path d="M6 11a6 6 0 0 1 12 0v2M9 20c.5-1.5.8-3 .8-5a2.2 2.2 0 0 1 4.4 0c0 3-.7 5-1.7 6.5M5 15c.4-2 .4-3 .2-4M18 15c0 2-.3 3.500-1 5M12 11v4"/>'
     };
     var SILUETA = '<svg viewBox="0 0 56 64" width="80%" height="80%" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="28" cy="24" r="11"/><path d="M6 64c2-14 11-20 22-20s20 6 22 20"/></svg>';
 
     // La foto viene del caso (`c.foto`); sin foto en el caso, la silueta. `sin` fuerza el estado "Sin foto".
-    function foto(sin, rotulo, url) {
-      var caja = sin
+    function foto(sin, url) {
+      return sin
         ? '<div class="pp-r__foto pp-r__foto--sin">' + SVG('<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 15h5"/>', 22) + 'Sin foto</div>'
         : url ? '<div class="pp-r__foto pp-r__foto--img"><img src="' + esc(url) + '" alt="Foto del documento"></div>'
         : '<div class="pp-r__foto">' + SILUETA + '</div>';
-      return rotulo ? '<div class="pp-r__fotoc">' + caja + rotulo + '</div>' : caja;
-    }
-
-    function bioTag(c) {
-      var huella = st.metodo === 'huella', ok = c.color === 'verde';
-      return '<span class="pp-r__bio' + (ok ? ' pp-r__bio--ok' : '') + '">' + SVG(huella ? I.huella : I.cara, 18) + (huella ? 'Huella' : 'Rostro') + (ok ? ' coincide' : '') + (ok ? SVG('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 16) : '') + '</span>';
     }
 
     // Mismo lugar y tamaño en todos los estados. El rojo por medida no lleva nombre (supuesto del modelo).
-    function documento(c, extra) {
-      // Con biométrico, la foto de referencia va sola y en grande; la huella o el rostro es un tag debajo (verde: coincide).
-      var fotos = extra ? '<div class="pp-r__fotos pp-r__fotos--una">' + foto(c.sinFoto, bioTag(c), c.foto) + '</div>' : foto(c.sinFoto, null, c.foto);
-      return '<section class="pp-r__doc" aria-label="Documento escaneado">' + fotos +
-        '<div class="pp-r__datos"><span class="pp-r__tipo">' + (c.sinDoc ? 'Boleta leída' : 'Documento escaneado') + '</span>' +
+    function documento(c) {
+      return '<section class="pp-r__doc" aria-label="' + (c.digitado ? 'Documento digitado' : 'Documento escaneado') + '">' + foto(c.sinFoto, c.foto) +
+        '<div class="pp-r__datos"><span class="pp-r__tipo">' + (c.digitado ? 'Documento digitado' : 'Documento escaneado') + '</span>' +
         '<span class="pp-r__nombre">' + esc(c.nombre || 'La autoridad reserva el nombre') + '</span><span class="pp-r__num">' + esc(c.doc) + '</span></div></section>';
     }
 
@@ -259,6 +300,14 @@ window.PANTALLAS = window.PANTALLAS || {};
         '<div class="pp-r__lector">' + SVG('<path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M7 12h10"/>', 20) + 'Lector activo · la siguiente lectura reemplaza esta pantalla</div></section>';
     }
 
+    // DC-062: el número se escribe a la vista antes del resultado; `escribiendo` lo anima sin repintar.
+    function tecleando() {
+      var d = st.caso.doc.split(' ');
+      return '<section class="pp-r pp-r--teclear" role="status"><div class="pp-r__centro"><p class="pp-r__texto">Digitando documento</p>' +
+        '<div class="pp-teclear__campo"><span class="pp-teclear__tipo">' + esc(d[0]) + '</span>' +
+        '<span class="pp-teclear__num" id="teclear-num" aria-label="Número de documento"></span><span class="pp-teclear__cursor" aria-hidden="true"></span></div></div></section>';
+    }
+
     function validando() {
       // Mismo orden del splash: Deporte arriba, IVC al centro, el loader del código y el texto debajo (DC-375).
       return '<section class="pp-r pp-r--cargando" role="status"><div class="pp-r__centro">' +
@@ -268,52 +317,50 @@ window.PANTALLAS = window.PANTALLAS || {};
         '<div class="pp-r__acciones">' + boton('cancelar-scan', 'Cancelar escaneo', { sec: true }) + '</div></section>';
     }
 
+    // Lectura de huella transitoria: no es un color, la lectura es simulada y el resultado lo fija el caso elegido.
+    function huellaVista() {
+      var h = st.hu, n = h.n;
+      var cab = {
+        leyendo: ['Ponga el dedo en el lector', 'Lectura simulada · intento ' + n + ' de 3'],
+        nocoincide: ['No coincide', 'Intento ' + n + ' de 3 · pruebe con otro dedo'],
+        ilegible: ['Lectura ilegible', 'Limpie el lector o el dedo · intento ' + n + ' de 3 · no cuenta como no coincide'],
+        sinlector: ['Lector de huella sin servicio', 'No se registra ningún ingreso hasta que el supervisor active la contingencia']
+      }[h.est];
+      var otra = (h.est === 'nocoincide' || h.est === 'ilegible') && n < 3;
+      var acc = h.est === 'sinlector'
+        ? boton('contingencia', 'Activar contingencia (supervisor)') + boton('cancelar-huella', 'Cancelar', { sec: true })
+        : (otra ? boton('leer-otra', 'Leer otra vez') : '') + boton('sin-huella', 'No puede dar huella', { sec: h.est === 'leyendo' || otra });
+      return '<section class="pp-r pp-r--huella" role="status" aria-live="polite"><div class="pp-r__centro">' +
+        '<div class="pp-r__huella' + (h.est === 'leyendo' ? ' pp-r__huella--lee' : '') + '" aria-hidden="true">' + SVG(I.huella, 72) + '</div>' +
+        '<p class="pp-r__texto">' + esc(cab[0]) + '</p><p class="pp-r__sub">' + esc(cab[1]) + '</p></div>' +
+        '<div class="pp-r__acciones">' + acc + '</div></section>';
+    }
+
     function resultado() {
       var c = st.caso, hh = hora(st.reloj);
       if (st.vista === 'validando') { return validando(); }
+      if (st.vista === 'tecleando') { return tecleando(); }
+      if (st.vista === 'huella') { return huellaVista(); }
       if (c.color === 'verde') {
-        // Tras "Sí, es la persona" el verde nombra la verificación, no la ubicación (DC-107).
-        return pantalla('verde', 'ENTRA', c.verificado ? ['escudo', 'Identidad verificada'] : ['pin', 'Ubicación'], c.detalle, documento(c, st.bio),
-          (st.bio ? nota('cara', 'Compare con la referencia de la compra', true) : '') +
-          (c.soloCC ? nota('boleta', 'Sin boleta en mano: vale la asignada') : '') +
-          (st.offline ? nota('refresh', 'Sin conexión · se sincroniza al volver') : ''),
-          boton('continuar', 'Registrar Entrada', { atajo: 'Enter', flecha: true }));
-      }
-      if (c.sinDoc) {
-        return pantalla('amarillo', 'ESCANEE', ['boleta', 'Boleta sin documento'], c.detalle.replace(/\.$/, ''), documento(c),
-          nota('candado', 'Con la boleta sola no se abre el paso', true),
-          boton('escanear-doc', 'Escanear documento', { atajo: 'Enter', flecha: true }));
-      }
-      if (c.color === 'amarillo' && c.riesgo) {
-        return pantalla('amarillo', 'APARTAR', ['aviso', 'Posible riesgo en este partido'], c.detalle.replace(/\.$/, ''), documento(c),
-          nota('campana', 'Señal, no certeza: apártelo y oriéntelo con pedagogía persuasiva'),
-          boton('continuar', 'Continuar', { atajo: 'Enter', flecha: true }) +
-          (st.acomp ? boton('acompanar', 'Acompañamiento solicitado', { sec: true, off: true, check: true }) : boton('acompanar', 'Solicitar acompañamiento', { sec: true })));
-      }
-      if (c.color === 'amarillo') {
-        return pantalla('amarillo', 'ENTRA', ['aviso', c.antecedente ? 'Antecedente' : 'Aviso'], c.detalle.replace(/\.$/, ''), documento(c),
-          notaHtml('campana', '<span>Supervisor y autoridad avisados<span class="pp-r__nota-sub">' + hh + ' · ' + esc(E.puerta) + '</span></span>'),
-          boton('continuar', 'Continuar', { atajo: 'Enter', flecha: true }));
+        // Con huella que coincide, la identidad ya está verificada; en cualquier otro verde el operador compara la foto impresa.
+        var ver = !!c.verificado;
+        var tag = ver ? '<span class="pp-r__bio pp-r__bio--ok">' + SVG(I.huella, 18) + 'Huella coincide' + SVG('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 16) + '</span>' : '';
+        return pantalla('verde', 'ENTRA', ver ? ['escudo', 'Identidad verificada'] : ['pin', 'Ubicación'], c.detalle, documento(c),
+          tag + (c.notaHuella ? nota('aviso', c.notaHuella) : '') + (c.notaLector ? nota('aviso', c.notaLector) : '') +
+          (ver ? '' : nota('persona', 'Compare la foto del documento con la persona', true)) +
+          (st.offline && !c.sinRed ? nota('refresh', 'Sin conexión · se sincroniza al volver') : ''),
+          boton('continuar', 'Registrar ingreso', { atajo: c.exc ? null : 'Enter', flecha: true }) +
+          (ver ? '' : boton('no-persona', 'No es la persona', { sec: true })));
       }
       if (c.color === 'rojo' && c.operativo) {
-        return pantalla('rojo', 'NO ENTRA', ['boleta', 'Causa'], c.dato || c.causa, documento(c), '',
+        return pantalla('rojo', 'NO ENTRA', [c.sinPolicia ? 'pin' : 'doc', c.dato ? c.causa : 'Causa'], c.dato || c.causa, documento(c), '',
           boton('cerrar-rojo', 'Siguiente', { atajo: 'Enter', flecha: true }) +
-          (st.policia ? boton('policia', 'Autoridad avisada', { sec: true, off: true, check: true }) : boton('policia', 'Llamar a la autoridad', { sec: true, atajo: 'P' })));
+          (c.sinPolicia ? '' : st.policia ? boton('policia', 'Autoridad avisada', { sec: true, off: true, check: true }) : boton('policia', 'Llamar a la autoridad', { sec: true, atajo: 'P' })));
       }
-      if (c.color === 'rojo') {
-        return pantalla('rojo', 'NO ENTRA', ['escudo', 'Medida vigente'], 'Remitir a la autoridad', documento(c),
-          nota(null, st.offline ? 'Alerta en cola · sale al volver la red' : 'Alerta al PMU · ' + hh + ' · ' + E.puerta.split(' · ')[0]) + nota(null, 'Nadie en la puerta puede autorizarlo'),
-          boton('cerrar-rojo', 'Remitir y siguiente', { atajo: 'Enter', flecha: true }) +
-          (st.apoyo ? boton('apoyo', 'Apoyo solicitado', { sec: true, off: true, check: true }) : boton('apoyo', 'Reportar alteración', { sec: true })));
-      }
-      // Cédula prestada: con el módulo encendido se compara contra la foto de referencia de la compra.
-      var bio = st.bio;
-      var h = st.metodo === 'huella';
-      var motivo = !h ? c.motivoRostro : c.motivo;
-      var rot = h ? ['huella', 'Huella no coincide'] : ['cara', 'Rostro no coincide'];
-      return pantalla('rostro', 'VERIFICAR', rot, motivo.replace(/\.$/, ''), documento(c, bio),
-        nota(null, bio ? '¿Es la misma persona de la referencia?' : 'Compare la cédula con la persona', true),
-        boton('rostro-si', 'Sí, es la persona') + boton('rostro-no', 'No coincide', { sec: true }));
+      return pantalla('rojo', 'NO ENTRA', ['escudo', 'Medida vigente'], 'Remitir a la autoridad', documento(c),
+        nota(null, st.offline ? 'Alerta en cola · sale al volver la red' : 'Alerta al PMU · ' + hh + ' · ' + E.puerta.split(' · ')[0]) + nota(null, 'Nadie en la puerta puede autorizarlo'),
+        boton('cerrar-rojo', 'Remitir y siguiente', { atajo: 'Enter', flecha: true }) +
+        (st.apoyo ? boton('apoyo', 'Apoyo solicitado', { sec: true, off: true, check: true }) : boton('apoyo', 'Reportar alteración', { sec: true })));
     }
 
     // Solo presentación: bloques de 3 para leer el número; st.digitos queda sin espacios.
@@ -326,17 +373,61 @@ window.PANTALLAS = window.PANTALLAS || {};
         var tit = 'Mi turno';
         return '<div class="pp-velo" data-acc="cerrar-hoja"></div><div class="pp-hoja" role="dialog" aria-label="' + tit + '"><div class="pp-hoja__cab"><span>' + tit + '</span><nwt-icon-button nwt-variant="mute" nwt-size="small" icon="close" label="Cerrar" data-acc="cerrar-hoja"></nwt-icon-button></div>' + turno() + '</div>';
       }
+      if (st.hoja === 'verificar-huella') {
+        var lee = st.lector && !st.offline;
+        return hojaMarco('Verificar con huella',
+          '<p class="pp-hoja__txt">' + (lee ? 'Si la foto del documento no coincide con la persona, la huella aclara la duda. Lectura simulada: el resultado lo fija el caso elegido.' : st.offline ? 'Sin conexión la huella no se verifica. La revisión sigue con el documento.' : 'El lector está sin servicio. La revisión sigue con el documento.') + '</p>' +
+          '<div class="pp-hoja__acciones"><button type="button" class="pp-hoja__btn" data-acc="leer-huella"' + (lee ? '' : ' disabled aria-disabled="true"') + '>Leer huella</button>' +
+          '<button type="button" class="pp-hoja__btn pp-hoja__btn--sec" data-acc="no-entra">No entra sin verificar</button></div>');
+      }
+      if (st.hoja === 'sin-huella') {
+        var otro = st.motivo === MOTIVOS[2], listo = !!st.motivo && (!otro || st.motivoNota.trim().length >= 3);
+        return hojaMarco('Ingreso sin huella',
+          '<p class="pp-hoja__txt">Elija el motivo. Después compare la foto del documento con la persona.</p>' +
+          '<div class="pp-tipos" role="radiogroup" aria-label="Motivo">' + MOTIVOS.map(function (m) { return '<button type="button" class="pp-tipo" role="radio" aria-checked="' + (st.motivo === m) + '" data-motivo="' + m + '">' + m + '</button>'; }).join('') + '</div>' +
+          (otro ? '<input class="pp-hoja__campo" id="motivo-nota" autocomplete="off" maxlength="60" aria-label="Anote el motivo" placeholder="Anote el motivo" value="' + esc(st.motivoNota) + '">' : '') +
+          '<div class="pp-hoja__acciones"><button type="button" class="pp-hoja__btn" data-acc="confirmar-sin-huella"' + (listo ? '' : ' disabled aria-disabled="true"') + '>Continuar</button>' +
+          '<button type="button" class="pp-hoja__btn pp-hoja__btn--sec" data-acc="cerrar-hoja">Volver</button></div>');
+      }
       var teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'ok'];
+      var est = estadoHoja();
       return '<div class="pp-velo" data-acc="cerrar-hoja"></div><div class="pp-hoja" role="dialog" aria-label="Digitar documento">' +
         '<div class="pp-hoja__cab"><span>Digitar documento</span><nwt-icon-button nwt-variant="mute" nwt-size="small" icon="close" label="Cerrar" data-acc="cerrar-hoja"></nwt-icon-button></div>' +
-        '<div class="pp-tipos">' + TIPOS.map(function (t) { return '<nwt-tag data-tipo="' + t + '"' + (st.tipo === t ? ' active' : '') + '>' + t + '</nwt-tag>'; }).join('') + '</div>' +
+        '<div class="pp-tipos" role="radiogroup" aria-label="Tipo de documento">' + TIPOS.map(function (t) { return '<button type="button" class="pp-tipo" role="radio" aria-checked="' + (st.tipo === t) + '" data-tipo="' + t + '">' + t + '</button>'; }).join('') + '</div>' +
         '<div class="pp-pantallita" aria-live="polite">' + esc(grupos(st.digitos)) + '</div>' +
         '<div class="pp-teclas">' + teclas.map(function (k) {
           return k === 'ok'
-            ? '<button class="pp-tecla" style="background:var(--naotech-primary-color-600);color:var(--naotech-color-white-alpha-100)" data-tecla="ok" aria-label="Validar">Validar</button>'
-            : '<button class="pp-tecla" data-tecla="' + k + '"' + (k === '⌫' ? ' aria-label="Borrar"' : '') + '>' + k + '</button>';
+            ? '<button type="button" class="pp-tecla" style="background:var(--naotech-primary-color-600);color:var(--naotech-color-white-alpha-100)" data-tecla="ok" aria-describedby="hoja-ayuda"' + (est.puede ? '' : ' disabled aria-disabled="true"') + '>Validar</button>'
+            : '<button type="button" class="pp-tecla" data-tecla="' + k + '"' + (k === '⌫' ? ' aria-label="Borrar"' : '') + '>' + k + '</button>';
         }).join('') + '</div>' +
-        '<p class="nwt-smalltext-font-regular pp-hoja__ayuda" id="hoja-ayuda">Mínimo 5 dígitos. Pruebe con un número que termine en 4447 para ver un rojo.</p></div>';
+        '<p class="nwt-smalltext-font-regular pp-hoja__ayuda' + (est.error ? ' pp-hoja__ayuda--error' : '') + '" id="hoja-ayuda" role="status">' + esc(est.texto) + '</p></div>';
+    }
+
+    var MOTIVOS = ['Discapacidad o lesión', 'Huella ilegible', 'Otro (anotar)'];
+    function hojaMarco(titulo, cuerpo) {
+      return '<div class="pp-velo" data-acc="cerrar-hoja"></div><div class="pp-hoja" role="dialog" aria-label="' + titulo + '"><div class="pp-hoja__cab"><span>' + titulo + '</span><nwt-icon-button nwt-variant="mute" nwt-size="small" icon="close" label="Cerrar" data-acc="cerrar-hoja"></nwt-icon-button></div>' + cuerpo + '</div>';
+    }
+
+    // Razón visible bajo el teclado: por qué Validar está apagado, o que el número no existe.
+    function estadoHoja() {
+      var n = st.digitos.length;
+      if (st.hojaError) { return { puede: n >= MIN_DOC, error: true, texto: 'No encontramos ese documento. Revise el tipo y el número.' }; }
+      if (!n) { return { puede: false, texto: 'Mínimo ' + MIN_DOC + ' dígitos. Para probar: 1036482117 entra; 71894447 es un rojo.' }; }
+      if (n < MIN_DOC) { return { puede: false, texto: 'Faltan ' + (MIN_DOC - n) + (MIN_DOC - n === 1 ? ' dígito' : ' dígitos') + ': el mínimo es ' + MIN_DOC + '.' }; }
+      return { puede: true, texto: 'Listo para validar ' + st.tipo + ' ' + grupos(st.digitos) + '.' };
+    }
+    // Actualiza pantallita, ayuda y Validar sin repintar la hoja: no se reanima ni se pierde el foco.
+    function pintarHoja() {
+      var est = estadoHoja(), pant = disp.querySelector('.pp-pantallita'), ay = disp.querySelector('#hoja-ayuda'), ok = disp.querySelector('[data-tecla="ok"]');
+      if (pant) { pant.textContent = grupos(st.digitos); }
+      if (ay) { ay.textContent = est.texto; ay.classList.toggle('pp-hoja__ayuda--error', !!est.error); }
+      if (ok) { ok.disabled = !est.puede; ok.setAttribute('aria-disabled', String(!est.puede)); }
+    }
+    function teclear(k) {
+      st.hojaError = false;
+      if (k === '⌫') { st.digitos = st.digitos.slice(0, -1); }
+      else if (st.digitos.length < MAX_DOC) { st.digitos += k; }
+      pintarHoja();
     }
 
     function toast() {
@@ -357,7 +448,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         // Con resultado, ocupa toda la pantalla; la validación en curso queda en la columna.
         cuerpo = '<div class="pp-cuerpo">' + columnaCamara +
           '<div class="pp-lateral"><div class="pp-lateral__arriba">' + listo() + '</div>' + turno() + '</div>' +
-          (st.vista === 'validando' ? validando() : st.vista === 'resultado' ? resultado() : '') + '</div>';
+          (st.vista !== 'lectura' ? resultado() : '') + '</div>';
       } else {
         cuerpo = '<div class="pp-cuerpo"><div class="pp-lector">' +
           '<form class="pp-lector__campo" data-form="lector"><nwt-icon value="qr-code"></nwt-icon>' +
@@ -365,7 +456,7 @@ window.PANTALLAS = window.PANTALLAS || {};
             '<nwt-button type="submit" data-acc="leer">Validar</nwt-button></form>' +
           ('<div class="pp-lector__espera"><div><nwt-icon value="qr-code"></nwt-icon><p class="pp-resultado__causa">Esperando lectura</p><p>El foco vuelve solo al campo después de cada persona.</p></div></div>') +
           '</div><div class="pp-lateral"><div class="pp-lateral__arriba">' + listoConsola() + '</div>' + turno() + '</div>' +
-          (st.vista === 'validando' ? validando() : st.vista === 'resultado' ? resultado() : '') + '</div>';
+          (st.vista !== 'lectura' ? resultado() : '') + '</div>';
       }
       return '<div class="pp-app">' + barra() + cuerpo + hoja() + toast() + '</div>';
     }
@@ -373,7 +464,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     function listoConsola() {
       // Mismos tags de estado del celular, sobre fondo gris claro (DC-187).
       return '<div class="pp-lateral__listo"><strong>' + esc(E.puerta) + '</strong><span>Lector USB conectado · torniquete asignado desde el backoffice.</span>' +
-        '<div class="pp-lateral__estado">' + estadoCamara('red') + estadoCamara('bio') + estadoCamara('torn') +
+        '<div class="pp-lateral__estado">' + estadoCamara('red') + estadoCamara('torn') + estadoCamara('huella') +
           lectorFijo('Lector de cédula · Conectado') + lectorFijo('Lector QR · Conectado') + '</div></div>';
     }
 
@@ -417,10 +508,10 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function nombres(a) { return (a.asignados || []).join(', '); }
 
-    // Aviso amarillo de un antecedente: entró, no hay nada que atender; queda a la vista para tenerlo presente (DC-030/031).
+    // Aviso silencioso de la puerta: la persona entró como verde; no es una alerta ni hay nada que atender (DC-030/031).
     function tarjetaAviso(v) {
-      return '<article class="pp-t__aviso" data-aviso="' + v.id + '">' +
-        '<div class="pp-t__alerta-top"><span class="pp-t__estado">Aviso</span><span class="pp-t__origen">Entró · ' + esc(v.quien) + '</span><span class="pp-t__tiempo">' + esc(v.hora) + '</span></div>' +
+      return '<article class="pp-t__aviso" data-aviso="' + v.id + '" data-tipo-aviso="' + esc(v.tipo) + '">' +
+        '<div class="pp-t__alerta-top"><span class="pp-t__estado">Aviso · ' + esc(v.etiqueta) + '</span><span class="pp-t__origen">' + esc(v.origen || 'Entró · ' + v.quien) + '</span><span class="pp-t__tiempo">' + esc(v.hora) + '</span></div>' +
         '<div><p class="pp-t__puerta">' + esc(v.puerta) + '</p><p class="pp-t__doc">' + esc(v.doc) + ' · ' + esc(v.causa) + '</p></div>' +
         '<p class="pp-t__aviso-det">' + SVG(I.aviso, 16) + esc(v.detalle) + '</p></article>';
     }
@@ -593,7 +684,14 @@ window.PANTALLAS = window.PANTALLAS || {};
     }
 
     function filtrarEventos() { window.EVENTOS.filtrar(disp, st.ebusca); }
-    function onInput(ev) { if (ev.target.classList.contains('pp-e__busca')) { st.ebusca = ev.target.value; filtrarEventos(); } }
+    function onInput(ev) {
+      if (ev.target.classList.contains('pp-e__busca')) { st.ebusca = ev.target.value; filtrarEventos(); }
+      if (ev.target.id === 'motivo-nota') {
+        st.motivoNota = ev.target.value;
+        var ok = disp.querySelector('[data-acc="confirmar-sin-huella"]');
+        if (ok) { var puede = st.motivoNota.trim().length >= 3; ok.disabled = !puede; ok.setAttribute('aria-disabled', String(!puede)); }
+      }
+    }
 
     function appTablero() {
       var T = D.policia.tablero;
@@ -605,12 +703,14 @@ window.PANTALLAS = window.PANTALLAS || {};
       var pct = (totalIng / T.aforo * 100).toFixed(1).replace('.', ',');
       var barras = barrasHtml(vivo.flujo);
       var puertas = vivo.puertas.map(function (p, i) {
-        return '<tr><th scope="row"><span class="pp-t__punto' + (p.off ? ' pp-t__punto--off' : '') + '"></span>' + esc(T.puertas[i].nombre) + '</th>' +
+        return '<tr><th scope="row"><span class="pp-t__punto' + (p.off ? ' pp-t__punto--off' : '') + '"></span>' + esc(T.puertas[i].nombre) + (T.puertas[i].lector === 'revisar' ? '<span class="pp-t__lector">Lector: revisar</span>' : '') + '</th>' +
           '<td class="pp-t__flujo" data-vivo="p' + i + '-f">' + flujoPuertaHtml(p) + '</td>' +
           '<td class="pp-t__num" data-vivo="p' + i + '-i">' + p.ing.toLocaleString('es-CO') + '</td><td class="pp-t__num pp-t__num--aviso">' + T.puertas[i].avisos + '</td>' +
           '<td class="pp-t__num' + (T.puertas[i].rojos ? ' pp-t__num--rojo' : '') + '">' + T.puertas[i].rojos + '</td></tr>';
       }).join('');
-      var filtros = [['todas', 'Todas', st.alertas.length], ['nueva', 'Nuevas', nuevas], ['atencion', 'En atención', contar('atencion')], ['cerrada', 'Cerradas', contar('cerrada')]].map(function (f) {
+      // Los avisos no piden atención: aparecen en Todas, Nuevas y Cerradas, nunca en En atención (DC-055).
+      var nAv = T.avisosPuerta.length, verAvisos = st.filtro !== 'atencion';
+      var filtros = [['todas', 'Todas', st.alertas.length + nAv], ['nueva', 'Nuevas', nuevas + nAv], ['atencion', 'En atención', contar('atencion')], ['cerrada', 'Cerradas', contar('cerrada') + nAv]].map(function (f) {
         return '<button type="button" role="tab" class="pp-t__filtro" aria-selected="' + (st.filtro === f[0]) + '" data-acc="t-filtro" data-id="' + f[0] + '">' + f[1] + ' · ' + f[2] + '</button>';
       }).join('');
       var kpi = function (l, v, s, mod, vivoV, vivoS) { return '<div class="pp-t__kpi' + (mod ? ' pp-t__kpi--' + mod : '') + '"><span class="pp-t__kpi-l">' + l + '</span><span class="pp-t__kpi-v"' + (vivoV ? ' data-vivo="' + vivoV + '"' : '') + '>' + v + '</span><span class="pp-t__kpi-s"' + (vivoS ? ' data-vivo="' + vivoS + '"' : '') + '>' + s + '</span></div>'; };
@@ -627,7 +727,7 @@ window.PANTALLAS = window.PANTALLAS || {};
             '<section class="pp-t__kpis" aria-label="Indicadores">' +
               kpi('Ingresados', totalIng.toLocaleString('es-CO'), pct + ' % de ' + T.aforo.toLocaleString('es-CO'), '', 'ing', 'ing-pct') +
               kpi('Ingresos por minuto', pm, 'Pico: ' + T.pico, '', 'pm', 'pico') +
-              kpi('Avisos amarillos', T.avisos, 'Entraron con aviso', 'aviso') +
+              kpi('Avisos', T.avisos, 'Entraron · sin atención', 'aviso') +
               kpi('Alertas rojas', st.alertas.length, nuevas + (nuevas === 1 ? ' nueva · ' : ' nuevas · ') + contar('atencion') + ' en atención · ' + contar('cerrada') + (contar('cerrada') === 1 ? ' cerrada' : ' cerradas'), 'rojo') +
             '</section>' +
             '<section class="pp-t__caja" aria-label="Ingreso en vivo"><h2 class="pp-t__h">Ingreso en vivo<span>Personas por minuto, cada 5 min · desde las 17:00</span></h2>' +
@@ -640,7 +740,7 @@ window.PANTALLAS = window.PANTALLAS || {};
               (sinAsignar ? '<p class="pp-t__sonando" role="status" title="Deja de sonar al asignarla">' + SVG(I.campana, 18) + (sinAsignar === 1 ? '1 alerta sin asignar' : sinAsignar + ' alertas sin asignar') + '</p>' : '') +
               '<div class="pp-t__filtros" role="tablist" aria-label="Filtrar por estado">' + filtros + '</div></div>' +
             '<div class="pp-t__lista">' + (lista.length ? lista.map(tarjetaAlerta).join('') : '<p class="pp-t__vacio">No hay alertas en este estado.</p>') +
-              '<h3 class="pp-t__sub">Avisos de antecedentes<span>Entraron · ' + T.antecedentes.length + '</span></h3>' + T.antecedentes.map(tarjetaAviso).join('') + '</div>' +
+              (verAvisos ? '<h3 class="pp-t__sub">Avisos de la puerta<span>Entraron · ' + nAv + '</span></h3>' + T.avisosPuerta.map(tarjetaAviso).join('') : '') + '</div>' +
             '<p class="pp-t__pie">Cada paso y cada consulta de perfil quedan en la auditoría.</p>' +
           '</aside>' +
         '</div></div>' + modal() + toast() + '</div>';
@@ -777,14 +877,15 @@ window.PANTALLAS = window.PANTALLAS || {};
     /* ---------- Acciones ---------- */
 
     // `lectura`: solo las lecturas suman a los contadores y salen en la lista (DC-212).
-    function registrar(color, texto, lectura) { st.historial.unshift({ color: color, texto: texto, hora: hora(st.reloj), lectura: !!lectura }); if (st.offline) { st.pendientes++; } }
+    // `aviso`: tipo de aviso silencioso al PMU que esta lectura deja en el historial (el operador no lo ve).
+    function registrar(color, texto, lectura, aviso) { st.historial.unshift({ color: color, texto: texto, hora: hora(st.reloj), lectura: !!lectura, aviso: aviso || undefined }); if (st.offline) { st.pendientes++; } }
     // Sin repintar: el láser y la validación en curso no se reinician.
     function alternarCamara(btn, clave, clase) {
       st[clave] = !st[clave];
       btn.setAttribute('aria-pressed', String(st[clave]));
       btn.closest('.pp-camara').classList.toggle(clase, st[clave]);
     }
-    function aLectura() { cancelar(); st.vista = 'lectura'; st.caso = null; st.apoyo = false; st.acomp = false; st.policia = false; pintarDispositivo(); }
+    function aLectura() { cancelar(); st.vista = 'lectura'; st.caso = null; st.hu = null; st.apoyo = false; st.policia = false; pintarDispositivo(); }
     // Timer propio: cancelar() corre en cada lectura y no debe dejar el toast pegado.
     var timerToast = null;
     // `cambio`: la acción ya movió estado que se ve en pantalla, así que va un solo repintado con el toast.
@@ -799,74 +900,196 @@ window.PANTALLAS = window.PANTALLAS || {};
     function continuar() {
       var c = st.caso;
       st.turno.ingresos++;
-      if (c.color === 'amarillo') { st.turno.avisos++; registrar('amarillo', c.riesgo ? 'Entró · aviso · orientado (riesgo)' : 'Entró · aviso · ' + c.causa, true); }
-      else { registrar('verde', c.registro || 'Entró · ' + c.detalle.split(' · ')[0], true); }
+      registrar('verde', c.registro || 'Entró · ' + c.detalle.split(' · ')[0], true, c.aviso);
       aLectura();
+    }
+
+    /* ---------- Huella: lectura simulada, excepciones y contingencia ---------- */
+
+    var PASO_HUELLA = 5, MS_LECTURA = 1200;
+    function clon(c) { return JSON.parse(JSON.stringify(c)); }
+    function sitio(c) { return String(c.detalle || '').split(' · ')[0]; }
+    function lectorListo() { return st.lector && !st.offline; }
+    // El sector del caso puede subir el modo del evento, pero nunca con el módulo apagado.
+    function modoDe(c) {
+      if (st.huella === 'apagada') { return 'apagada'; }
+      return ((D.evento.huella || {}).sectores || {})[sitio(c)] || st.huella;
+    }
+    // Verde con excepción: nunca se confirma con Enter y solo avisa al PMU en el modo obligatorio.
+    function excepcion(c, nota_, registro, aviso, sinRed) {
+      var v = clon(c); v.exc = true; v.notaHuella = nota_; v.registro = registro; v.aviso = aviso || undefined; v.sinRed = !!sinRed;
+      return v;
+    }
+    function verificado(c) { var v = clon(c); v.verificado = true; v.registro = 'Entró · huella coincide · ' + sitio(c); return v; }
+    function rojoHuella(c) {
+      var r = clon(c);
+      r.color = 'rojo'; r.punto = 'rojo'; r.operativo = true; r.prestada = true; r.causa = 'Posible cédula prestada'; r.dato = 'La huella no coincide con el documento';
+      r.registro = 'No entró · huella no coincide (3 lecturas legibles)';
+      return r;
+    }
+    function sinReferencia(c, m) { return excepcion(c, 'Documento sin huella de referencia', 'Entró · sin referencia de huella', m === 'obligatoria' ? 'sin-referencia' : null); }
+    function presentar(c) {
+      st.caso = c; st.vista = 'resultado'; st.hu = null;
+      if (c.color === 'rojo') { st.turno.rojos++; registrar('rojo', c.registro || (c.operativo ? 'No entró · ' + c.causa : 'No entró · alerta al PMU'), true); }
+      pintarDispositivo();
+    }
+    // Cierra la huella: con la capa retenida la libera y ella muestra el resultado al terminar; si no, se muestra ya.
+    function cerrarHuella(c) {
+      st.hoja = null;
+      if (st.hu && st.hu.retenida) { st.hu.final = c; st.hu.retenida = false; st.vista = 'validando'; pintarDispositivo(); capa.seguir(); }
+      else { presentar(c); }
+    }
+    function lectura(origen) {
+      st.hu = { n: 1, est: 'leyendo', origen: origen, retenida: origen === 'obligatoria' };
+      st.vista = 'huella'; pintarDispositivo();
+      luego(resolverLectura, MS_LECTURA);
+    }
+    // El resultado sale del caso elegido: calidad y coincidencia se cuentan aparte; solo 3 legibles sin coincidir dan rojo.
+    function resolverLectura() {
+      var h = st.hu, c = st.caso;
+      if (!h || st.vista !== 'huella') { return; }
+      var r = c.huella || 'coincide';
+      if (r === 'sinref') { cerrarHuella(sinReferencia(c, modoDe(c))); return; }
+      if (r === 'no' || r === 'ilegible') {
+        if (h.n < 3) { h.est = r === 'no' ? 'nocoincide' : 'ilegible'; pintarDispositivo(); return; }
+        if (r === 'no') { cerrarHuella(rojoHuella(c)); return; }
+        h.est = 'ilegible'; st.motivo = null; st.motivoNota = ''; st.hoja = 'sin-huella'; pintarDispositivo(); return;
+      }
+      cerrarHuella(verificado(c));
+    }
+    // Verde candidato que no pasó por lectura: sin referencia, lector caído, sin red o solo opcional.
+    function sinLectura(c, m, pide) {
+      if (m === 'apagada' || c.color !== 'verde') { return c; }
+      if (c.huella === 'sinref') { return sinReferencia(c, m); }
+      if (!pide) {
+        if (!lectorListo()) { c.notaLector = st.offline ? 'Sin conexión · la huella no se verifica' : 'Lector de huella sin servicio · la verificación sigue con el documento'; }
+        return c;
+      }
+      if (st.offline) { return excepcion(c, 'Sin conexión · sin huella · se sincroniza al volver', 'Entró · sin huella · contingencia (sin conexión)', null, true); }
+      if (!st.contingencia) { st.hu = { n: 0, est: 'sinlector' }; st.vista = 'huella'; pintarDispositivo(); return null; }
+      return excepcion(c, 'Sin huella · contingencia', 'Entró · sin huella · contingencia');
+    }
+    function fijarModo(m) {
+      st.huella = m;
+      var sw = raiz.querySelector('#sw-lector');
+      if (sw) { sw.checked = m !== 'apagada'; }
+    }
+    function fijarLector(v) { st.lector = v; }
+    // Un caso de huella con el módulo apagado lo enciende; el caso del lector lo apaga y el siguiente lo devuelve.
+    function prepararHuella(c) {
+      if (c.modo && st.huella === 'apagada') {
+        fijarModo(c.modo);
+        mostrarToast('Huella: ' + MODOS[c.modo].toLowerCase() + ' en este sector', 'El módulo estaba apagado: se enciende para este caso.', false);
+      }
+      if (c.huella === 'lector' && st.lector) { fijarLector(false); st.lectorAuto = true; }
+      else if (c.huella && c.huella !== 'lector' && st.lectorAuto && !st.lector) { fijarLector(true); st.lectorAuto = false; }
+    }
+
+    var lento = false;
+    function escribiendo(caso) {
+      cancelar();
+      st.hoja = null; st.caso = caso; st.vista = 'tecleando';
+      pintarDispositivo();
+      var num = disp.querySelector('#teclear-num'), digitos = caso.doc.split(' ').slice(1).join('').replace(/\D/g, '');
+      var reducido = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var paso = (lento ? 4800 : 1200) / digitos.length;
+      var total = grupos(digitos);
+      // Se agrupa el número final y se recorta por dígitos: los bloques no saltan mientras se escribe.
+      var pinta = function (n) { var k = 0, f = 0; while (f < n && k < total.length) { if (total[k] !== ' ') { f++; } k++; } if (num) { num.textContent = total.slice(0, k); } };
+      if (reducido) { pinta(digitos.length); luego(function () { leer(caso); }, 700); return; }
+      for (var i = 1; i <= digitos.length; i++) { luego(pinta.bind(null, i), i * paso); }
+      luego(function () { leer(caso); }, digitos.length * paso + 600);
     }
 
     function leer(caso) {
       cancelar();
-      st.hoja = null; st.reloj++; st.apoyo = false; st.acomp = false; st.policia = false; 
+      st.hoja = null; st.reloj++; st.apoyo = false; st.policia = false; st.hu = null;
+      prepararHuella(caso);
       st.caso = caso; st.vista = 'validando';
+      activarEnPanel(caso.id);
       SPLASH.flash();
       pintarDispositivo();
+      // En obligatoria el verde candidato espera la huella en el paso 6 de la capa; sin referencia o sin lector no hay lectura.
+      var m = modoDe(caso), pide = m === 'obligatoria' && caso.color === 'verde' && caso.huella !== 'sinref';
+      var lee = pide && lectorListo();
+      var paraCapa = lee && caso.huella === 'no' ? Object.assign({}, caso, { color: 'rojo' }) : caso;
       var mostrar = function () {
-        st.vista = 'resultado';
-        if (caso.color === 'rojo') { st.turno.rojos++; registrar('rojo', caso.operativo ? 'No entró · ' + caso.causa : 'No entró · alerta al PMU', true); }
-        pintarDispositivo();
+        if (st.hu && st.hu.final) { presentar(st.hu.final); return; }
+        var c = sinLectura(clon(caso), m, pide);
+        if (c) { presentar(c); }
       };
-      // Cada validación pasa por la capa oculta: 6 pasos de 1 s en Slow motion.
-      if (capa) { capa.correr(caso, { evento: E, offline: st.offline, reloj: st.reloj, alCambiar: escalar }, mostrar); } else { luego(mostrar, 450); }
+      // Cada validación pasa por la capa oculta: 7 pasos de 1 s en Slow motion.
+      if (capa) { capa.correr(paraCapa, { evento: E, offline: st.offline, reloj: st.reloj, alCambiar: escalar, huella: m, lector: st.lector, contingencia: st.contingencia, retener: lee ? PASO_HUELLA : -1, alRetener: function () { lectura('obligatoria'); } }, mostrar); } else { luego(mostrar, 450); }
     }
 
-    function casoPorDocumento(num) {
-      var base = CASOS.filter(function (c) { return c.id === (/4447$/.test(num) ? 'medida' : 'verde'); })[0];
-      var c = JSON.parse(JSON.stringify(base));
-      if (c.color === 'verde') { c.doc = st.tipo + ' ' + num; }
+    // Cruza tipo + número contra los casos del demo; sin coincidencia, null. El rojo por medida llega enmascarado (…4447).
+    function buscarCaso(tipo, num, digitado) {
+      var hit = CASOS.filter(function (c) {
+        if (c.id === 'medida') { return tipo === 'CC' && /4447$/.test(num); }
+        var m = /^(\S+)\s(.+)$/.exec(c.doc);
+        return !!m && m[1] === tipo && m[2].replace(/\D/g, '') === num;
+      })[0];
+      if (!hit) { return null; }
+      var c = JSON.parse(JSON.stringify(hit));
+      if (digitado && c.color === 'verde') { c.digitado = true; c.registro = 'Entró · documento digitado · ' + c.detalle.split(' · ')[0]; }
       return c;
+    }
+
+    // El operador compara la foto impresa con la persona: si no coincide, rojo operativo sin pasar por el SVN.
+    function noEsLaPersona() {
+      var np = clon(st.caso);
+      np.color = 'rojo'; np.punto = 'rojo'; np.operativo = true; np.prestada = true; np.causa = 'Posible cédula prestada'; np.dato = 'La foto del documento no coincide con la persona';
+      delete np.registro;
+      presentar(np);
     }
 
     function onClick(ev) {
       var t = ev.target;
-      var el = t.closest('[data-caso],[data-acc],[data-tecla],[data-tipo],[data-cierre],[data-zoom]');
+      var el = t.closest('[data-grupo],[data-caso],[data-acc],[data-tecla],[data-tipo],[data-cierre],[data-zoom],[data-motivo]');
       if (!el) { return; }
+      if (el.dataset.motivo) {
+        st.motivo = el.dataset.motivo; pintarDispositivo();
+        var campo = disp.querySelector('#motivo-nota'); if (campo) { campo.focus({ preventScroll: true }); }
+        return;
+      }
       if (el.dataset.zoom) {
         var z = el.dataset.zoom;
         zoom = z === 'in' ? Math.min(2, zoom + 0.15) : z === 'out' ? Math.max(0.5, zoom - 0.15) : 1;
         escalar();
         return;
       }
+      if (el.hasAttribute('data-grupo')) { var sec = el.closest('.pp-grupo'); abrirGrupo(sec, !sec.classList.contains('pp-grupo--abierto')); return; }
       if (el.dataset.caso) {
+        casoActivo = el.dataset.caso;
+        activarEnPanel(casoActivo);
+        el.closest('#pp-casos').querySelectorAll('nwt-detail-item').forEach(function (n) { n.classList.toggle('pp-caso--activo', n === el); });
         // Se ve 1 s el estado inicial (lectura) antes de validar, en Tiempo real y en Slow motion (DC-178).
         var elegido = CASOS.filter(function (c) { return c.id === el.dataset.caso; })[0];
-        st.hoja = null; aLectura(); luego(function () { leer(elegido); }, 1000);
+        st.hoja = null; aLectura(); luego(function () { if (elegido.digitado) { escribiendo(elegido); } else { leer(elegido); } }, 1000);
         return;
       }
       if (el.dataset.cierre) { st.cierre = el.dataset.cierre; pintarDispositivo(); return; }
       if (el.dataset.tipo) {
         // Sin repintar el equipo: la hoja no debe reanimarse al elegir el tipo.
-        st.tipo = el.dataset.tipo;
-        disp.querySelectorAll('[data-tipo]').forEach(function (t) { t.toggleAttribute('active', t.dataset.tipo === st.tipo); if ('active' in t) { t.active = t.dataset.tipo === st.tipo; } });
+        st.tipo = el.dataset.tipo; st.hojaError = false;
+        disp.querySelectorAll('[data-tipo]').forEach(function (t) { t.setAttribute('aria-checked', String(t.dataset.tipo === st.tipo)); });
+        pintarHoja();
         return;
       }
       if (el.dataset.tecla) {
         var k = el.dataset.tecla;
-        if (k === '⌫') { st.digitos = st.digitos.slice(0, -1); }
-        else if (k === 'ok') {
-          if (st.digitos.length >= 5) { var n = st.digitos; st.digitos = ''; leer(casoPorDocumento(n)); return; }
-          // Con menos de 5 dígitos no se valida: se avisa en vez de no hacer nada (DC-053).
-          var ayuda = disp.querySelector('#hoja-ayuda');
-          if (ayuda) { ayuda.textContent = 'Faltan dígitos: el documento tiene al menos 5.'; ayuda.classList.add('pp-hoja__ayuda--error'); }
-          return;
+        if (k === 'ok') {
+          if (!estadoHoja().puede) { return; }
+          var hallado = buscarCaso(st.tipo, st.digitos, true);
+          if (!hallado) { st.hojaError = true; pintarHoja(); return; }
+          st.digitos = ''; leer(hallado); return;
         }
-        else if (st.digitos.length < 12) { st.digitos += k; }
-        var pant = disp.querySelector('.pp-pantallita');
-        if (pant) { pant.textContent = grupos(st.digitos); }
+        teclear(k);
         return;
       }
       switch (el.dataset.acc) {
         case 'salir': ctx.salir(); break;
-        case 'digitar': st.hoja = 'digitar'; st.digitos = ''; pintarDispositivo(); break;
+        case 'digitar': st.hoja = 'digitar'; st.digitos = ''; st.hojaError = false; pintarDispositivo(); break;
         case 'turno': st.hoja = 'turno'; pintarDispositivo(); break;
         case 'cerrar-hoja': st.hoja = null; pintarDispositivo(); break;
         case 'cerrar-toast': st.toast = null; clearTimeout(timerToast); pintarToast(); break;
@@ -877,22 +1100,29 @@ window.PANTALLAS = window.PANTALLAS || {};
           var sig = st.caso; aLectura();
           mostrarToast(sig && sig.operativo ? 'Caso cerrado' : 'Remitido a la autoridad', (sig && sig.causa ? sig.causa + ' · ' : '') + 'Lector listo para la siguiente persona'); break;
         case 'policia': st.policia = true; registrar('rojo', 'Autoridad avisada'); mostrarToast('Autoridad avisada', E.puerta + ' · ' + hora(st.reloj), true); break;
-        case 'acompanar': st.acomp = true; mostrarToast('Acompañamiento solicitado', 'Supervisor avisado', true); break;
         case 'apoyo': st.apoyo = true; registrar('rojo', 'Alteración reportada'); mostrarToast('Apoyo solicitado', 'Autoridad y supervisor avisados · ' + E.puerta + ' · ' + hora(st.reloj), true); break;
-        case 'cancelar-scan': registrar('amarillo', 'Escaneo cancelado'); aLectura(); break;
+        case 'cancelar-scan': registrar('neutro', 'Escaneo cancelado'); aLectura(); break;
         case 'continuar': continuar(); break;
-        case 'rostro-si':
-          var ok = JSON.parse(JSON.stringify(st.caso)); ok.color = 'verde'; ok.verificado = true; ok.registro = 'Entró · identidad verificada';
-          st.vista = 'resultado'; st.caso = ok; pintarDispositivo();
+        case 'no-persona':
+          // En modo opcional la duda se aclara con la hoja de huella, sin un botón más en el verde.
+          if (modoDe(st.caso) === 'opcional' && !st.caso.exc) { st.hoja = 'verificar-huella'; pintarDispositivo(); break; }
+          noEsLaPersona();
           break;
-        case 'escanear-doc':
-          registrar('amarillo', 'Boleta sin documento · se pidió escanearlo'); aLectura();
-          mostrarToast('Escanee el documento', 'La boleta entra con quien la tiene asignada.', true, 'warning'); break;
-        case 'rostro-no':
-          var no = JSON.parse(JSON.stringify(st.caso));
-          no.color = 'rojo'; no.operativo = true; no.causa = 'Posible cédula prestada';
-          st.caso = no; st.turno.rojos++; registrar('rojo', 'No entró · identidad no confirmada', true); pintarDispositivo();
+        case 'no-entra': st.hoja = null; noEsLaPersona(); break;
+        case 'leer-huella': st.hoja = null; lectura('opcional'); break;
+        case 'leer-otra': if (st.hu && st.hu.n < 3) { st.hu.n++; st.hu.est = 'leyendo'; pintarDispositivo(); luego(resolverLectura, MS_LECTURA); } break;
+        case 'sin-huella': st.motivo = null; st.motivoNota = ''; st.hoja = 'sin-huella'; pintarDispositivo(); break;
+        case 'confirmar-sin-huella':
+          if (!st.motivo) { break; }
+          var mot = st.motivo === MOTIVOS[2] ? 'Otro · ' + st.motivoNota.trim() : st.motivo;
+          cerrarHuella(excepcion(st.caso, 'Sin huella · ' + mot, 'Entró · sin huella · ' + mot, modoDe(st.caso) === 'obligatoria' ? 'sin-huella' : null));
           break;
+        case 'contingencia':
+          st.contingencia = true;
+          mostrarToast('Contingencia de huella activa', E.puerta + ' · un solo aviso al PMU · cada ingreso queda marcado', false, 'warning');
+          presentar(excepcion(st.caso, 'Sin huella · contingencia', 'Entró · sin huella · contingencia'));
+          break;
+        case 'cancelar-huella': registrar('neutro', 'Lectura cancelada'); aLectura(); break;
         case 'nueva-alerta':
           st.min++;
           st.alertas.push({ id: 'n' + st.alertas.length, estado: 'nueva', puerta: 'Puerta 3 · Occidental', hora: ahora(), doc: 'CC •••• 3318', causa: 'Medida vigente', origen: 'Lectura en puerta',
@@ -952,9 +1182,17 @@ window.PANTALLAS = window.PANTALLAS || {};
         }
         return;
       }
+      if (st.hoja === 'digitar' && !(ev.target.closest && ev.target.closest('input'))) {
+        if (/^\d$/.test(ev.key)) { ev.preventDefault(); teclear(ev.key); }
+        else if (ev.key === 'Backspace') { ev.preventDefault(); teclear('⌫'); }
+        else if (ev.key === 'Escape') { st.hoja = null; pintarDispositivo(); }
+        return;
+      }
+      // Enter no lee ni confirma una huella: ni en la lectura, ni en las hojas, ni en el verde con excepción.
+      if (ev.key === 'Enter' && (st.vista === 'huella' || st.hoja === 'verificar-huella' || st.hoja === 'sin-huella' || (st.vista === 'resultado' && st.caso && st.caso.exc))) { ev.preventDefault(); return; }
       if (st.disp !== 'consola' || st.vista !== 'resultado' || st.hoja || ev.target.closest && ev.target.closest('button')) { return; }
       var b = ev.key === 'Enter' ? disp.querySelector('.pp-r__acciones .pp-r__btn:not(.pp-r__btn--sec)') : (ev.key === 'p' || ev.key === 'P') ? disp.querySelector('[data-acc=policia]') : null;
-      if (b && !b.disabled && b.dataset.acc !== 'rostro-si') { ev.preventDefault(); b.click(); }
+      if (b && !b.disabled) { ev.preventDefault(); b.click(); }
     }
 
     // Casillas del modal: se actualiza el estado y el botón sin repintar, para no perder el foco.
@@ -971,7 +1209,9 @@ window.PANTALLAS = window.PANTALLAS || {};
       if (!ev.target.matches('[data-form="lector"]')) { return; }
       ev.preventDefault();
       var v = (disp.querySelector('#lector').value || '').replace(/\D/g, '');
-      if (v.length >= 5) { leer(casoPorDocumento(v)); }
+      if (v.length < MIN_DOC) { return; }
+      var c = buscarCaso('CC', v, false);
+      if (c) { leer(c); } else { mostrarToast('No encontramos ese documento', 'Revise el número e inténtelo de nuevo.', false, 'warning'); }
     }
 
     /* ---------- Montaje ---------- */
@@ -983,15 +1223,6 @@ window.PANTALLAS = window.PANTALLAS || {};
     disp = raiz.querySelector('#dispositivo');
     if (modo === 'puerta') { capa = window.CAPA.crear(raiz.querySelector('.pp-escena')); }
 
-    var tabsM = raiz.querySelector('#tabs-metodo');
-    if (tabsM) {
-      tabsM.items = [{ id: 'huella', label: 'Huella', value: 'huella' }, { id: 'rostro', label: 'Rostro', value: 'rostro' }];
-      tabsM.value = st.metodo;
-      tabsM.addEventListener('nwtChange', function (e) {
-        st.metodo = e.detail;
-        mostrarToast(st.metodo === 'huella' ? 'Huella' : 'Reconocimiento facial', st.metodo === 'huella' ? 'Lector táctil: el método estable hoy en Colombia.' : 'Cámara contra la foto de referencia: la apuesta a futuro.', st.vista === 'resultado');
-      });
-    }
     var tabs = raiz.querySelector('#tabs-disp');
     if (tabs) {
       // El tablero de la autoridad de seguridad es para tablet y escritorio: sin celular.
@@ -1001,22 +1232,26 @@ window.PANTALLAS = window.PANTALLAS || {};
       tabs.value = st.disp;
       tabs.addEventListener('nwtChange', function (e) { st.disp = e.detail; st.hoja = null; pintarDispositivo(); });
     }
+    // El switch decide si hay huella en la puerta: encendido = opcional; el sector configurado como obligatorio manda en su puerta.
+    var swLector = raiz.querySelector('#sw-lector');
+    if (swLector) {
+      swLector.addEventListener('nwtChange', function (e) {
+        if ((e.detail === true) === (st.huella !== 'apagada')) { return; }
+        st.lectorAuto = false; st.contingencia = false;
+        st.lector = true;
+        fijarModo(e.detail ? 'opcional' : 'apagada');
+        // Sin un resultado viejo en pantalla: el nuevo estado rige desde la siguiente lectura.
+        aLectura();
+        mostrarToast(e.detail ? 'Huella en la puerta' : 'Sin huella en la puerta', AYUDA_MODO[st.huella], e.detail, e.detail ? undefined : 'warning');
+      });
+    }
     // Cada switch avisa con un toast breve y mueve su punto sobre el equipo (DC-208).
-    var swOff = raiz.querySelector('#sw-offline'), swBio = raiz.querySelector('#sw-bio'), swTorn = raiz.querySelector('#sw-torn');
+    var swOff = raiz.querySelector('#sw-offline'), swTorn = raiz.querySelector('#sw-torn');
     if (swOff) {
       swOff.addEventListener('nwtChange', function (e) {
         st.offline = e.detail; if (!st.offline) { st.pendientes = 0; }
         if (st.offline) { mostrarToast('Sin conexión', 'Valida con el paquete del evento.', true, 'warning'); }
         else { mostrarToast('Conexión restablecida', 'Se sincroniza lo pendiente.', true); }
-      });
-    }
-    if (swBio) {
-      swBio.addEventListener('nwtChange', function (e) {
-        st.bio = e.detail;
-        var repinta = st.vista === 'resultado';
-        if (!repinta) { estadoEquipos(); }
-        if (st.bio) { mostrarToast('Módulo biométrico encendido', 'Compara el rostro con la foto de referencia.', repinta); }
-        else { mostrarToast('Módulo biométrico apagado', 'Basta el documento; no se compara el rostro.', repinta, 'warning'); }
       });
     }
     if (swTorn) {
@@ -1032,6 +1267,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         var b = e.target.closest('[data-vel]');
         if (!b) { return; }
         velCtrl.querySelectorAll('[data-vel]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        lento = b.dataset.vel === 'slow';
         window.CAPA.setVelocidad(b.dataset.vel);
       });
     }

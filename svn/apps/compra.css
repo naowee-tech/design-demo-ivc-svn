@@ -1,4 +1,4 @@
-/* Venta de boletas (prefijo pc-). El marco del demo y del equipo es el de la puerta (pp-); acá va solo la vista.
+/* Venta de ingresos (prefijo pc-). El marco del demo y del equipo es el de la puerta (pp-); acá va solo la vista.
  * pc-* sin más = Graderío (comercializadora ficticia, paleta propia); pc-s-* = piezas del SVN con tokens --naotech-*. */
 
 /* El splash comparte solo las variables: el layout de .pc-app lo sacaría del overlay (position: absolute). */
@@ -88,15 +88,15 @@
 .pc-aviso{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;background:var(--pc-y2);color:var(--pc-ink)}
 .pc-aviso b{display:block;font-size:15px;margin-bottom:2px}
 .pc-aviso span{font-size:14px;line-height:1.4}
-/* Boleta */
-.pc-boleta{background:#fff;border:1px solid var(--pc-line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}
-.pc-boleta__cab{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--pc-ink);color:#fff}
-.pc-boleta__cab b{font-size:14px}
-.pc-boleta__cuerpo{padding:14px;display:flex;flex-direction:column;gap:10px}
-.pc-boleta__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.pc-boleta__grid div{display:flex;flex-direction:column;gap:2px}
-.pc-boleta__grid span{font-size:14px;font-weight:700;color:var(--pc-mute);text-transform:uppercase;letter-spacing:.04em}
-.pc-boleta__grid b{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:20px}
+/* Ingreso */
+.pc-ingreso{background:#fff;border:1px solid var(--pc-line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}
+.pc-ingreso__cab{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--pc-ink);color:#fff}
+.pc-ingreso__cab b{font-size:14px}
+.pc-ingreso__cuerpo{padding:14px;display:flex;flex-direction:column;gap:10px}
+.pc-ingreso__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pc-ingreso__grid div{display:flex;flex-direction:column;gap:2px}
+.pc-ingreso__grid span{font-size:14px;font-weight:700;color:var(--pc-mute);text-transform:uppercase;letter-spacing:.04em}
+.pc-ingreso__grid b{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:20px}
 .pc-titular{display:flex;align-items:center;gap:10px}
 .pc-avatar{width:36px;height:36px;border-radius:50%;background:var(--pc-y);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
 .pc-avatar--vacio{background:transparent;border:1.5px dashed var(--pc-line2);color:var(--pc-mute)}
@@ -109,7 +109,7 @@
 .pc-estado--vacio{background:#ECE9DF;color:var(--pc-ink)}
 .pc-estado--claro{background:rgba(255,255,255,.14);color:#fff}
 .pc-qr{display:flex;gap:14px;align-items:center}
-.pc-qr__img{width:112px;height:112px;padding:6px;background:#fff;border:1px solid var(--pc-line);border-radius:12px;flex:none}
+.pc-qr__doc{display:grid;place-items:center;width:112px;height:112px;color:var(--pc-ink);background:#fff;border:1px solid var(--pc-line);border-radius:12px;flex:none}
 /* ---------- Piezas del SVN (look Naowee) ---------- */
 .pc-s-pieza{font-family:var(--naotech-sdk-font-family);color:var(--pc-s-ink);background:#fff;border:1px solid var(--pc-s-line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px}
 .pc-s-cab{display:flex;align-items:center;gap:10px}
@@ -181,8 +181,8 @@
 .pc-qr__d .pc-titular__t { flex: none; align-items: center; }
 .pc-qr__vacio { width: 112px; height: 112px; flex: none; display: grid; place-items: center; border: 1.5px dashed var(--pc-line2); border-radius: 12px; color: var(--pc-mute); }
 .pc-puerta { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
-.pc-token { font-family: var(--naotech-sdk-font-family); font-size: 14px; color: var(--pc-s-mute); }
-.pc-boleta__cab b { overflow-wrap: anywhere; }
+.pc-nota-doc { font-family: var(--naotech-sdk-font-family); font-size: 14px; color: var(--pc-s-mute); }
+.pc-ingreso__cab b { overflow-wrap: anywhere; }
 
 
 /* ---------- Panel del demo y franja de la consulta ---------- */
@@ -214,7 +214,7 @@
 /* DC-230: la franja de la consulta queda pegada al fondo de la escena; el equipo ocupa el resto (escalar()). */
 .pp-escena--capa .pp-c.pc-c { top: auto; bottom: var(--naotech-sizing-20); }
 
-/* Compra aprobada: cubre todo el equipo 2 s (verde 0B6B33 con blanco ≈ 6,9:1) y pasa sola a Tus boletas. */
+/* Compra aprobada: cubre todo el equipo 2 s (verde 0B6B33 con blanco ≈ 6,9:1) y pasa sola a Tus ingresos. */
 .pc-aprob { --pc-ok: #0B6B33; position: absolute; inset: 0; z-index: 25; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 32px; text-align: center; background: var(--pc-ok); color: #fff; font-family: 'Figtree', system-ui, sans-serif; pointer-events: all; }
 .pc-aprob p { margin: 0; }
 .pc-aprob__ic { width: 132px; height: 132px; fill: none; stroke: #fff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
@@ -226,8 +226,8 @@
 @keyframes pc-aprob-trazo { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { .pc-aprob__ic circle, .pc-aprob__ic path { animation: none; } }
 
-/* Acciones dentro de la tarjeta de cada boleta en «Tus boletas». */
-.pc-boleta__acc { display: flex; flex-direction: column; gap: 10px; }
+/* Acciones dentro de la tarjeta de cada ingreso en «Tus ingresos». */
+.pc-ingreso__acc { display: flex; flex-direction: column; gap: 10px; }
 
 /* Compra nominativa: botón sin habilitar (con su razón debajo) y resumen de titulares en Pago. */
 .pc-btn:disabled { background: var(--pc-line2); color: var(--pc-mute); cursor: not-allowed; }
@@ -249,4 +249,17 @@
 .pc-grupo__lista[hidden] { display: none; }
 .pc-grupo__lista > nwt-detail-item { padding-block: var(--naotech-sizing-8); border-radius: var(--naotech-radius-md); }
 .pc-grupo__lista > nwt-detail-item + nwt-detail-item { border-top: 1px solid var(--naotech-app-color-200); border-top-left-radius: 0; border-top-right-radius: 0; }
+/* DC-061: el punto de color va al extremo derecho de la fila. */
+.pc-grupo__lista > nwt-detail-item { justify-content: space-between; padding-inline: var(--naotech-sizing-12); }
+.pp-panel .pc-grupo__lista > nwt-detail-item .pp-caso__punto { margin: 0 0 0 auto; flex: none; }
 .pc-grupo__lista > nwt-detail-item:hover { background: var(--naotech-app-color-100); }
+
+/* DC-059: en escritorio la card Casos llena el alto del panel y su lista scrollea por dentro; el panel no. */
+@media (min-width: 901px) {
+  .pp-panel:has(#pc-casos) { overflow: hidden; }
+  .pp-panel:has(#pc-casos) > .pp-panel__card:first-of-type { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+  .pp-panel:has(#pc-casos) > .pp-panel__card:first-of-type .nwt-card__body { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .pp-panel:has(#pc-casos) .nwt-card__content:has(#pc-casos) { flex: 1 1 auto; min-height: 0; flex-direction: column; overflow: hidden; }
+  .pp-panel:has(#pc-casos) #pc-casos { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .pp-panel:has(#pc-casos) > .pp-panel__card:nth-of-type(2) { flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 60%; }
+}

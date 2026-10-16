@@ -19,99 +19,111 @@ window.PANTALLAS = window.PANTALLAS || {};
   var T = function (d, h, m) { return Date.UTC(2026, 8 + (d > 30 ? 1 : 0), d > 30 ? d - 30 : d, h, m); };
   var AHORA = T(29, 10, 14), INICIO_HOY = T(29, 20, 0);
   var EV = {
-    mil: { nombre: 'Millonarios vs. América', lugar: 'Estadio El Campín', cuando: '29 sep · 20:00', inicio: T(29, 20, 0), plazo: T(29, 17, 0) },
-    nal: { nombre: 'Nacional vs. Medellín', lugar: 'Estadio Atanasio Girardot', cuando: '28 sep · 19:00', inicio: T(28, 19, 0), plazo: T(28, 17, 0) },
-    car: { nombre: 'Real Cartagena vs. Unión Magdalena', lugar: 'Estadio Jaime Morón', cuando: '3 oct · 18:30', inicio: T(33, 18, 30), plazo: T(32, 16, 0) },
-    ame: { nombre: 'América vs. Once Caldas', lugar: 'Estadio Olímpico Pascual Guerrero', cuando: '3 oct · 16:00', inicio: T(33, 16, 0), plazo: T(32, 14, 0) }
+    mil: { nombre: 'Millonarios vs. América', lugar: 'Estadio El Campín', cuando: '29 sep · 20:00', inicio: T(29, 20, 0) },
+    nal: { nombre: 'Nacional vs. Medellín', lugar: 'Estadio Atanasio Girardot', cuando: '28 sep · 19:00', inicio: T(28, 19, 0) },
+    car: { nombre: 'Real Cartagena vs. Unión Magdalena', lugar: 'Estadio Jaime Morón', cuando: '3 oct · 18:30', inicio: T(33, 18, 30) },
+    ame: { nombre: 'América vs. Once Caldas', lugar: 'Estadio Olímpico Pascual Guerrero', cuando: '3 oct · 16:00', inicio: T(33, 16, 0) }
   };
 
   var MOTIVOS_RECHAZO = [
     'La medida solo la revisa la autoridad que la emitió',
     'Después del inicio del encuentro no se puede hacer nada',
-    'La boleta perdió el plazo: sin devolución ni reventa',
+    'El derecho de ingreso es de otro documento',
     'Reclamación duplicada',
     'No se pudo verificar a quien reclama'
   ];
   var RES = {
-    congeladas: ['Propiedad transferida a otra persona elegible'],
-    noaparece: ['Se confirmó que la boleta está a su nombre y se reenvió el código', 'Se orientó a abrir la boleta desde su portal'],
+    congelados: ['Titularidad transferida a otro documento elegible'],
+    sinderecho: ['Se confirmó que el derecho está en otro documento y se orientó a cambiar el titular desde la comercializadora', 'Se confirmó que el derecho existe y se orientó a la puerta de su sector'],
     medida: ['Se orientó a consultar su estado en el portal de la persona'],
     identidad: ['Se orientó a corregir el nombre con la Registraduría'],
-    usada: ['Se confirmó el ingreso previo: la boleta no se reemite'],
-    plazo: ['Se informó que la boleta perdió el plazo'],
-    limite: ['Se orientó sobre el límite de boletas por persona']
+    usada: ['Se confirmó el ingreso previo: el derecho no se reemite'],
+    puerta: ['Se confirmó el sector del derecho y se indicó la puerta que le corresponde'],
+    prestada: ['Se registró el reporte de cédula prestada y quedó en la auditoría', 'Se orientó a la persona sobre su derecho de ingreso y su documento'],
+    limite: ['Se orientó sobre el límite de ingresos por persona']
   };
-  var TIPOS = { congeladas: 'Boletas congeladas', noaparece: 'La boleta no aparece', medida: 'Compra rechazada por medida', identidad: 'Identidad no coincide', usada: 'Boleta ya usada', plazo: 'Perdió el plazo', limite: 'Límite de boletas' };
+  var TIPOS = { congelados: 'Derechos de ingreso congelados', sinderecho: 'Documento sin derecho en la puerta', medida: 'Compra rechazada por medida', identidad: 'Identidad no coincide', usada: 'Ya ingresó', puerta: 'Puerta equivocada', prestada: 'Cédula prestada reportada', limite: 'Límite de ingresos' };
+
+  // Pasos de traza que se repiten: la compra del derecho y su registro (nace al pagar, por documento).
+  function compra(d, h, doc, sector, yo) {
+    return [[d + ' · ' + h, 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], [d + ' · ' + h, 'Consulta 2 · ¿Puede recibir?', 'ok', 'Titular ' + doc + ' · Autorizado'],
+      [d + ' · ' + h, 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], [d + ' · ' + h, 'Derecho de ingreso registrado', 'info', doc + ' · ' + sector + (yo ? ' · «Yo también voy»' : '')]];
+  }
 
   function nuevosCasos() {
     return [
-      { id: 'R-2026-0187', tipo: 'congeladas', estado: 'abierta', quien: { n: 'Daniela Gómez Arias', doc: 'CC 1.017.889.214' }, ev: EV.mil, recibida: 'Hoy · 09:48',
-        dice: 'Mi pareja compró 4 boletas para el partido de hoy y le dijeron que no puede seguir. Dos eran para mí y mi familia. ¿Pueden pasarlas a mi nombre?',
-        boletas: [
-          { cod: 'EC-MIL-0412', est: 'congelada', tit: 'CC •••• 3301', prop: 'Propietario CC •••• 7120', sector: 'Occidental · General',
-            traza: [['27 sep · 16:41', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['27 sep · 16:42', 'Consulta 2 · ¿Puede recibir?', 'ok', 'Titular CC •••• 3301 · Autorizado'], ['27 sep · 16:44', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['27 sep · 16:44', 'Token emitido', 'info', 'tk •••• 8F2A'], ['27 sep · 16:44', 'Boleta emitida', 'info', 'Titular CC •••• 3301'], ['29 sep · 08:02', 'Medida nueva del propietario', 'no', 'La boleta se congeló: solo soporte puede transferirla']] },
-          { cod: 'EC-MIL-0413', est: 'congelada', tit: 'CC •••• 3302', prop: 'Propietario CC •••• 7120', sector: 'Occidental · General',
-            traza: [['27 sep · 16:41', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['27 sep · 16:43', 'Consulta 2 · ¿Puede recibir?', 'ok', 'Titular CC •••• 3302 · Autorizado'], ['27 sep · 16:44', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['27 sep · 16:44', 'Token emitido', 'info', 'tk •••• 8F2B'], ['27 sep · 16:44', 'Boleta emitida', 'info', 'Titular CC •••• 3302'], ['29 sep · 08:02', 'Medida nueva del propietario', 'no', 'La boleta se congeló: solo soporte puede transferirla']] },
-          { cod: 'EC-MIL-0411', est: 'anulada', tit: 'CC •••• 7120', prop: 'Propietario CC •••• 7120', sector: 'Occidental · Fila B · Silla 3',
-            traza: [['27 sep · 16:41', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['27 sep · 16:44', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['27 sep · 16:44', 'Token emitido', 'info', 'tk •••• 8F2C'], ['27 sep · 16:44', 'Boleta emitida', 'info', 'Titular CC •••• 7120 · «Yo también voy»'], ['29 sep · 08:02', 'Medida nueva del propietario', 'no', 'La boleta del sancionado se anuló']] },
-          { cod: 'EC-MIL-0414', est: 'asignada', tit: 'CC •••• 3380', prop: 'Propietario CC •••• 7120', sector: 'Occidental · Fila B · Silla 4',
-            traza: [['27 sep · 16:41', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['27 sep · 16:43', 'Consulta 2 · ¿Puede recibir?', 'ok', 'Titular CC •••• 3380 · Autorizado'], ['27 sep · 16:44', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['27 sep · 16:44', 'Token emitido', 'info', 'tk •••• 8F2D'], ['27 sep · 16:44', 'Boleta emitida', 'info', 'Titular CC •••• 3380'], ['29 sep · 08:02', 'Medida nueva del propietario', 'ok', 'No la afecta: sigue válida']] }
+      { id: 'R-2026-0187', tipo: 'congelados', estado: 'abierta', quien: { n: 'Daniela Gómez Arias', doc: 'CC 1.017.889.214' }, ev: EV.mil, recibida: 'Hoy · 09:48',
+        dice: 'Mi pareja compró 4 ingresos para el partido de hoy y le dijeron que no puede seguir. Dos eran para mí y mi familia. ¿Pueden pasarlos a mi documento?',
+        derechos: [
+          { cod: 'DI-MIL-0412', est: 'congelado', tit: 'CC •••• 3301', prop: 'Comprador CC •••• 7120', sector: 'Occidental',
+            traza: compra('27 sep', '16:41', 'CC •••• 3301', 'Occidental').concat([['29 sep · 08:02', 'Medida nueva del comprador', 'no', 'El derecho se congeló: solo soporte puede transferir su titularidad']]) },
+          { cod: 'DI-MIL-0413', est: 'congelado', tit: 'CC •••• 3302', prop: 'Comprador CC •••• 7120', sector: 'Occidental',
+            traza: compra('27 sep', '16:41', 'CC •••• 3302', 'Occidental').concat([['29 sep · 08:02', 'Medida nueva del comprador', 'no', 'El derecho se congeló: solo soporte puede transferir su titularidad']]) },
+          { cod: 'DI-MIL-0411', est: 'anulado', tit: 'CC •••• 7120', prop: 'Comprador CC •••• 7120', sector: 'Occidental',
+            traza: compra('27 sep', '16:41', 'CC •••• 7120', 'Occidental', true).concat([['29 sep · 08:02', 'Medida nueva del comprador', 'no', 'El derecho del documento sancionado se anuló']]) },
+          { cod: 'DI-MIL-0414', est: 'vigente', tit: 'CC •••• 3380', prop: 'Comprador CC •••• 7120', sector: 'Occidental',
+            traza: compra('27 sep', '16:41', 'CC •••• 3380', 'Occidental').concat([['29 sep · 08:02', 'Medida nueva del comprador', 'ok', 'No lo afecta: sigue vigente']]) }
         ],
         historial: [{ t: 'Hoy · 09:48', x: 'Reclamación recibida por el canal web', q: 'Daniela Gómez Arias' }] },
-      { id: 'R-2026-0184', tipo: 'noaparece', estado: 'en gestión', quien: { n: 'Mariana Cárdenas Ríos', doc: 'CC 1.152.708.339' }, ev: EV.mil, recibida: 'Hoy · 09:21',
-        dice: 'Compré en Graderío y ya me cobraron, pero en el celular no me aparece la boleta.',
-        boletas: [{ cod: 'EC-MIL-0377', est: 'asignada', tit: 'CC •••• 8339', prop: 'Propietario CC •••• 8339', sector: 'Occidental · Fila D · Silla 4',
-          traza: [['21 sep · 18:02', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['21 sep · 18:04', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['21 sep · 18:04', 'Token emitido', 'info', 'tk •••• 51C0'], ['21 sep · 18:04', 'Boleta emitida', 'info', 'Titular CC •••• 8339 · «Yo también voy»'], ['29 sep · 09:21', 'Reclamación abierta', 'info', 'Sin ingresos todavía']] }],
-        historial: [{ t: 'Hoy · 09:21', x: 'Reclamación recibida por el canal web', q: 'Mariana Cárdenas Ríos' }, { t: 'Hoy · 09:40', x: 'Caso tomado', q: 'Marcela Duque' }] },
+      { id: 'R-2026-0184', tipo: 'sinderecho', estado: 'en gestión', quien: { n: 'Sebastián Cardona Ruiz', doc: 'CC 1.152.708.664' }, ev: EV.mil, recibida: 'Hoy · 09:21',
+        dice: 'Compré en Graderío y ya me cobraron, pero en la puerta me dijeron que mi documento no tiene derecho de ingreso a este partido.',
+        derechos: [{ cod: 'DI-MIL-0377', est: 'vigente', tit: 'CC •••• 8646', prop: 'Comprador CC •••• 8664', sector: 'Occidental',
+          traza: compra('21 sep', '18:02', 'CC •••• 8646', 'Occidental', false).concat([['29 sep · 09:10', 'Lectura en puerta · CC •••• 8664', 'no', 'Rojo operativo · sin derecho de ingreso a este partido'], ['29 sep · 09:21', 'Reclamación abierta', 'info', 'El derecho existe, pero está en el documento CC •••• 8646']]) }],
+        historial: [{ t: 'Hoy · 09:21', x: 'Reclamación recibida por el canal web', q: 'Sebastián Cardona Ruiz' }, { t: 'Hoy · 09:40', x: 'Caso tomado', q: 'Marcela Duque' }] },
       { id: 'R-2026-0181', tipo: 'medida', estado: 'abierta', quien: { n: 'Julián Andrés Posada', doc: 'CC 71.894.447' }, ev: EV.car, recibida: 'Ayer · 16:30',
-        dice: 'No me dejaron comprar la boleta y yo nunca he tenido problemas. Quiero saber por qué.',
-        boletas: [{ cod: 'Intento de compra · 28 sep', est: 'sin boleta', tit: '—', prop: 'CC •••• 4447', sector: 'Oriental · General',
+        dice: 'No me dejaron comprar el ingreso y yo nunca he tenido problemas. Quiero saber por qué.',
+        derechos: [{ cod: 'Intento de compra · 28 sep', est: 'sin derecho', tit: '—', prop: 'CC •••• 4447', sector: 'Oriental',
           traza: [['28 sep · 15:08', 'Consulta 1 · ¿Puede comprar?', 'no', 'Denegado'], ['28 sep · 15:08', 'Código de motivo', 'no', 'Medida restrictiva vigente'], ['28 sep · 15:08', 'Qué vio la comercializadora', 'info', 'Solo «no es posible continuar» y el enlace al portal']] }],
         historial: [{ t: 'Ayer · 16:30', x: 'Reclamación recibida por el canal web', q: 'Julián Andrés Posada' }] },
       { id: 'R-2026-0178', tipo: 'identidad', estado: 'abierta', quien: { n: 'Camilo Torres Díaz', doc: 'CC 1.000.000.017' }, ev: EV.car, recibida: 'Ayer · 11:05',
         dice: 'Mi cédula está bien y me dicen que mi nombre no coincide.',
-        boletas: [{ cod: 'Intento de compra · 28 sep', est: 'sin boleta', tit: '—', prop: 'CC •••• 0017', sector: 'Norte · General',
+        derechos: [{ cod: 'Intento de compra · 28 sep', est: 'sin derecho', tit: '—', prop: 'CC •••• 0017', sector: 'Norte',
           traza: [['28 sep · 10:51', 'Consulta 1 · ¿Puede comprar?', 'no', 'Denegado'], ['28 sep · 10:51', 'Registraduría', 'no', 'Identidad no coincide'], ['28 sep · 10:52', 'Segundo intento', 'no', 'Identidad no coincide']] }],
         historial: [{ t: 'Ayer · 11:05', x: 'Reclamación recibida por el canal web', q: 'Camilo Torres Díaz' }] },
-      { id: 'R-2026-0173', tipo: 'usada', estado: 'en gestión', quien: { n: 'Andrés Zuluaga Mejía', doc: 'CC 1.017.335.902' }, ev: EV.nal, recibida: 'Ayer · 18:40',
-        dice: 'En la puerta me dijeron que mi boleta ya se había usado. Yo no había entrado.',
-        boletas: [{ cod: 'EC-NAL-1180', est: 'usada', tit: 'CC •••• 5902', prop: 'Propietario CC •••• 5902', sector: 'Oriental Baja · Fila F · Silla 9',
-          traza: [['20 sep · 12:08', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['20 sep · 12:10', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['20 sep · 12:10', 'Token emitido', 'info', 'tk •••• 7D04'], ['20 sep · 12:10', 'Boleta emitida', 'info', 'Titular CC •••• 5902 · «Yo también voy»'], ['28 sep · 17:58', 'Lectura en puerta', 'ok', 'Entró · Puerta 2 · Norte'], ['28 sep · 18:40', 'Lectura en puerta', 'no', 'Rojo · boleta ya usada · Puerta 4']] }],
-        historial: [{ t: 'Ayer · 18:40', x: 'Reclamación recibida por el canal web', q: 'Andrés Zuluaga Mejía' }, { t: 'Ayer · 19:02', x: 'Caso tomado', q: 'Marcela Duque' }] },
-      { id: 'R-2026-0165', tipo: 'plazo', estado: 'abierta', quien: { n: 'Rosa Elena Cortés Vega', doc: 'CC 43.118.920' }, ev: EV.nal, recibida: '27 sep · 20:15',
-        dice: 'Me pasaron las boletas congeladas de mi hijo y no alcancé a asignarlas antes del plazo. ¿Pueden volver a habilitarlas?',
-        boletas: [{ cod: 'EC-NAL-1202', est: 'perdida', tit: '—', prop: 'Propietario CC •••• 6511', sector: 'Norte · General',
-          traza: [['25 sep · 14:02', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['25 sep · 14:04', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['25 sep · 14:04', 'Token emitido', 'info', 'tk •••• 6A17'], ['25 sep · 14:04', 'Boleta emitida', 'info', 'Titular CC •••• 6511'], ['26 sep · 09:30', 'Medida nueva del propietario', 'no', 'La boleta se congeló'], ['26 sep · 14:20', 'Propiedad transferida por soporte', 'ok', 'A CC •••• 0920 · por reasignar'], ['28 sep · 17:00', 'Venció el plazo para reasignar', 'no', 'La boleta se perdió: sin devolución ni reventa']] }],
-        historial: [{ t: '27 sep · 20:15', x: 'Reclamación recibida por el canal web', q: 'Rosa Elena Cortés Vega' }] },
+      { id: 'R-2026-0173', tipo: 'usada', estado: 'en gestión', quien: { n: 'Mateo Giraldo Paz', doc: 'CC 1.001.246.583' }, ev: EV.nal, recibida: 'Ayer · 18:40',
+        dice: 'En la puerta me dijeron que mi documento ya había ingresado. Yo no había entrado.',
+        derechos: [{ cod: 'DI-NAL-1180', est: 'usado', tit: 'CC •••• 6583', prop: 'Comprador CC •••• 6583', sector: 'Oriental Baja',
+          traza: compra('20 sep', '12:08', 'CC •••• 6583', 'Oriental Baja', true).concat([['28 sep · 17:58', 'Lectura en puerta', 'ok', 'Entró · Puerta 2 · Norte · documento escaneado'], ['28 sep · 18:40', 'Lectura en puerta', 'no', 'Rojo operativo · ya ingresó · Puerta 4']]) }],
+        historial: [{ t: 'Ayer · 18:40', x: 'Reclamación recibida por el canal web', q: 'Mateo Giraldo Paz' }, { t: 'Ayer · 19:02', x: 'Caso tomado', q: 'Marcela Duque' }] },
+      { id: 'R-2026-0191', tipo: 'prestada', estado: 'abierta', quien: { n: 'Andrés Zuluaga Mejía', doc: 'CC 1.017.335.902' }, ev: EV.nal, recibida: 'Ayer · 20:05',
+        dice: 'Alguien intentó entrar con mi cédula y el operador marcó «posible cédula prestada». Yo no presté mi cédula y no pude entrar.',
+        derechos: [{ cod: 'DI-NAL-1176', est: 'vigente', tit: 'CC •••• 5902', prop: 'Comprador CC •••• 5902', sector: 'Oriental Baja',
+          traza: compra('20 sep', '11:30', 'CC •••• 5902', 'Oriental Baja', true).concat([['28 sep · 18:38', 'Lectura en puerta · Puerta 6 · Sur', 'no', 'Rojo operativo · posible cédula prestada · la foto del documento no coincide con la persona'], ['28 sep · 18:40', 'Decisión del operador', 'info', 'Llamó a la autoridad'], ['28 sep · 20:05', 'Reclamación abierta', 'info', 'La persona reporta que su cédula fue usada por otra persona']]) }],
+        historial: [{ t: 'Ayer · 20:05', x: 'Reclamación recibida por el canal web', q: 'Andrés Zuluaga Mejía' }] },
+      { id: 'R-2026-0165', tipo: 'puerta', estado: 'abierta', quien: { n: 'Camilo Andrés Vélez Soto', doc: 'CC 1.020.553.771' }, ev: EV.nal, recibida: 'Ayer · 17:20',
+        dice: 'En la puerta me dijeron que no era la mía y me mandaron a otra. Quiero saber cuál me corresponde.',
+        derechos: [{ cod: 'DI-NAL-1202', est: 'vigente', tit: 'CC •••• 3771', prop: 'Comprador CC •••• 3771', sector: 'Sur',
+          traza: compra('25 sep', '14:02', 'CC •••• 3771', 'Sur').concat([['28 sep · 17:12', 'Lectura en puerta · Puerta 4 · Oriental', 'no', 'Rojo operativo · puerta equivocada · se indicó la Puerta 6 · Sur'], ['28 sep · 17:20', 'Reclamación abierta', 'info', 'La persona pide confirmar su puerta']]) }],
+        historial: [{ t: 'Ayer · 17:20', x: 'Reclamación recibida por el canal web', q: 'Camilo Andrés Vélez Soto' }] },
       { id: 'R-2026-0160', tipo: 'limite', estado: 'en gestión', quien: { n: 'Cristian Muñoz Henao', doc: 'CC 1.128.403.552' }, ev: EV.ame, recibida: '27 sep · 13:44',
-        dice: 'Quise comprar 2 boletas más y no me dejó. Dice que llegué al límite.',
-        boletas: [{ cod: 'Intento de compra · 27 sep', est: 'sin boleta', tit: '—', prop: 'CC •••• 3552', sector: 'Occidental · General',
-          traza: [['27 sep · 13:30', 'Consulta 1 · ¿Puede comprar?', 'no', 'Denegado'], ['27 sep · 13:30', 'Código de motivo', 'no', 'Límite de venta excedido'], ['27 sep · 13:31', 'Boletas que ya tiene', 'info', '4 de 5 para este partido']] }],
+        dice: 'Quise comprar 2 ingresos más y no me dejó. Dice que llegué al límite.',
+        derechos: [{ cod: 'Intento de compra · 27 sep', est: 'sin derecho', tit: '—', prop: 'CC •••• 3552', sector: 'Occidental',
+          traza: [['27 sep · 13:30', 'Consulta 1 · ¿Puede comprar?', 'no', 'Denegado'], ['27 sep · 13:30', 'Código de motivo', 'no', 'Límite de venta excedido'], ['27 sep · 13:31', 'Ingresos que ya tiene', 'info', '4 de 5 para este partido']] }],
         historial: [{ t: '27 sep · 13:44', x: 'Reclamación recibida por el canal web', q: 'Cristian Muñoz Henao' }, { t: '27 sep · 15:10', x: 'Caso tomado', q: 'Marcela Duque' }] },
-      { id: 'R-2026-0152', tipo: 'congeladas', estado: 'resuelta', quien: { n: 'Paula Andrea Henao Restrepo', doc: 'CC 1.040.221.908' }, ev: EV.nal, recibida: '26 sep · 10:02',
-        dice: 'A mi hermano le congelaron las boletas por una medida y necesito que pasen a mi nombre.',
-        boletas: [{ cod: 'EC-NAL-0990', est: 'sin titular', tit: '—', prop: 'Propietaria CC •••• 1908', sector: 'Sur · General',
-          traza: [['24 sep · 09:11', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['24 sep · 09:13', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['24 sep · 09:13', 'Token emitido', 'info', 'tk •••• 2B90'], ['24 sep · 09:13', 'Boleta emitida', 'info', 'Titular CC •••• 2240'], ['26 sep · 07:30', 'Medida nueva del propietario', 'no', 'La boleta se congeló'], ['26 sep · 14:20', 'Propiedad transferida por soporte', 'ok', 'A CC •••• 1908 · validada a los dos lados · por reasignar']] }],
-        historial: [{ t: '26 sep · 10:02', x: 'Reclamación recibida por el canal web', q: 'Paula Andrea Henao Restrepo' }, { t: '26 sep · 13:55', x: 'Caso tomado', q: 'Marcela Duque' }, { t: '26 sep · 14:20', x: 'Propiedad transferida · 1 boleta', q: 'Marcela Duque' }, { t: '26 sep · 14:21', x: 'Resuelta · propiedad transferida a otra persona elegible', q: 'Marcela Duque' }] },
-      { id: 'R-2026-0149', tipo: 'congeladas', estado: 'rechazada', quien: { n: 'Daniela Restrepo Gil', doc: 'CE 4.518.227' }, ev: EV.nal, recibida: '28 sep · 19:20',
-        dice: 'Quiero que pasen a mi nombre las boletas congeladas de un familiar. El partido ya empezó.',
-        boletas: [{ cod: 'EC-NAL-1244', est: 'congelada', tit: 'CC •••• 4402', prop: 'Propietario CC •••• 9027', sector: 'Norte · General',
-          traza: [['26 sep · 17:58', 'Consulta 1 · ¿Puede comprar?', 'ok', 'Autorizado · Graderío'], ['26 sep · 17:59', 'Consulta 2 · ¿Puede recibir?', 'ok', 'Titular CC •••• 4402 · Autorizado'], ['26 sep · 18:00', 'Consulta 3 · Revalida al pagar', 'ok', 'Comprador y todos los titulares · Autorizado'], ['26 sep · 18:00', 'Token emitido', 'info', 'tk •••• 9E55'], ['26 sep · 18:00', 'Boleta emitida', 'info', 'Titular CC •••• 4402'], ['27 sep · 08:15', 'Medida nueva del propietario', 'no', 'La boleta se congeló: solo soporte puede transferirla'], ['28 sep · 19:00', 'Inicio del encuentro', 'info', 'Desde aquí no se transfiere nada']] }],
+      { id: 'R-2026-0152', tipo: 'congelados', estado: 'resuelta', quien: { n: 'Paula Andrea Henao Restrepo', doc: 'CC 1.040.221.908' }, ev: EV.nal, recibida: '26 sep · 10:02',
+        dice: 'A mi hermano le congelaron un ingreso por una medida y necesito que pase a mi documento.',
+        derechos: [{ cod: 'DI-NAL-0990', est: 'vigente', tit: 'CC •••• 1908', prop: 'Comprador CC •••• 2240', sector: 'Sur',
+          traza: compra('24 sep', '09:11', 'CC •••• 2240', 'Sur').concat([['26 sep · 07:30', 'Medida nueva del comprador', 'no', 'El derecho se congeló'], ['26 sep · 14:20', 'Titularidad transferida por soporte', 'ok', 'A CC •••• 1908 · validada a los dos lados']]) }],
+        historial: [{ t: '26 sep · 10:02', x: 'Reclamación recibida por el canal web', q: 'Paula Andrea Henao Restrepo' }, { t: '26 sep · 13:55', x: 'Caso tomado', q: 'Marcela Duque' }, { t: '26 sep · 14:20', x: 'Titularidad transferida · 1 ingreso', q: 'Marcela Duque' }, { t: '26 sep · 14:21', x: 'Resuelta · titularidad transferida a otro documento elegible', q: 'Marcela Duque' }] },
+      { id: 'R-2026-0149', tipo: 'congelados', estado: 'rechazada', quien: { n: 'Daniela Restrepo Gil', doc: 'CE 4.518.227' }, ev: EV.nal, recibida: '28 sep · 19:20',
+        dice: 'Quiero que pasen a mi documento los ingresos congelados de un familiar. El partido ya empezó.',
+        derechos: [{ cod: 'DI-NAL-1244', est: 'congelado', tit: 'CC •••• 4402', prop: 'Comprador CC •••• 9027', sector: 'Norte',
+          traza: compra('26 sep', '17:58', 'CC •••• 4402', 'Norte').concat([['27 sep · 08:15', 'Medida nueva del comprador', 'no', 'El derecho se congeló: solo soporte puede transferir su titularidad'], ['28 sep · 19:00', 'Inicio del encuentro', 'info', 'Desde aquí no se transfiere nada']]) }],
         historial: [{ t: '28 sep · 19:20', x: 'Reclamación recibida por el canal web', q: 'Daniela Restrepo Gil' }, { t: '28 sep · 19:35', x: 'Caso tomado', q: 'Marcela Duque' }, { t: '28 sep · 19:41', x: 'Rechazada · después del inicio del encuentro no se puede hacer nada', q: 'Marcela Duque' }] }
     ];
   }
 
-  // Quien recibe se valida igual que en la compra: documento vigente, medida, una boleta por persona y por evento.
+  // Quien recibe se valida igual que en la compra: documento vigente, medida y un derecho por documento y por evento.
   var DEST = {
     '1017889214': { n: 'Daniela Gómez Arias', ok: true },
     '1036482117': { n: 'Andrés Felipe Restrepo Gil', ok: true },
-    '1152708339': { n: 'Mariana Cárdenas Ríos', ok: false, cod: 'Ya tiene boleta para este evento' },
+    '1152708339': { n: 'Mariana Cárdenas Ríos', ok: false, cod: 'Ya tiene derecho de ingreso a este partido' },
     '71894447': { n: 'Julián Andrés Posada', ok: false, cod: 'Medida restrictiva vigente' }
   };
 
   var FILTROS = [['todas', 'Todas'], ['abierta', 'Abiertas'], ['en gestión', 'En gestión'], ['resuelta', 'Resueltas'], ['rechazada', 'Rechazadas']];
   var TAG = { 'abierta': 'azul', 'en gestión': 'ambar', 'resuelta': 'verde', 'rechazada': 'gris' };
-  var BOL = { congelada: ['azul', 'Congelada'], anulada: ['rojo', 'Anulada'], asignada: ['verde', 'Asignada'], usada: ['gris', 'Usada'], perdida: ['gris', 'Perdida'], 'sin boleta': ['gris', 'Sin boleta'], 'sin titular': ['ambar', 'Por reasignar'] };
+  var BOL = { congelado: ['azul', 'Congelado'], anulado: ['rojo', 'Anulado'], vigente: ['verde', 'Vigente'], usado: ['gris', 'Usado'], 'sin derecho': ['gris', 'Sin derecho'] };
 
   window.PANTALLAS.soporte = function (raiz, ctx) {
     var disp, zoom = 1, timerToast = null, timerVal = null, scr = {};
@@ -127,13 +139,12 @@ window.PANTALLAS = window.PANTALLAS || {};
       var m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
       return d ? d + ' d ' + h + ' h' : h ? h + ' h ' + (m % 60) + ' min' : m + ' min';
     }
-    // El plazo importa solo mientras el caso está vivo; el color avisa cuando faltan menos de 12 horas.
+    // El inicio del partido cierra las transferencias; el color avisa cuando faltan menos de 12 horas.
     function plazo(c) {
       if (c.estado === 'resuelta' || c.estado === 'rechazada') { return { tono: 'gris', t: 'Cerrada' }; }
       if (iniciado(c)) { return { tono: 'rojo', t: 'Encuentro iniciado' }; }
-      var r = c.ev.plazo - ahora(), txt = restante(r);
-      if (!txt) { return { tono: 'rojo', t: 'Plazo vencido' }; }
-      return { tono: r < 12 * 3600000 ? 'ambar' : 'gris', t: 'Plazo en ' + txt };
+      var r = c.ev.inicio - ahora();
+      return { tono: r < 12 * 3600000 ? 'ambar' : 'gris', t: 'Inicia en ' + restante(r) };
     }
 
     function tag(tono, t) { return '<span class="sp-tag sp-tag--' + tono + '">' + esc(t) + '</span>'; }
@@ -149,7 +160,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         return c.id.toLowerCase().indexOf(q) >= 0 || c.quien.n.toLowerCase().indexOf(q) >= 0 || (d.length >= 3 && digitos(c.quien.doc).indexOf(d) >= 0);
       }).sort(function (a, b) {
         var va = a.estado === 'resuelta' || a.estado === 'rechazada', vb = b.estado === 'resuelta' || b.estado === 'rechazada';
-        return va !== vb ? (va ? 1 : -1) : a.ev.plazo - b.ev.plazo;
+        return va !== vb ? (va ? 1 : -1) : a.ev.inicio - b.ev.inicio;
       });
     }
     function cola() {
@@ -185,9 +196,9 @@ window.PANTALLAS = window.PANTALLAS || {};
     function detalle() {
       var c = caso();
       if (!c) { return '<section class="sp-det sp-det--vacio"><p class="sp-sub">Elija una reclamación de la cola.</p></section>'; }
-      var p = plazo(c), b = c.boletas[Math.min(st.bol, c.boletas.length - 1)], e = BOL[b.est];
-      var selector = c.boletas.length > 1 ? '<div class="sp-sel" role="group" aria-label="Boletas del caso">' + c.boletas.map(function (x, i) {
-        return '<button type="button" class="sp-chip sp-chip--b" aria-pressed="' + (i === st.bol) + '" data-acc="bol" data-id="' + i + '">' + esc(x.cod.replace('EC-', '')) + ' · ' + BOL[x.est][1] + '</button>';
+      var p = plazo(c), b = c.derechos[Math.min(st.bol, c.derechos.length - 1)], e = BOL[b.est];
+      var selector = c.derechos.length > 1 ? '<div class="sp-sel" role="group" aria-label="Derechos de ingreso del caso">' + c.derechos.map(function (x, i) {
+        return '<button type="button" class="sp-chip sp-chip--b" aria-pressed="' + (i === st.bol) + '" data-acc="bol" data-id="' + i + '">' + esc(x.cod.replace('DI-', '')) + ' · ' + BOL[x.est][1] + '</button>';
       }).join('') + '</div>' : '';
       var hist = '<ol class="sp-hist">' + c.historial.slice().reverse().map(function (h) {
         return '<li><span class="sp-sub sp-num">' + esc(h.t) + '</span><span>' + esc(h.x) + '</span><span class="sp-sub">' + esc(h.q) + '</span></li>';
@@ -197,10 +208,10 @@ window.PANTALLAS = window.PANTALLAS || {};
           '<h2 class="sp-h1">' + esc(TIPOS[c.tipo]) + '</h2><p class="sp-sub sp-num">' + esc(c.quien.n) + ' · ' + esc(mask(c.quien.doc)) + ' · ' + esc(c.ev.nombre) + ' · ' + esc(c.ev.cuando) + ' · recibida ' + esc(c.recibida.toLowerCase()) + '</p></header>' +
         '<div class="sp-det__cuerpo" data-sc="det"><div class="sp-cols"><div class="sp-col">' +
           '<section class="sp-card"><h3 class="sp-h3">Lo que dice la persona</h3><p class="sp-cita">«' + esc(c.dice) + '»</p></section>' +
-          '<section class="sp-card"><h3 class="sp-h3">Boleta</h3>' + selector + '<dl class="sp-kvs">' + kv('Código', '<span class="sp-num">' + esc(b.cod) + '</span>') + kv('Estado', tag(e[0], e[1])) + kv('Titular', esc(b.tit)) + kv('Propietario', esc(b.prop)) + kv('Evento', esc(c.ev.nombre + ' · ' + c.ev.lugar)) + kv('Sector', esc(b.sector)) + '</dl></section>' +
+          '<section class="sp-card"><h3 class="sp-h3">Derecho de ingreso</h3>' + selector + '<dl class="sp-kvs">' + kv('Referencia', '<span class="sp-num">' + esc(b.cod) + '</span>') + kv('Estado', tag(e[0], e[1])) + kv('Documento', esc(b.tit)) + kv('Comprador', esc(b.prop.replace('Comprador ', ''))) + kv('Evento', esc(c.ev.nombre + ' · ' + c.ev.lugar)) + kv('Sector', esc(b.sector)) + '</dl></section>' +
           '<section class="sp-card"><h3 class="sp-h3">Historial de la reclamación</h3>' + hist + '</section>' +
         '</div><div class="sp-col">' +
-          '<section class="sp-card"><h3 class="sp-h3">Traza de la boleta</h3>' + traza(b) + '</section>' +
+          '<section class="sp-card"><h3 class="sp-h3">Traza del derecho de ingreso</h3>' + traza(b) + '</section>' +
           '<section class="sp-card sp-card--reserva"><h3 class="sp-h3">' + ico('candado', 16) + 'Lo que soporte no ve</h3><p class="sp-sub">El expediente de una medida (hechos, conducta, acto) no está disponible aquí: solo el resultado de la validación y su código de motivo. Cada consulta de este caso queda en la auditoría.</p></section>' +
         '</div></div></div>' + acciones(c) + '</section>';
     }
@@ -218,10 +229,10 @@ window.PANTALLAS = window.PANTALLAS || {};
         return '<footer class="sp-pie"><div class="sp-pie__f">' + btn('tomar', 'Tomar el caso', 'pri') + '<p class="sp-sub">Tomarlo lo pasa a «en gestión» y queda a su nombre. Antes de eso no se puede resolver.</p></div></footer>';
       }
       var panel = st.acc ? panelAcc(c) : '';
-      var cong = c.boletas.filter(function (x) { return x.est === 'congelada'; }).length;
+      var cong = c.derechos.filter(function (x) { return x.est === 'congelado'; }).length;
       var ini = iniciado(c);
       return '<footer class="sp-pie">' + panel + '<div class="sp-pie__f">' +
-        btn('abrir-tr', 'Transferir boletas congeladas', st.acc === 'tr' ? 'sec' : 'pri', !cong || ini, !cong ? 'Este caso no tiene boletas congeladas.' : 'Después del inicio del encuentro no se transfiere nada.') +
+        btn('abrir-tr', 'Transferir titularidad', st.acc === 'tr' ? 'sec' : 'pri', !cong || ini, !cong ? 'Este caso no tiene derechos congelados.' : 'Después del inicio del encuentro no se transfiere nada.') +
         btn('abrir-rs', 'Resolver', 'sec') +
         btn('abrir-rc', 'Rechazar', 'sec') + '</div></footer>';
     }
@@ -232,19 +243,19 @@ window.PANTALLAS = window.PANTALLAS || {};
     function panelAcc(c) {
       var cierra = '<button type="button" class="sp-x" data-acc="cerrar-acc" aria-label="Cerrar">' + ico('no', 18) + '</button>';
       if (st.acc === 'tr') {
-        var t = st.tr, cong = c.boletas.filter(function (x) { return x.est === 'congelada'; });
+        var t = st.tr, cong = c.derechos.filter(function (x) { return x.est === 'congelado'; });
         var res = '';
         if (t.fase === 'validando') { res = '<p class="sp-valid" role="status"><span class="sp-giro" aria-hidden="true"></span>Validando a quien entrega y a quien recibe…</p>'; }
         else if (t.res) {
-          res = '<ul class="sp-valid sp-valid--' + (t.res.ok ? 'ok' : 'no') + '" role="status"><li>' + ico('ok', 16) + 'Entrega · propietario CC •••• 7120: puede ceder sus boletas congeladas</li><li>' + ico(t.res.ok ? 'ok' : 'no', 16) + 'Recibe · ' + esc(t.res.n || 'documento') + ': ' + (t.res.ok ? 'elegible' : esc(t.res.cod)) + '</li></ul>';
+          res = '<ul class="sp-valid sp-valid--' + (t.res.ok ? 'ok' : 'no') + '" role="status"><li>' + ico('ok', 16) + 'Entrega · comprador CC •••• 7120: soporte puede ceder sus derechos congelados</li><li>' + ico(t.res.ok ? 'ok' : 'no', 16) + 'Recibe · ' + esc(t.res.n || 'documento') + ': ' + (t.res.ok ? 'elegible' : esc(t.res.cod)) + '</li></ul>';
         }
-        return '<div class="sp-accion" role="group" aria-label="Transferir boletas congeladas">' + cierra + '<h3 class="sp-h3">Transferir la propiedad de las boletas congeladas</h3>' +
-          '<div class="sp-tr"><fieldset class="sp-fs"><legend class="sp-sub">Boletas a transferir</legend>' + cong.map(function (x) {
+        return '<div class="sp-accion" role="group" aria-label="Transferir titularidad">' + cierra + '<h3 class="sp-h3">Transferir la titularidad de los derechos de ingreso congelados</h3>' +
+          '<div class="sp-tr"><fieldset class="sp-fs"><legend class="sp-sub">Derechos a transferir</legend>' + cong.map(function (x) {
             return '<label class="sp-check"><input type="checkbox" data-k="trsel" data-id="' + x.cod + '"' + (t.sel[x.cod] !== false ? ' checked' : '') + '><span class="sp-num">' + esc(x.cod) + '</span></label>';
           }).join('') + '</fieldset>' +
           '<div class="sp-tr__d"><label class="sp-campo"><span>Documento de quien recibe</span><span class="sp-doc"><select data-k="trtipo"><option' + (t.tipo === 'CC' ? ' selected' : '') + '>CC</option><option' + (t.tipo === 'CE' ? ' selected' : '') + '>CE</option><option>TI</option></select><input data-k="trdoc" inputmode="numeric" autocomplete="off" value="' + esc(t.doc) + '"></span></label>' +
           '<button type="button" class="sp-btn sp-btn--pri" data-acc="transferir"' + (t.fase === 'validando' ? ' disabled' : '') + '>Validar y transferir</button></div></div>' + res +
-          '<p class="sp-sub">Se valida a los dos lados. Las boletas quedan por reasignar a nombre de quien recibe, que las asigna antes del plazo.</p></div>';
+          '<p class="sp-sub">Se valida a los dos lados. Los derechos pasan al documento de quien recibe, que entra con él; antes del inicio del partido.</p></div>';
       }
       var rs = st.acc === 'rs', o = rs ? st.rs : st.rc;
       var lista = rs ? RES[c.tipo] : MOTIVOS_RECHAZO;
@@ -267,17 +278,17 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function tarjeta(titulo, cuerpo) { return '<nwt-card class="pp-panel__card" nwt-size="small"><span slot="header" class="nwt-body-font-bold">' + esc(titulo) + '</span>' + cuerpo + '</nwt-card>'; }
     var PROBAR = [
-      ['R-2026-0187', 'positive', 'positive', '1 · Boletas congeladas (urgente)'], ['R-2026-0184', 'positive', 'informative', '2 · La boleta no aparece'], ['R-2026-0181', 'negative', 'negative', '3 · Compra rechazada por medida'],
-      ['R-2026-0178', 'caution', 'warning', '4 · Identidad no coincide'], ['R-2026-0173', 'negative', 'negative', '5 · Boleta ya usada'], ['R-2026-0165', 'caution', 'warning', '6 · Perdió el plazo'],
-      ['R-2026-0160', 'caution', 'warning', '7 · Límite de boletas'], ['R-2026-0152', 'positive', 'positive', '8 · Resuelta con transferencia'], ['R-2026-0149', 'negative', 'negative', '9 · Rechazada: pidió tras el inicio']
+      ['R-2026-0187', 'positive', 'positive', '1 · Derechos congelados (urgente)'], ['R-2026-0184', 'positive', 'informative', '2 · Documento sin derecho en la puerta'], ['R-2026-0181', 'negative', 'negative', '3 · Compra rechazada por medida'],
+      ['R-2026-0178', 'caution', 'warning', '4 · Identidad no coincide'], ['R-2026-0173', 'negative', 'negative', '5 · Ya ingresó'], ['R-2026-0165', 'caution', 'warning', '6 · Puerta equivocada'],
+      ['R-2026-0160', 'caution', 'warning', '7 · Límite de ingresos'], ['R-2026-0152', 'positive', 'positive', '8 · Resuelta con transferencia'], ['R-2026-0149', 'negative', 'negative', '9 · Rechazada: pidió tras el inicio'], ['R-2026-0191', 'negative', 'negative', '10 · Cédula prestada reportada']
     ];
     function guion() {
       return '<aside class="pp-panel" aria-label="Controles del demo"><button type="button" class="pp-panel__toggle" aria-expanded="false"><span>Controles del demo</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
         tarjeta('Probar', '<div class="pp-panel__lista">' + PROBAR.map(function (p) {
           return '<nwt-detail-item actionable icon="' + p[1] + '" nwt-theme="' + p[2] + '" data-acc="g-caso" data-id="' + p[0] + '">' + esc(p[3]) + '</nwt-detail-item>';
         }).join('') + '</div>') +
-        tarjeta('Transferir', '<div class="pp-panel__lista"><nwt-detail-item actionable icon="negative" nwt-theme="negative" data-acc="g-dest" data-id="71894447">Destino con medida vigente</nwt-detail-item>' +
-          '<nwt-detail-item actionable icon="caution" nwt-theme="warning" data-acc="g-dest" data-id="1152708339">Destino con boleta para el evento</nwt-detail-item></div>') +
+        tarjeta('Transferir titularidad', '<div class="pp-panel__lista"><nwt-detail-item actionable icon="negative" nwt-theme="negative" data-acc="g-dest" data-id="71894447">Destino con medida vigente</nwt-detail-item>' +
+          '<nwt-detail-item actionable icon="caution" nwt-theme="warning" data-acc="g-dest" data-id="1152708339">Destino con derecho para el partido</nwt-detail-item></div>') +
         tarjeta('Condiciones', '<div class="pp-panel__lista" id="sp-reloj"></div>') +
         '<p class="nwt-smalltext-font-regular pp-panel__pie">Datos e información de prueba.</p></aside>';
     }
@@ -323,8 +334,8 @@ window.PANTALLAS = window.PANTALLAS || {};
     }
     function transferir() {
       var c = caso(), t = st.tr, d = digitos(t.doc);
-      var marcadas = c.boletas.filter(function (x) { return x.est === 'congelada' && t.sel[x.cod] !== false; });
-      if (!marcadas.length) { avisar('Elija al menos una boleta', 'Marque las boletas congeladas que se transfieren.', 'negative', 'negative'); return; }
+      var marcadas = c.derechos.filter(function (x) { return x.est === 'congelado' && t.sel[x.cod] !== false; });
+      if (!marcadas.length) { avisar('Elija al menos un derecho', 'Marque los derechos congelados que se transfieren.', 'negative', 'negative'); return; }
       t.fase = 'validando'; t.res = null; pintar();
       clearTimeout(timerVal);
       timerVal = setTimeout(function () {
@@ -332,13 +343,13 @@ window.PANTALLAS = window.PANTALLAS || {};
         t.fase = 'fin'; t.res = { ok: dst.ok, n: dst.n, cod: dst.cod };
         if (dst.ok) {
           marcadas.forEach(function (b) {
-            b.est = 'sin titular'; b.tit = '—'; b.prop = 'Propietario ' + mask(t.tipo + ' ' + t.doc);
-            b.traza.push([st.inicio ? '29 sep · 20:05' : '29 sep · 10:14', 'Propiedad transferida por soporte', 'ok', 'A ' + mask(t.tipo + ' ' + t.doc) + ' · validada a los dos lados · por reasignar']);
+            b.est = 'vigente'; b.tit = mask(t.tipo + ' ' + t.doc);
+            b.traza.push([st.inicio ? '29 sep · 20:05' : '29 sep · 10:14', 'Titularidad transferida por soporte', 'ok', 'A ' + mask(t.tipo + ' ' + t.doc) + ' · validada a los dos lados']);
           });
-          nota(c, 'Propiedad transferida · ' + marcadas.length + (marcadas.length === 1 ? ' boleta' : ' boletas') + ' a ' + mask(t.tipo + ' ' + t.doc));
-          c.estado = 'resuelta'; nota(c, 'Resuelta · propiedad transferida a otra persona elegible');
+          nota(c, 'Titularidad transferida · ' + marcadas.length + (marcadas.length === 1 ? ' ingreso' : ' ingresos') + ' a ' + mask(t.tipo + ' ' + t.doc));
+          c.estado = 'resuelta'; nota(c, 'Resuelta · titularidad transferida a otro documento elegible');
           st.acc = null; st.tr.res = null; st.tr.fase = 'idle';
-          avisar('Propiedad transferida', dst.n + ' ya puede asignar ' + (marcadas.length === 1 ? 'la boleta' : 'las ' + marcadas.length + ' boletas') + ' antes del plazo.', 'positive', 'positive');
+          avisar('Titularidad transferida', dst.n + ' ya entra con ' + (marcadas.length === 1 ? 'el ingreso' : 'los ' + marcadas.length + ' ingresos') + ' con su documento.', 'positive', 'positive');
         } else { pintar(); }
       }, 1100);
     }
@@ -389,7 +400,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     /* ---------- Montaje ---------- */
 
-    raiz.innerHTML = '<div class="pp-demo"><nwt-toolbar class="pp-toolbar"><div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
+    raiz.innerHTML = '<div class="pp-demo"><nwt-toolbar class="pp-toolbar">' +
       '<nwt-title class="pp-toolbar__titulo">Consola de soporte<span slot="subtitle">Superficie 9 · Escritorio · Soporte</span></nwt-title>' +
       '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button></nwt-toolbar>' +
       '<div class="pp-demo__cuerpo">' + guion() + '<main class="pp-escenario"><div class="pp-escena pp-escena--ctl"><div class="pp-controles"><div class="pp-zoom">' +

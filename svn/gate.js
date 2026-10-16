@@ -130,7 +130,7 @@ window.PANTALLAS.gate = function (raiz, ctx) {
   var reducido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var enZoom = false;
   // `entrar` lo decide quien llama: por rol usa la ruta del rol; por aplicación, la de la app.
-  function zoom(card, rotulo, sub, conRuta, entrar) {
+  function zoom(card, rotulo, sub, conRuta, entrar, externa) {
     if (reducido || !conRuta) { entrar(); return; }
     enZoom = true;
     var b = card.getBoundingClientRect();
@@ -147,10 +147,19 @@ window.PANTALLAS.gate = function (raiz, ctx) {
     });
     setTimeout(function () {
       entrar();
-      requestAnimationFrame(function () { clon.classList.add('sv-zoom--fuera'); });
-      setTimeout(function () { clon.remove(); }, 300);
+      // Otra página: el splash queda hasta que ella cargue, así el gate no se ve de nuevo.
+      if (externa) { return; }
+      requestAnimationFrame(function () { requestAnimationFrame(function () { clon.classList.add('sv-zoom--fuera'); }); });
+      setTimeout(function () { clon.remove(); enZoom = false; }, 340);
     }, 900);
   }
+  // Al volver con «atrás» la página sale del caché con el splash puesto: se limpia.
+  function alVolver(e) {
+    if (!e.persisted) { return; }
+    document.querySelectorAll('.sv-zoom').forEach(function (n) { n.remove(); });
+    enZoom = false;
+  }
+  window.addEventListener('pageshow', alVolver);
 
   function elegir(ev) {
     var card = ev.target.closest('[data-rol],[data-app]');
@@ -158,16 +167,16 @@ window.PANTALLAS.gate = function (raiz, ctx) {
     if (card.hasAttribute('data-app')) {
       var a = D.apps.filter(function (x) { return x.id === card.getAttribute('data-app'); })[0];
       // El zoom lleva el nombre y la línea de la card, no los del primer rol (DC-399).
-      zoom(card, a.nombre, (a.paso ? 'Paso ' + a.paso + ' · ' : '') + quienesDe(a), !!a.ruta && !a.enDiseno, function () { ctx.entrarApp(a.id); });
+      zoom(card, a.nombre, (a.paso ? 'Paso ' + a.paso + ' · ' : '') + quienesDe(a), !!a.ruta && !a.enDiseno, function () { ctx.entrarApp(a.id); }, a.ruta.charAt(0) !== '#');
       return;
     }
     var r = rol(card.getAttribute('data-rol'));
-    zoom(card, r.rol, '', !!r.ruta, function () { ctx.entrar(r.id); });
+    zoom(card, r.rol, '', !!r.ruta, function () { ctx.entrar(r.id); }, !!r.ruta && r.ruta.charAt(0) !== '#');
   }
   function tecla(ev) {
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('[data-rol],[data-app]')) { ev.preventDefault(); elegir(ev); }
   }
   raiz.addEventListener('click', elegir);
   raiz.addEventListener('keydown', tecla);
-  return function () { raiz.removeEventListener('click', elegir); raiz.removeEventListener('keydown', tecla); };
+  return function () { raiz.removeEventListener('click', elegir); raiz.removeEventListener('keydown', tecla); window.removeEventListener('pageshow', alVolver); };
 };

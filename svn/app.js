@@ -51,6 +51,21 @@
     var ctx = { D: D, rol: leer() || ruta.rol, ir: ir, aviso: aviso, entrar: entrar, entrarApp: entrarApp, salir: salir };
     limpiar = window.PANTALLAS[ruta.pantalla](raiz, ctx) || null;
     window.scrollTo(0, 0);
+    marcaFlotante(ruta.pantalla !== 'gate');
+  }
+
+  // El logo de Naowee flota abajo a la derecha sobre cualquier pantalla (DC-070/071); el gate trae el suyo.
+  function marcaFlotante(ver) {
+    var m = document.getElementById('sv-flota');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'sv-flota';
+      m.className = 'sv-flota';
+      m.setAttribute('aria-hidden', 'true');
+      m.innerHTML = '<nwt-logo-naowee></nwt-logo-naowee>';
+      document.body.appendChild(m);
+    }
+    m.hidden = !ver;
   }
 
   // Sin número del modelo: dice el paso del flujo, o que aún no entra al flujo de la demo.

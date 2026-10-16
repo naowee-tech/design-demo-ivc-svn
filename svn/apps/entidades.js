@@ -34,7 +34,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     { corto: 'Nacional vs. Medellín · 28 sep', largo: 'Nacional vs. Medellín · 28 sep 2026 · Estadio Atanasio Girardot', fecha: '28 sep 2026', estado: 'finalizado', asist: '34.870', avisos: 41, rojos: 4, bloq: 12, autoridad: 'Inspección municipal 14 de Medellín' },
     { corto: 'Nacional vs. Junior · 20 sep', largo: 'Nacional vs. Junior · 20 sep 2026 · Estadio Atanasio Girardot', fecha: '20 sep 2026', estado: 'finalizado', asist: '31.204', avisos: 27, rojos: 2, bloq: 7, autoridad: 'Inspección municipal 14 de Medellín' },
     { corto: 'Nacional vs. Pereira · 10 ago', largo: 'Nacional vs. Pereira · 10 ago 2026 · Estadio Atanasio Girardot', fecha: '10 ago 2026', estado: 'finalizado', asist: '28.915', avisos: 19, rojos: 3, bloq: 5, autoridad: 'Inspección municipal 14 de Medellín' },
-    { corto: 'Nacional vs. Once Caldas · 4 oct', largo: 'Nacional vs. Once Caldas · 4 oct 2026 · Estadio Atanasio Girardot', fecha: '4 oct 2026', estado: 'proximo', asist: '22.480', asistEtq: 'boletas emitidas', avisos: null, rojos: null, bloq: 3, autoridad: 'Inspección municipal 14 de Medellín' }
+    { corto: 'Nacional vs. Once Caldas · 4 oct', largo: 'Nacional vs. Once Caldas · 4 oct 2026 · Estadio Atanasio Girardot', fecha: '4 oct 2026', estado: 'proximo', asist: '22.480', asistEtq: 'ingresos emitidos', avisos: null, rojos: null, bloq: 3, autoridad: 'Inspección municipal 14 de Medellín' }
   ];
 
   // Hub de la comercializadora. Graderío es la del demo (integracion.js); «hoy» del módulo es 29 sep.
@@ -78,8 +78,11 @@ window.PANTALLAS = window.PANTALLAS || {};
         }) };
     });
 
-    // Eventos de Graderío con su cupo por sector. `base` = cifras agregadas fuera de la muestra B, en el orden de ORDEN_B.
+    // Eventos de Graderío con su cupo de derechos de ingreso por sector. `base` = cifras agregadas fuera de la muestra B,
+    // en el orden de ORDEN_B; KEY_B las pliega a los 4 estados del derecho (sin paso de activar ni perdidas).
     var ORDEN_B = ['activa', 'usada', 'poractivar', 'sintitular', 'perdida', 'anulada', 'congelada'];
+    var KEY_B = ['vigente', 'usado', 'vigente', 'vigente', 'vigente', 'anulado', 'congelado'];
+    var EST_B = { activa: 'vigente', usada: 'usado', poractivar: 'vigente', sintitular: 'vigente', perdida: 'vigente', anulada: 'anulado', congelada: 'congelado', sinvender: 'sinvender' };
     var EV_CO = [
       { id: 'EV-2026-0412', corto: 'Nacional vs. Medellín', fecha: '28 sep 2026', estado: 'finalizado', plazo: '28 sep 2026, 19:00', cupo: { norte: 5000, occ: 6000, ori: 7000 },
         base: { norte: [0, 4710, 0, 0, 120, 8, 3], occ: [0, 5402, 0, 0, 147, 11, 2], ori: [0, 6305, 0, 0, 143, 9, 4] }, nv: [37, 12, 5, 9] },
@@ -88,7 +91,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       { id: 'EV-2026-0447', corto: 'Nacional vs. Tolima', fecha: '18 oct 2026', estado: 'proximo', plazo: '18 oct 2026, 13:00', cupo: { norte: 3000, occ: 3500, ori: 4500 },
         base: { norte: [668, 0, 140, 4, 0, 0, 0], occ: [976, 0, 210, 6, 0, 1, 0], ori: [1266, 0, 265, 8, 0, 0, 0] }, nv: [6, 1, 0, 2] }
     ];
-    // Muestra de boletas: [evento, sector, estado, titular, fecha de venta]. Titular ya enmascarado.
+    // Muestra de derechos de ingreso: [evento, sector, estado, titular, fecha de venta]. Titular ya enmascarado.
     var B = [
       [0, 'norte', 'usada', 'Laura O. · CC ••••7712', '19 sep 2026'], [0, 'occ', 'usada', 'Esteban T. · CC ••••0938', '21 sep 2026'], [0, 'ori', 'usada', 'Mariana Z. · CC ••••5521', '22 sep 2026'],
       [0, 'ori', 'perdida', '', '24 sep 2026'], [0, 'occ', 'perdida', '', '25 sep 2026'],
@@ -103,20 +106,20 @@ window.PANTALLAS = window.PANTALLAS || {};
       [2, 'ori', 'activa', 'Juliana B. · CC ••••3305', '28 sep 2026'], [2, 'occ', 'activa', 'Santiago M. · CC ••••4905', '28 sep 2026']
     ].map(function (x, i) {
       var ev = EV_CO[x[0]], n = 18000 + i * 137;
-      return { id: 'GR-' + ev.id.slice(-4) + '-' + x[1].toUpperCase() + '-' + String(n).slice(-5), ev: ev.id, sec: x[1], estado: x[2], tit: x[3], venta: x[4], act: x[2] === 'activa' || x[2] === 'usada' ? x[4] : '' };
+      return { id: 'GR-' + ev.id.slice(-4) + '-' + x[1].toUpperCase() + '-' + String(n).slice(-5), ev: ev.id, sec: x[1], estado: EST_B[x[2]], tit: x[3], venta: x[4] };
     });
 
     // Reportes que Graderío envía a Mindeporte; los revisa Mindeporte.
     var RC = [
       { id: 'RC-2026-0107', tipo: 'ventas', titulo: 'Reporte de ventas · Nacional vs. Medellín', periodo: 'EV-2026-0412', fecha: '29 sep 2026', estado: 'observaciones', nota: '',
         cifras: null,
-        obs: 'Las perdidas de Oriental no cuadran con el corte del organizador (143 frente a 140). Revisa y reenvía con una nota.',
+        obs: 'Los ingresos sin usar de Oriental no cuadran con el corte del organizador (143 frente a 140). Revisa y reenvía con una nota.',
         historial: [{ f: '29 sep 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '29 sep 2026', t: 'Devuelto con observaciones', q: 'Mindeporte' }] },
-      { id: 'RC-2026-0098', tipo: 'incidente', titulo: 'Reventa no autorizada · Nacional vs. Medellín', evento: 'EV-2026-0412', cat: 'Reventa no autorizada', boleta: 'GR-0412-ORI-18274', fecha: '26 sep 2026', estado: 'revision',
-        descripcion: 'Detectamos boletas de Oriental ofrecidas en redes sociales al triple del precio, dos días antes del partido. Ninguna transferencia pasó por el SVN.',
+      { id: 'RC-2026-0098', tipo: 'incidente', titulo: 'Reventa no autorizada · Nacional vs. Medellín', evento: 'EV-2026-0412', cat: 'Reventa no autorizada', comprobante: 'GR-0412-ORI-18274', fecha: '26 sep 2026', estado: 'revision',
+        descripcion: 'Detectamos comprobantes de compra de Oriental ofrecidos en redes sociales al triple del precio, dos días antes del partido. Ningún cambio de titular pasó por el SVN.',
         historial: [{ f: '26 sep 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '27 sep 2026', t: 'Mindeporte empezó la revisión', q: 'Mindeporte' }] },
       { id: 'RC-2026-0061', tipo: 'ventas', titulo: 'Reporte semestral 2026-I', periodo: '2026-I', fecha: '3 jul 2026', estado: 'aceptado', nota: '',
-        cifras: [['Cupo asignado', 96000], ['Vendidas', 81240], ['Sin vender', 14760], ['Activas y usadas', 80115], ['Por activar o por reasignar', 0], ['Perdidas, anuladas o congeladas', 1125], ['Ventas no realizadas', 388]],
+        cifras: [['Cupo de ingresos asignado', 96000], ['Vendidos', 81240], ['Sin vender', 14760], ['Vigentes y usados', 80115], ['Anulados o congelados', 1125], ['Ventas no realizadas', 388]],
         historial: [{ f: '3 jul 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '9 jul 2026', t: 'Aceptado', q: 'Mindeporte' }] }
     ];
 
@@ -182,7 +185,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       var u = co ? USUARIO_CO : USUARIO_CL;
       var ent = co ? '<span class="en-monograma en-monograma--co" aria-label="Graderío">GR</span>' : '<span class="en-monograma" aria-label="' + esc(CLUB) + '">AN</span>';
       var cargo = (co ? 'Graderío' : CLUB) + ' · ' + u.cargo;
-      return '<header class="en-barra"><span class="pp-marca__naowee">' + window.NAOWEE.logo + '</span>' + window.NAOWEE.entidades + '<span class="en-barra__sep" aria-hidden="true"></span>' +
+      return '<header class="en-barra">' + window.NAOWEE.entidades + '<span class="en-barra__sep" aria-hidden="true"></span>' +
         '<span class="en-barra__ttl">Entidades y comercializadoras</span>' +
         '<span class="en-usuario"><b>' + esc(u.nombre) + '</b><span class="en-sub"> · ' + esc(cargo) + '</span></span>' + ent + '</header>';
     }
@@ -371,19 +374,19 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function fmt(n) { return Number(n).toLocaleString('es-CO'); }
     function evCo(id) { return EV_CO.filter(function (e) { return e.id === id; })[0]; }
-    // Conteo por estado de un evento (y un sector, opcional): agregado base + la muestra B, así activar mueve los KPIs.
+    // Conteo por estado de un evento (y un sector, opcional): agregado base + la muestra B, así cada venta mueve los KPIs.
     function conteo(e, sec) {
       var r = { cupo: 0, sinvender: 0 };
-      ORDEN_B.forEach(function (k) { r[k] = 0; });
+      KEY_B.forEach(function (k) { r[k] = 0; });
       Object.keys(e.cupo).forEach(function (s) {
         if (sec && s !== sec) { return; }
         var base = e.base[s], muestra = B.filter(function (b) { return b.ev === e.id && b.sec === s; });
         r.cupo += e.cupo[s];
-        ORDEN_B.forEach(function (k, i) { r[k] += base[i]; });
+        ORDEN_B.forEach(function (k, i) { r[KEY_B[i]] += base[i]; });
         muestra.forEach(function (b) { r[b.estado] += 1; });
         r.sinvender += e.cupo[s] - base.reduce(function (a, x) { return a + x; }, 0) - muestra.length + muestra.filter(function (b) { return b.estado === 'sinvender'; }).length;
       });
-      r.vendidas = r.cupo - r.sinvender;
+      r.vendidos = r.cupo - r.sinvender;
       return r;
     }
     function conteoTotal() {
@@ -398,12 +401,12 @@ window.PANTALLAS = window.PANTALLAS || {};
     var EST_RC = { enviado: ['e-enviado', 'Enviado'], revision: ['r-revision', 'En revisión'], aceptado: ['r-aprobado', 'Aceptado'], observaciones: ['c-suspendida', 'Con observaciones'] };
     function tagRC(e) { return tag(EST_RC[e][0], EST_RC[e][1]); }
     function rc(id) { return RC.filter(function (r) { return r.id === id; })[0]; }
-    function nuevoRepCo(tipo, ev) { return { tipo: tipo || 'incidente', evento: ev || 'EV-2026-0412', cat: '', boleta: '', descripcion: '', periodo: ev || 'EV-2026-0412', nota: '', reenvio: null }; }
+    function nuevoRepCo(tipo, ev) { return { tipo: tipo || 'incidente', evento: ev || 'EV-2026-0412', cat: '', comprobante: '', descripcion: '', periodo: ev || 'EV-2026-0412', nota: '', reenvio: null }; }
 
     // Las cifras del reporte de ventas salen del SVN y no se editan: la comercializadora solo agrega una nota.
     function cifrasDe(periodo) {
       var c = periodo === '2026-II' ? conteoTotal() : conteo(evCo(periodo)), nv = periodo === '2026-II' ? noRealizadas() : noRealizadas(evCo(periodo));
-      return [['Cupo asignado', c.cupo], ['Vendidas', c.vendidas], ['Sin vender', c.sinvender], ['Activas y usadas', c.activa + c.usada], ['Por activar o por reasignar', c.poractivar + c.sintitular], ['Perdidas, anuladas o congeladas', c.perdida + c.anulada + c.congelada], ['Ventas no realizadas', nv]];
+      return [['Cupo de ingresos asignado', c.cupo], ['Vendidos', c.vendidos], ['Sin vender', c.sinvender], ['Vigentes y usados', c.vigente + c.usado], ['Anulados o congelados', c.anulado + c.congelado], ['Ventas no realizadas', nv]];
     }
     function tituloPeriodo(p) { return p === '2026-II' ? 'Reporte semestral 2026-II' : 'Reporte de ventas · ' + evCo(p).corto; }
     function faltaRepCo(x) {
@@ -421,7 +424,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       var form = inc
         ? '<section class="en-card"><h2 class="en-h2">Incidente</h2><div class="en-form">' +
             campo('Evento', lista('cr', 'evento', evs, x.evento)) + campo('Tipo de incidente', lista('cr', 'cat', [['', 'Elige un tipo']].concat(CATS_INC), x.cat)) +
-            campo('Boletas relacionadas (opcional)', entrada('cr', 'boleta', x.boleta, 'placeholder="Por ejemplo: GR-0412-ORI-18548"'), 'en-campo--ancho') +
+            campo('Comprobantes de compra relacionados (opcional)', entrada('cr', 'comprobante', x.comprobante, 'placeholder="Por ejemplo: GR-0412-ORI-18548"'), 'en-campo--ancho') +
             campo('Qué pasó', '<textarea data-s="cr" data-k="descripcion" rows="4" placeholder="Describe qué detectaste, dónde y cuándo. No incluyas documentos completos de personas.">' + esc(x.descripcion) + '</textarea>', 'en-campo--ancho') + '</div></section>'
         : '<section class="en-card"><h2 class="en-h2">' + (x.reenvio ? 'Corrige y reenvía ' + esc(x.reenvio) : 'Reporte de ventas') + '</h2><div class="en-form">' +
             campo('Periodo', lista('cr', 'periodo', evs.concat([['2026-II', 'Semestre 2026-II · tus 3 eventos']]), x.periodo), 'en-campo--ancho') + '</div>' +
@@ -465,7 +468,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function detalleRC(r) {
       var cuerpo = r.tipo === 'incidente'
-        ? seccion('Lo que se reportó', '<div class="en-kvs">' + kv('Evento', esc(evCo(r.evento).corto)) + kv('Tipo', esc(r.cat)) + (r.boleta ? kv('Boletas', esc(r.boleta)) : '') + '</div><p class="en-texto">' + esc(r.descripcion) + '</p>')
+        ? seccion('Lo que se reportó', '<div class="en-kvs">' + kv('Evento', esc(evCo(r.evento).corto)) + kv('Tipo', esc(r.cat)) + (r.comprobante ? kv('Comprobantes', esc(r.comprobante)) : '') + '</div><p class="en-texto">' + esc(r.descripcion) + '</p>')
         : seccion('Cifras del SVN', '<div class="en-kvs">' + r.cifras.map(function (p) { return kv(p[0], fmt(p[1])); }).join('') + '</div>' + (r.nota ? '<p class="en-texto"><b>Nota:</b> ' + esc(r.nota) + '</p>' : ''));
       var obs = r.estado === 'observaciones' ? aviso('alerta', 'Observaciones de Mindeporte', r.obs) : '';
       var pie = r.estado === 'observaciones' && r.tipo === 'ventas' ? '<button type="button" class="en-btn en-btn--pri" data-acc="co-corregir" data-id="' + r.id + '">Corregir y reenviar</button>'
@@ -483,7 +486,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         r.historial.push({ f: hoyTxt(), t: 'Reenviado con correcciones', q: 'Graderío' });
       } else {
         r = { id: 'RC-2026-0' + (108 + RC.length), fecha: hoyTxt(), estado: 'enviado', tipo: x.tipo, historial: [{ f: hoyTxt(), t: 'Enviado a Mindeporte', q: 'Graderío' }] };
-        if (x.tipo === 'incidente') { r.titulo = x.cat + ' · ' + evCo(x.evento).corto; r.evento = x.evento; r.cat = x.cat; r.boleta = x.boleta.trim(); r.descripcion = x.descripcion.trim(); }
+        if (x.tipo === 'incidente') { r.titulo = x.cat + ' · ' + evCo(x.evento).corto; r.evento = x.evento; r.cat = x.cat; r.comprobante = x.comprobante.trim(); r.descripcion = x.descripcion.trim(); }
         else { r.titulo = tituloPeriodo(x.periodo); r.periodo = x.periodo; r.cifras = cifrasDe(x.periodo); r.nota = x.nota.trim(); }
         RC.unshift(r);
       }
@@ -502,7 +505,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       var clubes = R.filter(function (r) { return r.c === 'grader'; });
       return '<div class="en-cuerpo en-cuerpo--solo"><div class="en-main en-main--centro" data-sc="main">' +
         '<div class="en-resp en-resp--' + (ok ? 'ok' : 'alerta') + '"><span class="en-resp__ico">' + ico(ok ? 'positive' : 'caution') + '</span><div><p class="en-resp__t">' +
-          (ok ? 'Graderío está homologada: puedes vender y activar boletas' : 'Graderío está ' + CERT[g.estado].tag.toLowerCase() + ': no puedes vender ni activar boletas') + '</p>' +
+          (ok ? 'Graderío está homologada: puedes vender y asignar ingresos' : 'Graderío está ' + CERT[g.estado].tag.toLowerCase() + ': no puedes vender ni asignar ingresos') + '</p>' +
           '<p>' + (ok ? 'Tu certificación de interoperabilidad con el SVN está activa.' : esc(g.motivo ? 'Motivo: ' + g.motivo.toLowerCase() + '.' : 'Mindeporte te avisará cuando cambie.')) + '</p></div></div>' +
         '<section class="en-card"><h2 class="en-h2">Tu certificación</h2><div class="en-kvs">' + kv('Estado', tagCert(g.estado)) + kv('Conexión con el API', conexionApi(g)) + kv('Pruebas', pasadas(g) + ' de 4 casos aprobados') +
           kv('Aprobó', esc(g.aprobo || '—')) + kv('Llave de producción', g.llave === 'emitida' ? 'Emitida el ' + esc(g.llaveFecha) : g.llave === 'revocada' ? 'Revocada' : 'Sin emitir') + '</div>' +
@@ -518,7 +521,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function toolbar() {
       return '<nwt-toolbar class="pp-toolbar">' +
-        '<div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
+        '' +
         '<nwt-title class="pp-toolbar__titulo">Entidades y comercializadoras<span slot="subtitle">Club o entidad · Comercializadora</span></nwt-title>' +
         '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
       '</nwt-toolbar>';
@@ -698,7 +701,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         case 'g-derivo': st.cara = 'club'; k.filtro = 'todos'; k.sel = 'R-2025-0288'; st.vista = 'incidentes'; break;
         case 'g-co-incidente':
           st.cara = 'comercializadora'; st.co.rep = nuevoRepCo('incidente', 'EV-2026-0431'); st.co.rep.cat = 'Reventa no autorizada';
-          st.co.rep.descripcion = 'Encontramos boletas de Oriental ofrecidas en un grupo de mensajería por encima del precio oficial.'; st.vista = 'co-reportar'; break;
+          st.co.rep.descripcion = 'Encontramos comprobantes de compra de Oriental ofrecidos en un grupo de mensajería por encima del precio oficial.'; st.vista = 'co-reportar'; break;
         case 'g-co-ventas': st.cara = 'comercializadora'; st.co.rep = nuevoRepCo('ventas', 'EV-2026-0412'); st.vista = 'co-reportar'; break;
         case 'g-co-obs': st.cara = 'comercializadora'; st.co.rfiltro = 'todos'; st.co.rsel = 'RC-2026-0107'; st.vista = 'co-reportes'; break;
         default: return false;

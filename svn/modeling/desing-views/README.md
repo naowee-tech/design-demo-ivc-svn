@@ -5,8 +5,11 @@ numeración. Cada uno **modela la superficie** (pantallas, estados, qué ve cada
 [`../dominio.md`](../dominio.md) hace cumplir) y, cuando existe en el demo, trae su **auditoría de
 usabilidad** como evidencia. No es un brief para replicar el demo.
 
-> Estado: **v2.1** (28-sep-2026). Alineado con `dominio.md` (con las decisiones del kick-off),
-> `superficies.md` v2.3 y `fuentes.md`.
+> Estado: **v2.2** (16-oct-2026). Alineado con `dominio.md` (con las decisiones del kick-off y la del
+> 16-oct: puerta por documento, sin rostro, con la huella como módulo *(exploratorio)*, dos colores y aviso al PMU), `superficies.md` y
+> `fuentes.md`. Con la fase 4, las vistas de compra, entidades, integración y componentes embebibles
+> hablan de *derecho de ingreso* y la API pasa a v2 *(exploratorio)*; las de portal y soporte las
+> cierra el otro frente de la fase 4.
 > La auditoría sale de leer el código del demo (`content-supplies/demo-svn`) y recorrerlo en local a
 > 1440, 820 y 390 px. Las capturas no se versionan: muestran nombres y documentos de los insumos.
 
@@ -53,7 +56,7 @@ entre la 6 (lo que viaja por la API) y la 7 (lo que ve el hincha).
 ## Lo que más pesa del demo
 
 1. **Menores sin reserva**: nombre y documento completos en la tabla abierta (1).
-2. **Amarillo y rojo iguales en el monitor**, y el rojo no avisa (3).
-3. **El amarillo no se decide en la puerta** y el resultado no se limpia solo (5).
+2. **Antecedentes y rojos iguales en el monitor**, y el rojo no avisa (3). El modelo los separa: el antecedente es un aviso al PMU y el rojo, una alerta.
+3. **El amarillo bloquea con un mensaje** en la puerta y el resultado no se limpia solo (5). En el modelo el operador ve dos colores.
 4. **El hincha ve el motivo legal del rechazo** y la compra no coteja el nombre con el ANI (6, 7).
 5. **Radicación prellenada** con datos de otra medida (1).

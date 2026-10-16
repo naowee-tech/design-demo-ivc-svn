@@ -24,13 +24,13 @@ puerta. Esta superficie es la que le quita esa decisión al operador.
 | **Escenario** | Administrador del escenario | La base física, que se reusa | Sectores (numerado o aforo libre), puertas (cada una de un solo sector), puestos, dispositivos |
 | **Evento y partidos** | Club u organizador | Crear el evento dentro de su competencia | Competencia, evento, partidos, fecha y hora, escenario |
 | **Configuración del evento** | Club u organizador | Ajustar el escenario para este evento | Por sector: habilitado, visitante, cerrado, aforo reducido · por puerta: abierta o cerrada, horario, **partido de su torniquete** · por silla: bloqueada con motivo · plazo de asignación · sin hinchada visitante |
-| **Cupos** | Club u organizador | Repartir el inventario | Cupo por comercializadora homologada (solo aparecen las homologadas) |
+| **Cupos** | Club u organizador | Repartir el inventario | Cupo de derechos de ingreso por sector y comercializadora homologada (solo aparecen las homologadas) |
 | **Listo para abrir** | Club, supervisor | Verificar antes de abrir puertas | Lista de chequeo: puertas con dispositivo asignado, paquete sin conexión descargado, plazo vencido |
 
 ## Estados
 
 - **Evento** *(decisión de producto)*: borrador → publicado → en curso → cerrado.
-- **Plazo de asignación**: abierto → vencido (las boletas sin titular se pierden).
+- **Plazo de asignación y transferencia**: abierto → vencido. Con el pago nace el derecho de ingreso ya con titular, así que nada se pierde; vencido, el titular ya no cambia.
 - **Puerta**: abierta · cerrada; dispositivo en línea · sin conexión · sin paquete.
 
 ## Qué ve cada rol

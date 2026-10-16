@@ -7,8 +7,8 @@ window.PANTALLAS = window.PANTALLAS || {};
   // Los términos dicen lo que pasó en la puerta, no el color; el color queda en el punto y el tag. Orden: de lo que entra a lo que no, y lo que no es lectura.
   var TIPOS = [
     { id: 'verde', label: 'Entró', tag: 'Entró' },
-    { id: 'amarillo', label: 'Entró con aviso', tag: 'Entró con aviso' },
-    { id: 'operativo', label: 'No entró · boleta', tag: 'No entró · boleta' },
+    { id: 'amarillo', label: 'Entró · aviso al PMU', tag: 'Entró · aviso al PMU' },
+    { id: 'operativo', label: 'No entró · documento', tag: 'No entró · documento' },
     { id: 'medida', label: 'No entró · medida', tag: 'No entró · medida' },
     { id: 'policia', label: 'Acción de seguridad', tag: 'Acción de seguridad' },
     { id: 'consulta', label: 'Consulta de perfil', tag: 'Consulta de perfil' },
@@ -59,7 +59,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function toolbar() {
       return '<nwt-toolbar class="pp-toolbar">' +
-        '<div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
+        '' +
         '<nwt-title class="pp-toolbar__titulo">Auditoría<span slot="subtitle">' + esc(ROTULO[rolId]) + ' · ' + esc(E.partido) + '</span></nwt-title>' +
         '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
       '</nwt-toolbar>';

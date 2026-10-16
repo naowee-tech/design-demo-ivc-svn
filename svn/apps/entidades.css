@@ -16,7 +16,7 @@
 /* ---------- Barra y pestañas ---------- */
 
 .en-barra { flex: none; display: flex; align-items: center; gap: var(--naotech-sizing-16); min-height: calc(var(--naotech-sizing-48) + var(--naotech-sizing-4)); padding: var(--naotech-sizing-4) var(--naotech-sizing-32); background: var(--naotech-app-background); border-bottom: 1px solid var(--naotech-app-color-200); }
-.en-barra .pp-marca__naowee svg { height: var(--naotech-sizing-20); }
+.en-barra .pp-alianza__sep:first-child { display: none; }
 .en-barra .pp-alianza__min { height: var(--naotech-sizing-28); }
 .en-barra__sep { width: 1px; height: 24px; background: var(--naotech-app-color-300); }
 .en-barra__ttl { font-size: var(--naotech-sizing-14); font-weight: 700; white-space: nowrap; }

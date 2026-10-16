@@ -7,12 +7,13 @@ window.PANTALLAS = window.PANTALLAS || {};
   var CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
 
   var COM = 'Graderío';
-  var BASE = { pruebas: 'https://api.pruebas.svn.example/v1', produccion: 'https://api.svn.example/v1' };
+  // v2 es la vigente; v1 se mantiene como alias en desuso (ver docVersiones) (exploratorio).
+  var BASE = { pruebas: 'https://api.pruebas.svn.example/v2', produccion: 'https://api.svn.example/v2' };
   var CODIGOS = [
-    { c: 'LIMITE_VENTA_EXCEDIDO', n: 'Límite de venta excedido', cuando: 'Pide más de 5 boletas para el evento, sumando las de todas las comercializadoras.', pantalla: 'Sí se puede explicar: «Máximo 5 boletas por persona para este evento» y ofrecer cambiar la cantidad.' },
+    { c: 'LIMITE_VENTA_EXCEDIDO', n: 'Límite de venta excedido', cuando: 'Pide más de 5 ingresos para el evento, sumando los de todas las comercializadoras.', pantalla: 'Sí se puede explicar: «Máximo 5 ingresos por persona para este evento» y ofrecer cambiar la cantidad.' },
     { c: 'MEDIDA_RESTRICTIVA_VIGENTE', n: 'Medida restrictiva vigente', cuando: 'La persona tiene una medida correctiva vigente.', pantalla: 'Mensaje genérico: «No es posible continuar. Consulta tu estado en tu portal.» Nunca el motivo.' },
     { c: 'DOCUMENTO_NO_VALIDO', n: 'Documento no válido', cuando: 'El documento no existe en el ANI o está cancelado. Nombre por definir.', pantalla: 'Mensaje genérico. No digas que el documento está cancelado.' },
-    { c: 'YA_TIENE_BOLETA', n: 'Ya tiene boleta', cuando: 'El titular ya tiene una boleta para el evento, en cualquier comercializadora: una boleta es una persona y un documento.', pantalla: 'Mensaje genérico: «No es posible asignar esta boleta a esta persona». Nunca digas que ya tiene boleta.' },
+    { c: 'YA_TIENE_INGRESO', n: 'Ya tiene ingreso', cuando: 'El titular ya tiene un derecho de ingreso para el evento, en cualquier comercializadora: un ingreso es una persona y un documento. En v1 se llamaba YA_TIENE_BOLETA.', pantalla: 'Mensaje genérico: «No es posible asignar este ingreso a esta persona». Nunca digas que ya tiene ingreso.' },
     { c: 'IDENTIDAD_NO_COINCIDE', n: 'Identidad no coincide', cuando: 'El nombre no corresponde al documento, del comprador o de un titular. Nombre por definir.', pantalla: 'Pide revisar los datos, hasta 3 intentos; después, mensaje genérico.' }
   ];
   var ERRORES = [
@@ -26,49 +27,49 @@ window.PANTALLAS = window.PANTALLAS || {};
   var NUM_DOC = 'Dígitos, de 5 a 11, sin puntos. El pasaporte admite letras, de 5 a 12.';
   var DOC_PERSONA = [['documento.tipo', 'texto', 'Sí', TIPOS_DOC], ['documento.numero', 'texto', 'Sí', NUM_DOC]];
   var PUNTOS = {
-    compra1: { rot: '¿Puede comprar? · al identificarse', ruta: 'POST /v1/validaciones/compra' },
-    recibir: { rot: '¿Puede recibir? · al asignar la boleta', ruta: 'POST /v1/validaciones/recepcion' },
-    compra2: { rot: 'Revalida al pagar', ruta: 'POST /v1/validaciones/compra' },
-    transferir: { rot: '¿Puede transferir?', ruta: 'POST /v1/validaciones/transferencia' },
-    boleta: { rot: 'Registrar boleta', ruta: 'POST /v1/boletas' },
-    estado: { rot: 'Estado del escenario', ruta: 'GET /v1/escenarios/{id}/estado' }
+    compra1: { rot: '¿Puede comprar? · al identificarse', ruta: 'POST /v2/validaciones/compra' },
+    recibir: { rot: '¿Puede recibir? · al asignar el ingreso', ruta: 'POST /v2/validaciones/recepcion' },
+    compra2: { rot: 'Revalida al pagar', ruta: 'POST /v2/validaciones/compra' },
+    transferir: { rot: '¿Puede transferir?', ruta: 'POST /v2/validaciones/transferencia' },
+    ingreso: { rot: 'Registrar ingreso', ruta: 'POST /v2/ingresos' },
+    estado: { rot: 'Estado del escenario', ruta: 'GET /v2/escenarios/{id}/estado' }
   };
   var ENDPOINTS = [
     { id: 'compra', punto: 'Punto 1', titulo: '¿Puede comprar?', met: 'POST', ruta: '/validaciones/compra',
-      cuando: 'Se llama dos veces por compra. Con fase "identificacion" cuando la persona se identifica (consulta 1: valida al comprador). Con fase "pago" justo antes de cobrar (consulta 3): revalida al comprador y a todos los titulares porque el estado pudo cambiar, y emite un token por boleta.',
-      req: [['fase', 'texto', 'Sí', '"identificacion" o "pago".']].concat(DOC_PERSONA, [['nombre', 'texto', 'Sí', 'Como aparece en el documento. Se coteja con el ANI.'], ['evento_id', 'texto', 'Sí', 'El evento que se va a comprar.'], ['cantidad', 'entero', 'Sí', 'Boletas que pide, de 1 a 5.'], ['reserva_id', 'texto', 'Con "pago"', 'La reserva que se está pagando.'], ['titulares[]', 'lista', 'Con "pago"', 'Una entrada por boleta, ya validada en la consulta 2.'], ['titulares[].cupo', 'entero', 'Con "pago"', 'Número de la boleta, de 1 a la cantidad.'], ['titulares[].documento', 'objeto', 'Con "pago"', 'tipo y numero de quien entra.'], ['titulares[].nombre', 'texto', 'Con "pago"', 'Como aparece en su documento.']]),
+      cuando: 'Se llama dos veces por compra. Con fase "identificacion" cuando la persona se identifica (consulta 1: valida al comprador). Con fase "pago" justo antes de cobrar (consulta 3): revalida al comprador y a todos los titulares porque el estado pudo cambiar, y emite un token por ingreso.',
+      req: [['fase', 'texto', 'Sí', '"identificacion" o "pago".']].concat(DOC_PERSONA, [['nombre', 'texto', 'Sí', 'Como aparece en el documento. Se coteja con el ANI.'], ['evento_id', 'texto', 'Sí', 'El evento que se va a comprar.'], ['cantidad', 'entero', 'Sí', 'Ingresos que pide, de 1 a 5.'], ['reserva_id', 'texto', 'Con "pago"', 'La reserva que se está pagando.'], ['titulares[]', 'lista', 'Con "pago"', 'Un titular por ingreso, ya validado en la consulta 2.'], ['titulares[].linea', 'entero', 'Con "pago"', 'Número del ingreso en la reserva, de 1 a la cantidad.'], ['titulares[].documento', 'objeto', 'Con "pago"', 'tipo y numero de quien entra.'], ['titulares[].nombre', 'texto', 'Con "pago"', 'Como aparece en su documento.']]),
       ejemplo: { fase: 'identificacion', documento: { tipo: 'CC', numero: '1037512884' }, nombre: 'Camilo Andrés Vélez Soto', evento_id: 'EV-2026-0412', cantidad: 2 },
-      ejemploPago: { fase: 'pago', documento: { tipo: 'CC', numero: '1037512884' }, nombre: 'Camilo Andrés Vélez Soto', evento_id: 'EV-2026-0412', cantidad: 2, reserva_id: 'RES-30418', titulares: [{ cupo: 1, documento: { tipo: 'CC', numero: '1037512884' }, nombre: 'Camilo Andrés Vélez Soto' }, { cupo: 2, documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' }] },
-      resp: [['Autorizado', 200, { resultado: 'autorizado', codigo: null, consulta_id: 'con_7f3a9c21' }], ['Autorizado al pagar', 200, { resultado: 'autorizado', codigo: null, tokens: [{ cupo: 1, token: 'tok_c91e04aa7b' }, { cupo: 2, token: 'tok_3b70d8e215' }], consulta_id: 'con_7f3a9c58' }], ['Denegado · límite', 200, { resultado: 'denegado', codigo: 'LIMITE_VENTA_EXCEDIDO', consulta_id: 'con_7f3a9c33' }], ['Denegado · medida', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', consulta_id: 'con_7f3a9c40' }], ['Denegado al pagar · titular', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', parte: 'titular', cupo: 2, consulta_id: 'con_7f3a9c61' }]] },
-    { id: 'recepcion', punto: 'Punto 2', titulo: '¿Puede recibir esta boleta?', met: 'POST', ruta: '/validaciones/recepcion',
-      cuando: 'Al asignar cada boleta, antes de pagar (fase "preasignacion"): todavía no existe la boleta, se identifica por la reserva y el cupo. La asignación es firme y no hay aceptación. Con "reasignacion" se valida a quien recibe una boleta ya pagada, hasta el inicio del partido.',
-      req: [['fase', 'texto', 'Sí', '"preasignacion" o "reasignacion".'], ['reserva_id', 'texto', 'Con "preasignacion"', 'La reserva de la compra en curso.'], ['cupo', 'entero', 'Con "preasignacion"', 'Número de la boleta dentro de la reserva.'], ['boleta_id', 'texto', 'Con "reasignacion"', 'La boleta ya registrada que cambia de titular.'], ['titular.documento.tipo', 'texto', 'Sí', TIPOS_DOC], ['titular.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.nombre', 'texto', 'Sí', 'Como aparece en su documento. Se coteja con el ANI.']],
-      ejemplo: { fase: 'preasignacion', reserva_id: 'RES-30418', cupo: 2, titular: { documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' } },
-      ejemploReasignacion: { fase: 'reasignacion', boleta_id: 'BOL-884120', titular: { documento: { tipo: 'CC', numero: '1020774310' }, nombre: 'Andrea Mejía Cano' } },
-      resp: [['Autorizado', 200, { resultado: 'autorizado', codigo: null, consulta_id: 'con_8a02b711' }], ['Denegado · límite', 200, { resultado: 'denegado', codigo: 'LIMITE_VENTA_EXCEDIDO', consulta_id: 'con_8a02b790' }], ['Denegado · medida', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', consulta_id: 'con_8a02b7c4' }], ['Denegado · ya tiene boleta', 200, { resultado: 'denegado', codigo: 'YA_TIENE_BOLETA', consulta_id: 'con_8a02b7e9' }]] },
+      ejemploPago: { fase: 'pago', documento: { tipo: 'CC', numero: '1037512884' }, nombre: 'Camilo Andrés Vélez Soto', evento_id: 'EV-2026-0412', cantidad: 2, reserva_id: 'RES-30418', titulares: [{ linea: 1, documento: { tipo: 'CC', numero: '1037512884' }, nombre: 'Camilo Andrés Vélez Soto' }, { linea: 2, documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' }] },
+      resp: [['Autorizado', 200, { resultado: 'autorizado', codigo: null, consulta_id: 'con_7f3a9c21' }], ['Autorizado al pagar', 200, { resultado: 'autorizado', codigo: null, tokens: [{ linea: 1, token: 'tok_c91e04aa7b' }, { linea: 2, token: 'tok_3b70d8e215' }], consulta_id: 'con_7f3a9c58' }], ['Denegado · límite', 200, { resultado: 'denegado', codigo: 'LIMITE_VENTA_EXCEDIDO', consulta_id: 'con_7f3a9c33' }], ['Denegado · medida', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', consulta_id: 'con_7f3a9c40' }], ['Denegado al pagar · titular', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', parte: 'titular', linea: 2, consulta_id: 'con_7f3a9c61' }]] },
+    { id: 'recepcion', punto: 'Punto 2', titulo: '¿Puede recibir este ingreso?', met: 'POST', ruta: '/validaciones/recepcion',
+      cuando: 'Al asignar cada ingreso, antes de pagar (fase "preasignacion"): todavía no existe el derecho de ingreso, se identifica por la reserva y la línea. La asignación es firme y no hay aceptación. Con "reasignacion" se valida a quien recibe un ingreso ya pagado, hasta el inicio del partido.',
+      req: [['fase', 'texto', 'Sí', '"preasignacion" o "reasignacion".'], ['reserva_id', 'texto', 'Con "preasignacion"', 'La reserva de la compra en curso.'], ['linea', 'entero', 'Con "preasignacion"', 'Número del ingreso dentro de la reserva.'], ['ingreso_id', 'texto', 'Con "reasignacion"', 'El ingreso ya registrado que cambia de titular.'], ['titular.documento.tipo', 'texto', 'Sí', TIPOS_DOC], ['titular.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.nombre', 'texto', 'Sí', 'Como aparece en su documento. Se coteja con el ANI.']],
+      ejemplo: { fase: 'preasignacion', reserva_id: 'RES-30418', linea: 2, titular: { documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' } },
+      ejemploReasignacion: { fase: 'reasignacion', ingreso_id: 'ING-884120', titular: { documento: { tipo: 'CC', numero: '1020774310' }, nombre: 'Andrea Mejía Cano' } },
+      resp: [['Autorizado', 200, { resultado: 'autorizado', codigo: null, consulta_id: 'con_8a02b711' }], ['Denegado · límite', 200, { resultado: 'denegado', codigo: 'LIMITE_VENTA_EXCEDIDO', consulta_id: 'con_8a02b790' }], ['Denegado · medida', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', consulta_id: 'con_8a02b7c4' }], ['Denegado · ya tiene ingreso', 200, { resultado: 'denegado', codigo: 'YA_TIENE_INGRESO', consulta_id: 'con_8a02b7e9' }]] },
     { id: 'transferencia', punto: 'Punto 3', titulo: '¿Puede transferir?', met: 'POST', ruta: '/validaciones/transferencia',
-      cuando: 'Cuando una persona le pasa su boleta ya pagada a otra (cambio de titular). Se valida a quien entrega y a quien recibe, hasta el inicio del partido.',
-      req: [['boleta_id', 'texto', 'Sí', 'La boleta que se transfiere.'], ['entrega.documento.tipo', 'texto', 'Sí', 'Quien entrega.'], ['entrega.documento.numero', 'texto', 'Sí', 'Solo dígitos.'], ['recibe.documento.tipo', 'texto', 'Sí', 'Quien recibe.'], ['recibe.documento.numero', 'texto', 'Sí', 'Solo dígitos.']],
-      ejemplo: { boleta_id: 'BOL-884120', entrega: { documento: { tipo: 'CC', numero: '1037512884' } }, recibe: { documento: { tipo: 'CC', numero: '1020774310' } } },
+      cuando: 'Cuando una persona le pasa su ingreso ya pagado a otra (cambio de titular). Se valida a quien entrega y a quien recibe, hasta el inicio del partido.',
+      req: [['ingreso_id', 'texto', 'Sí', 'El ingreso que se transfiere.'], ['entrega.documento.tipo', 'texto', 'Sí', 'Quien entrega.'], ['entrega.documento.numero', 'texto', 'Sí', 'Solo dígitos.'], ['recibe.documento.tipo', 'texto', 'Sí', 'Quien recibe.'], ['recibe.documento.numero', 'texto', 'Sí', 'Solo dígitos.']],
+      ejemplo: { ingreso_id: 'ING-884120', entrega: { documento: { tipo: 'CC', numero: '1037512884' } }, recibe: { documento: { tipo: 'CC', numero: '1020774310' } } },
       resp: [['Autorizado', 200, { resultado: 'autorizado', codigo: null, token: 'tok_5d20e1b9c3', consulta_id: 'con_9b11c0d2' }], ['Denegado · recibe', 200, { resultado: 'denegado', codigo: 'MEDIDA_RESTRICTIVA_VIGENTE', parte: 'recibe', consulta_id: 'con_9b11c0f6' }]] },
-    { id: 'boleta', punto: 'Registro', titulo: 'Registrar la boleta', met: 'POST', ruta: '/boletas',
-      cuando: 'Después de pagar, una vez por boleta, con el token de ese cupo. Deja la boleta con propietario (quien compró) y titular (quien entra).',
-      req: [['token', 'texto', 'Sí', 'El de este cupo, devuelto por la consulta al pagar. Se usa una sola vez.'], ['evento_id', 'texto', 'Sí', 'Evento de la boleta.'], ['localidad_id', 'texto', 'Sí', 'Localidad o sector.'], ['propietario.documento.tipo', 'texto', 'Sí', 'Quien compró.'], ['propietario.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.documento.tipo', 'texto', 'Sí', 'Quien entra. Puede ser el propietario.'], ['titular.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.nombre', 'texto', 'Sí', 'Como aparece en su documento.']],
-      ejemplo: { token: 'tok_3b70d8e215', evento_id: 'EV-2026-0412', localidad_id: 'ORI-BAJA', propietario: { documento: { tipo: 'CC', numero: '1037512884' } }, titular: { documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' } },
-      resp: [['Registrada', 201, { boleta_id: 'BOL-884121', estado: 'registrada' }], ['Token vencido', 422, { error: { codigo: 'SOLICITUD_INVALIDA', campo: 'token' } }]] },
+    { id: 'ingreso', punto: 'Registro', titulo: 'Registrar el ingreso', met: 'POST', ruta: '/ingresos',
+      cuando: 'Después de pagar, una vez por ingreso, con el token de esa línea. Crea el derecho de ingreso: documento del titular, evento y sector. La silla es de la comercializadora y el SVN no la recibe. Reemplaza a POST /boletas de v1.',
+      req: [['token', 'texto', 'Sí', 'El de esta línea, devuelto por la consulta al pagar. Se usa una sola vez.'], ['evento_id', 'texto', 'Sí', 'Evento del ingreso.'], ['sector_id', 'texto', 'Sí', 'Sector al que da ingreso.'], ['propietario.documento.tipo', 'texto', 'Sí', 'Quien compró.'], ['propietario.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.documento.tipo', 'texto', 'Sí', 'Quien entra. Puede ser el propietario.'], ['titular.documento.numero', 'texto', 'Sí', NUM_DOC], ['titular.nombre', 'texto', 'Sí', 'Como aparece en su documento.']],
+      ejemplo: { token: 'tok_3b70d8e215', evento_id: 'EV-2026-0412', sector_id: 'ORI-BAJA', propietario: { documento: { tipo: 'CC', numero: '1037512884' } }, titular: { documento: { tipo: 'CE', numero: '5521904' }, nombre: 'Laura Restrepo Gil' } },
+      resp: [['Registrado', 201, { ingreso_id: 'ING-884121', estado: 'vigente' }], ['Token vencido', 422, { error: { codigo: 'SOLICITUD_INVALIDA', campo: 'token' } }]] },
     { id: 'escenario', punto: 'Consulta', titulo: 'Estado del escenario', met: 'GET', ruta: '/escenarios/{id}/estado',
       cuando: 'Para mostrar en tu canal si las puertas ya abrieron. Es un dato público del evento: no trae información de personas.',
       req: [['id', 'ruta', 'Sí', 'El escenario, por ejemplo ATANASIO-GIRARDOT.']],
       ejemplo: null,
       resp: [['En vivo', 200, { escenario: 'ATANASIO-GIRARDOT', evento_id: 'EV-2026-0412', estado: 'puertas_abiertas', aforo: 38000, ingresos: 4812, actualizado: '2026-09-28T18:42:10-05:00' }]] }
   ];
-  var DOCS_ITEMS = ENDPOINTS.map(function (e) { return [e.id, e.titulo, e.punto]; }).concat([['codigos', 'Códigos de motivo', 'Referencia'], ['limites', 'Autenticación y límites', 'Referencia']]);
+  var DOCS_ITEMS = ENDPOINTS.map(function (e) { return [e.id, e.titulo, e.punto]; }).concat([['codigos', 'Códigos de motivo', 'Referencia'], ['limites', 'Autenticación y límites', 'Referencia'], ['versiones', 'Versiones y migración', 'Referencia']]);
   var CASOS = [
     { id: 'p1', t: 'Medida vigente', doc: 'CC 1000000001', esp: 'denegado · MEDIDA_RESTRICTIVA_VIGENTE', res: 'denegado', cod: 'MEDIDA_RESTRICTIVA_VIGENTE' },
     { id: 'p2', t: 'Medida cumplida', doc: 'CC 1000000002', esp: 'autorizado: ya cumplió, puede comprar', res: 'autorizado', cod: null },
     { id: 'p3', t: 'Nombre que no coincide', doc: 'CC 1000000003', esp: 'denegado · IDENTIDAD_NO_COINCIDE', res: 'denegado', cod: 'IDENTIDAD_NO_COINCIDE' },
-    { id: 'p4', t: 'Más de 5 boletas', doc: 'CC 1000000004', esp: 'denegado · LIMITE_VENTA_EXCEDIDO', res: 'denegado', cod: 'LIMITE_VENTA_EXCEDIDO' },
-    { id: 'p5', t: 'Titular con boleta para el evento', doc: 'CC 1000000005', esp: 'denegado · YA_TIENE_BOLETA', res: 'denegado', cod: 'YA_TIENE_BOLETA', punto: 'recibir' }
+    { id: 'p4', t: 'Más de 5 ingresos', doc: 'CC 1000000004', esp: 'denegado · LIMITE_VENTA_EXCEDIDO', res: 'denegado', cod: 'LIMITE_VENTA_EXCEDIDO' },
+    { id: 'p5', t: 'Titular con ingreso para el evento', doc: 'CC 1000000005', esp: 'denegado · YA_TIENE_INGRESO', res: 'denegado', cod: 'YA_TIENE_INGRESO', punto: 'recibir' }
   ];
   function pruebasDe(n) {
     var o = { ultimo: null, solicitud: false };
@@ -83,10 +84,18 @@ window.PANTALLAS = window.PANTALLAS || {};
       viaja: 'Nos envían las medidas ya decididas.', nunca: 'No ven datos de compras.' },
     { id: 'clubes', lado: 'da', nombre: 'Clubes y entidades deportivas', que: 'Organizan los eventos', icono: 'official-stores', estado: 'enpruebas', estadoT: 'En pruebas',
       viaja: 'Nos cuentan qué empresa vende y qué incidentes hubo.', nunca: 'Solo ven lo de sus eventos.' },
-    { id: 'comercializadoras', lado: 'usa', nombre: 'Comercializadoras de boletas', que: COM + ' y 11 más', icono: 'payment', estado: 'ok', estadoT: 'Conectadas', portal: true,
+    { id: 'comercializadoras', lado: 'usa', nombre: 'Comercializadoras', que: COM + ' y 11 más', icono: 'payment', estado: 'ok', estadoT: 'Conectadas', portal: true,
       viaja: 'Preguntan en cada venta si la persona puede comprar.', nunca: 'Reciben solo sí o no, nunca el motivo.' },
     { id: 'policia', lado: 'usa', nombre: 'Autoridad de seguridad', que: 'Puesto de Mando Unificado', icono: 'view-grid', estado: 'pendiente', estadoT: 'Por conectar',
-      viaja: 'Recibirá un aviso en vivo si alguien con medida vigente intenta entrar.', nunca: 'No verá quién compró boleta.' }
+      viaja: 'Recibirá un aviso en vivo si alguien con medida vigente intenta entrar.', nunca: 'No verá quién compró cada ingreso.' }
+  ];
+  // v1 -> v2: el cambio de nombres que sigue a pasar de revisar la boleta a revisar el documento (exploratorio).
+  var CAMBIOS_V2 = [
+    ['POST /v1/boletas', 'POST /v2/ingresos', 'Registra el derecho de ingreso: documento, evento y sector.'],
+    ['YA_TIENE_BOLETA', 'YA_TIENE_INGRESO', 'Mismo caso, nombre nuevo.'],
+    ['boleta_id', 'ingreso_id', 'Identifica el ingreso registrado.'],
+    ['localidad_id', 'sector_id', 'El sector al que da ingreso.'],
+    ['cupo', 'linea', 'Número del ingreso dentro de la reserva.']
   ];
   var ALFA = 'abcdefghjkmnpqrstuvwxyz23456789';
 
@@ -112,19 +121,19 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     /* ---------- Registro de llamadas (datos sembrados y las que se hacen acá) ---------- */
 
-    // [punto, tipo doc, últimos 4, resultado, código, http, ms, propietario (solo en boleta)]
-    // Una compra completa de 2 boletas: compra1 -> recibir x2 -> compra2 -> boleta x2.
+    // [punto, tipo doc, últimos 4, resultado, código, http, ms, propietario (solo en ingreso)]
+    // Una compra completa de 2 ingresos: compra1 -> recibir x2 -> compra2 -> ingreso x2.
     var SEMILLA = [
       ['compra1', 'CC', '2884', 'autorizado', null, 200, 412], ['recibir', 'CE', '1904', 'autorizado', null, 200, 301], ['recibir', 'CC', '2884', 'autorizado', null, 200, 288],
-      ['compra2', 'CC', '2884', 'autorizado', null, 200, 538], ['boleta', 'CC', '2884', 'autorizado', null, 201, 187, '2884'], ['boleta', 'CE', '1904', 'autorizado', null, 201, 192, '2884'],
+      ['compra2', 'CC', '2884', 'autorizado', null, 200, 538], ['ingreso', 'CC', '2884', 'autorizado', null, 201, 187, '2884'], ['ingreso', 'CE', '1904', 'autorizado', null, 201, 192, '2884'],
       ['compra1', 'CC', '4447', 'denegado', 'MEDIDA_RESTRICTIVA_VIGENTE', 200, 377], ['compra1', 'CC', '9120', 'denegado', 'LIMITE_VENTA_EXCEDIDO', 200, 391], ['recibir', 'CC', '4310', 'autorizado', null, 200, 295],
       ['estado', '', '', 'autorizado', null, 200, 64], ['compra1', 'CC', '6672', 'denegado', 'IDENTIDAD_NO_COINCIDE', 200, 1108], ['compra1', 'CC', '6672', 'autorizado', null, 200, 436],
-      ['recibir', 'CC', '0518', 'denegado', 'YA_TIENE_BOLETA', 200, 326], ['recibir', 'PA', '7741', 'autorizado', null, 200, 310], ['compra2', 'CC', '6672', 'autorizado', null, 200, 502],
-      ['boleta', 'CC', '6672', 'autorizado', null, 201, 203, '6672'], ['boleta', 'PA', '7741', 'autorizado', null, 201, 198, '6672'], ['transferir', 'CC', '5518', 'autorizado', null, 200, 341],
+      ['recibir', 'CC', '0518', 'denegado', 'YA_TIENE_INGRESO', 200, 326], ['recibir', 'PA', '7741', 'autorizado', null, 200, 310], ['compra2', 'CC', '6672', 'autorizado', null, 200, 502],
+      ['ingreso', 'CC', '6672', 'autorizado', null, 201, 203, '6672'], ['ingreso', 'PA', '7741', 'autorizado', null, 201, 198, '6672'], ['transferir', 'CC', '5518', 'autorizado', null, 200, 341],
       ['compra1', 'TI', '9406', 'autorizado', null, 200, 421], ['recibir', 'CC', '2208', 'denegado', 'MEDIDA_RESTRICTIVA_VIGENTE', 200, 318], ['compra1', 'CE', '2279', 'denegado', 'DOCUMENTO_NO_VALIDO', 200, 884],
       ['compra1', 'CC', '7730', 'autorizado', null, 200, 405], ['recibir', 'CC', '3392', 'autorizado', null, 200, 297], ['compra2', 'CC', '7730', 'denegado', 'MEDIDA_RESTRICTIVA_VIGENTE', 200, 561],
       ['compra1', 'CC', '1180', 'autorizado', null, 200, 389], ['compra1', 'CC', '3305', 'error', 'SOLICITUD_INVALIDA', 422, 41], ['estado', '', '', 'autorizado', null, 200, 58],
-      ['transferir', 'CC', '6045', 'denegado', 'MEDIDA_RESTRICTIVA_VIGENTE', 200, 352], ['compra1', 'CC', '2117', 'autorizado', null, 200, 398], ['compra2', 'CC', '2117', 'autorizado', null, 200, 515], ['boleta', 'CC', '2117', 'autorizado', null, 201, 176, '2117']
+      ['transferir', 'CC', '6045', 'denegado', 'MEDIDA_RESTRICTIVA_VIGENTE', 200, 352], ['compra1', 'CC', '2117', 'autorizado', null, 200, 398], ['compra2', 'CC', '2117', 'autorizado', null, 200, 515], ['ingreso', 'CC', '2117', 'autorizado', null, 201, 176, '2117']
     ];
     var FILAS_BASE = SEMILLA.map(function (s, i) {
       var min = 4 + i * 3 + (i % 4), h = 10 * 60 + 14 - min;
@@ -146,21 +155,21 @@ window.PANTALLAS = window.PANTALLAS || {};
       if (f.punto === 'compra1') { return { fase: 'identificacion', documento: d, nombre: '(no se conserva)', evento_id: 'EV-2026-0412', cantidad: 2 }; }
       if (f.punto === 'compra2') {
         return { fase: 'pago', documento: d, nombre: '(no se conserva)', evento_id: 'EV-2026-0412', cantidad: 2, reserva_id: 'RES-••••••',
-          titulares: [{ cupo: 1, documento: d, nombre: '(no se conserva)' }, { cupo: 2, documento: { tipo: 'CC', numero: '••••••••••' }, nombre: '(no se conserva)' }] };
+          titulares: [{ linea: 1, documento: d, nombre: '(no se conserva)' }, { linea: 2, documento: { tipo: 'CC', numero: '••••••••••' }, nombre: '(no se conserva)' }] };
       }
-      if (f.punto === 'recibir') { return { fase: 'preasignacion', reserva_id: 'RES-••••••', cupo: 2, titular: { documento: d, nombre: '(no se conserva)' } }; }
-      if (f.punto === 'transferir') { return { boleta_id: 'BOL-884120', entrega: { documento: { tipo: 'CC', numero: '••••••2884' } }, recibe: { documento: d } }; }
-      if (f.punto === 'boleta') { return { token: 'tok_••••••••', evento_id: 'EV-2026-0412', localidad_id: 'ORI-BAJA', propietario: { documento: { tipo: 'CC', numero: '••••••' + (f.prop || f.fin) } }, titular: { documento: d, nombre: '(no se conserva)' } }; }
+      if (f.punto === 'recibir') { return { fase: 'preasignacion', reserva_id: 'RES-••••••', linea: 2, titular: { documento: d, nombre: '(no se conserva)' } }; }
+      if (f.punto === 'transferir') { return { ingreso_id: 'ING-884120', entrega: { documento: { tipo: 'CC', numero: '••••••2884' } }, recibe: { documento: d } }; }
+      if (f.punto === 'ingreso') { return { token: 'tok_••••••••', evento_id: 'EV-2026-0412', sector_id: 'ORI-BAJA', propietario: { documento: { tipo: 'CC', numero: '••••••' + (f.prop || f.fin) } }, titular: { documento: d, nombre: '(no se conserva)' } }; }
       return { id: 'ATANASIO-GIRARDOT' };
     }
     function respuesta(f) {
       if (f.resultado === 'error') { return { error: { codigo: f.codigo, http: f.http } }; }
-      if (f.punto === 'boleta') { return { boleta_id: 'BOL-884120', estado: 'registrada' }; }
+      if (f.punto === 'ingreso') { return { ingreso_id: 'ING-884120', estado: 'vigente' }; }
       if (f.punto === 'estado') { return { estado: 'puertas_abiertas', aforo: 38000, ingresos: 4812 }; }
       var r = { resultado: f.resultado, codigo: f.codigo, consulta_id: 'con_' + f.id.slice(4) + 'a1' };
-      if (f.resultado === 'autorizado' && f.punto === 'compra2') { r.tokens = [{ cupo: 1, token: 'tok_••••••••' }, { cupo: 2, token: 'tok_••••••••' }]; }
+      if (f.resultado === 'autorizado' && f.punto === 'compra2') { r.tokens = [{ linea: 1, token: 'tok_••••••••' }, { linea: 2, token: 'tok_••••••••' }]; }
       if (f.resultado === 'autorizado' && f.punto === 'transferir') { r.token = 'tok_••••••••'; }
-      if (f.resultado === 'denegado' && f.punto === 'compra2') { r.parte = 'titular'; r.cupo = 2; }
+      if (f.resultado === 'denegado' && f.punto === 'compra2') { r.parte = 'titular'; r.linea = 2; }
       return r;
     }
 
@@ -190,7 +199,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function barra() {
       var envb = function (id, txt) { return '<button type="button" class="ig-env__b" data-acc="env" data-id="' + id + '" aria-pressed="' + (st.env === id) + '">' + txt + '</button>'; };
-      return '<header class="ig-barra"><span class="pp-marca__naowee">' + window.NAOWEE.logo + '</span>' + window.NAOWEE.entidades + '<span class="ig-barra__sep" aria-hidden="true"></span>' +
+      return '<header class="ig-barra">' + window.NAOWEE.entidades + '<span class="ig-barra__sep" aria-hidden="true"></span>' +
         '<span class="ig-barra__ttl">Portal de integración</span>' +
         '<div class="ig-env" role="group" aria-label="Entorno">' + envb('pruebas', 'Pruebas') + envb('produccion', 'Producción') + '</div>' +
         '<span class="ig-usuario"><span class="ig-sub">' + COM + '</span></span>' + tagHomol() + '<span class="ig-monograma" aria-hidden="true">GR</span></header>';
@@ -306,13 +315,23 @@ window.PANTALLAS = window.PANTALLAS || {};
         ERRORES.map(function (x) { return '<div class="ig-fila-t" role="row"><b>' + x[0] + '</b><code>' + x[1] + '</code><span>' + esc(x[2]) + '</span></div>'; }).join('') + '</div></section>';
     }
 
+    function docVersiones() {
+      return '<div class="ig-cab"><p class="ig-eyebrow">Referencia</p><h1 class="ig-h1">Versiones y migración</h1></div>' +
+        '<p class="ig-texto">La versión vigente es <code>v2</code>. La <code>v1</code> está <b>en desuso</b> y se mantiene como alias: sigue respondiendo, con los nombres de antes, mientras migras.</p>' +
+        '<div class="ig-tabla ig-tabla--cod"><div class="ig-fila-t ig-fila-t--cab" role="row"><span>En v1</span><span>En v2</span><span>Qué cambia</span></div>' + CAMBIOS_V2.map(function (c) {
+          return '<div class="ig-fila-t" role="row"><span><code>' + esc(c[0]) + '</code></span><span><code>' + esc(c[1]) + '</code></span><span>' + esc(c[2]) + '</span></div>';
+        }).join('') + '</div>' +
+        aviso('info', 'Qué no cambia', 'Los tres puntos de validación, la llave, los límites y la regla de solo sí o no siguen igual.') +
+        aviso('alerta', 'Pendiente de definir', 'Hasta cuándo se mantiene el alias v1 y con qué base legal se cambia el contrato de las comercializadoras que hoy están en pruebas. (exploratorio)');
+    }
+
     function seccionDocs() {
       var sel = st.doc.id;
       var lista = '<nav class="ig-docnav" aria-label="Documentación">' + DOCS_ITEMS.map(function (i) {
         return '<button type="button" class="ig-docnav__i" data-acc="doc" data-id="' + i[0] + '"' + (sel === i[0] ? ' aria-current="page"' : '') + '><span class="ig-sub">' + esc(i[2]) + '</span><span>' + esc(i[1]) + '</span></button>';
       }).join('') + '</nav>';
       var e = ENDPOINTS.filter(function (x) { return x.id === sel; })[0];
-      var cuerpo = e ? docEndpoint(e) : sel === 'codigos' ? docCodigos() : docLimites();
+      var cuerpo = e ? docEndpoint(e) : sel === 'codigos' ? docCodigos() : sel === 'versiones' ? docVersiones() : docLimites();
       return '<div class="ig-doc">' + lista + '<div class="ig-pag ig-pag--doc" data-sc="pag">' + cuerpo + '</div></div>';
     }
 
@@ -394,7 +413,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         ['Validación de compra', 'Puntos 1 · compra y pago', '99,98 %', 'normal', 412, false],
         ['Validación de recepción y transferencia', 'Puntos 2 y 3', '99,97 %', 'normal', 336, false],
         ['Verificación de identidad', 'Cotejo del documento y el nombre (ANI)', deg ? '99,71 %' : '99,95 %', deg ? 'degradado' : 'normal', deg ? 4180 : 380, deg],
-        ['Registro de boletas', 'Boletas nominalizadas', '99,99 %', 'normal', 190, false],
+        ['Registro de ingresos', 'Derechos de ingreso por documento', '99,99 %', 'normal', 190, false],
         ['Estado del escenario', 'Consulta de puertas y aforo', '100 %', 'normal', 64, false]
       ];
       var banner = deg
@@ -434,7 +453,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function toolbar() {
       return '<nwt-toolbar class="pp-toolbar">' +
-        '<div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
+        '' +
         '<nwt-title class="pp-toolbar__titulo">API y portal de integración<span slot="subtitle">Con quién se integra el SVN</span></nwt-title>' +
         '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
       '</nwt-toolbar>';

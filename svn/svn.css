@@ -160,14 +160,14 @@ button { font-family: inherit; }
   background: linear-gradient(135deg, var(--naotech-color-default-800), var(--naotech-color-gray-900));
   transition: left 380ms cubic-bezier(0.4, 0, 1, 1), top 380ms cubic-bezier(0.4, 0, 1, 1), width 380ms cubic-bezier(0.4, 0, 1, 1), height 380ms cubic-bezier(0.4, 0, 1, 1), border-radius 380ms, opacity 280ms;
 }
-.sv-zoom__rotulo { color: var(--naotech-color-white-alpha-100); font-size: var(--naotech-sizing-48); font-weight: 900; letter-spacing: -0.02em; opacity: 0; transition: opacity 300ms 200ms; }
+.sv-zoom__rotulo { box-sizing: border-box; max-width: 100%; padding: 0 var(--naotech-sizing-24); text-align: center; text-wrap: balance; font-size: clamp(var(--naotech-sizing-32), 6vw, var(--naotech-sizing-48)); color: var(--naotech-color-white-alpha-100); font-weight: 900; letter-spacing: -0.02em; opacity: 0; transition: opacity 300ms 200ms; }
 .sv-zoom--crece .sv-zoom__rotulo { opacity: 1; }
 .sv-zoom--fuera { opacity: 0; }
 
 @media (max-width: 720px) {
   .sv-gate { padding-top: 96px; }
   .sv-gate__top { padding: var(--naotech-sizing-16); }
-  .sv-gate__titulo { font-size: var(--naotech-sizing-32); }
+  .sv-gate__titulo { font-size: clamp(var(--naotech-sizing-28), 8vw, var(--naotech-sizing-32)); }
   .sv-card { flex-basis: calc(50% - 8px); min-height: 200px; }
 }
 
@@ -177,7 +177,7 @@ button { font-family: inherit; }
   .sv-gate__top { padding: var(--naotech-sizing-12) var(--naotech-sizing-40); }
   .sv-gate__escudo { height: var(--naotech-sizing-40); }
   .sv-gate__cab { gap: var(--naotech-sizing-12); }
-  .sv-gate__titulo { font-size: var(--naotech-sizing-40); }
+  .sv-gate__titulo { font-size: var(--naotech-sizing-56); white-space: nowrap; }
   .sv-gate__modo { margin-top: var(--naotech-sizing-8); }
   .sv-gate__cuerpo { gap: var(--naotech-sizing-16); }
   .sv-gate__fila, .sv-gate__fila--apps { max-width: none; margin: 0; gap: var(--naotech-sizing-16); }
@@ -227,3 +227,7 @@ button { font-family: inherit; }
 /* La burbuja ocupa el lugar del icono de «Probar»; la elegida lleva punto de color, así se marca sin depender del fondo. */
 .pp-panel nwt-tabs[data-lista] .nwt-tabs__tab::before { content: ''; flex: none; box-sizing: border-box; width: var(--naotech-sizing-28); height: var(--naotech-sizing-28); border-radius: var(--naotech-radius-circle); background: var(--naotech-app-color-100); }
 .pp-panel nwt-tabs[data-lista] .nwt-tabs__tab--active::before { border: var(--naotech-sizing-2) solid var(--naotech-primary-color-800); background: var(--naotech-primary-color-800); box-shadow: inset 0 0 0 var(--naotech-sizing-6) var(--naotech-app-background); }
+
+/* Logo de Naowee flotante: sin clics, por encima de todo, para no tapar controles. */
+.sv-flota { position: fixed; right: var(--naotech-sizing-16); bottom: var(--naotech-sizing-16); z-index: 2147483000; pointer-events: none; --naotech-logo-width: 6rem; }
+.sv-flota[hidden] { display: none; }

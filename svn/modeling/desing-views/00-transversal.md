@@ -16,8 +16,13 @@ cuatro pestañas, métricas y modal *Conectar smartphone*).
 - **La Registraduría (ANI) es un servicio compartido**: la venta, la asignación, la puerta, la
   radicación, el reporte de una entidad y el portal de la persona lo consultan igual, con el mismo
   resultado (documento vigente o no, nombre coincide o no).
-- **La biometría es un módulo desacoplable**: toda pantalla que la use funciona también con el módulo
-  apagado, con documento y ANI.
+- **Biometría: solo huella, modular** *(exploratorio, 16-oct-2026)*: ninguna superficie guarda ni
+  compara rostro, ni usa una confianza de identidad. La identidad es documento + ANI; en la puerta, el
+  operador compara la foto impresa del documento y, **solo si el evento enciende el módulo de huella**,
+  esta se verifica contra la Registraduría en línea (el SVN no guarda plantillas). La comercializadora
+  y los componentes embebibles nunca capturan ni ven biometría.
+- **La puerta revisa el documento, no la boleta**: lo que cuenta es su **derecho de ingreso**
+  (documento + evento + sector). La boleta es el comprobante de la compra.
 - **Todo deja rastro**: cada consulta, cada decisión de un operador y cada apertura de datos protegidos
   es una transacción de la auditoría (`dominio.md` · *Auditoría*).
 
@@ -32,18 +37,37 @@ Un término por concepto, el del dominio:
 | Puerta · Torniquete (el dispositivo) | Molinete, taquilla |
 | Comercializadora | Tiquetera |
 | Titular · Propietario | Espectador, comprador (salvo en la compra) |
+| Derecho de ingreso (en el modelo) · *tu ingreso a [partido]* (al hincha) | Entrada, boleta (cuando se habla de la puerta) |
+| Aviso al PMU | Amarillo, alerta amarilla |
+| Huella (módulo *Apagada · Opcional · Obligatoria*) | Reconocimiento facial, rostro, confianza de identidad, estado «Verificar» |
 | Consulta a la base nacional | POST al API Gateway, endpoint |
 
 ## El semáforo, igual en todas
 
+**El operador ve dos colores** *(decisión de producto, 16-oct-2026)*. El amarillo dejó de ser un color:
+los antecedentes entran como verde y generan un **aviso silencioso al PMU**.
+
 | Color | Texto | Quién lo resuelve |
 |---|---|---|
-| Verde | **Entra** | Nadie: la boleta queda usada |
-| Amarillo | **Entra · aviso** + causa (medida recién levantada · indicativos cruzados) | Nadie: entra igual y el supervisor y la Policía quedan avisados |
-| Rojo operativo | **No entra** + causa (boleta de otro partido, ya usada, vencida, falsa, sin boleta) | Nadie la autoriza; el operador elige si llama a la Policía |
+| Verde | **Entra** | Nadie: el derecho de ingreso queda usado. Si hay un antecedente (medida recién levantada, sanción cumplida, antecedente por agresión, posible riesgo), el PMU recibe un aviso que el operador no ve |
+| Rojo operativo | **No entra** + causa (sin derecho de ingreso a este partido, ya ingresó, puerta equivocada, posible cédula prestada) | Nadie la autoriza; el operador elige si llama a la Policía. *Puerta equivocada* indica la puerta correcta |
 | Rojo por medida | **No entra** | Nadie en la puerta; alerta al PMU |
 
+El **aviso al PMU** no es un color: es informativo, vive en su propia cola (`03-monitor-pmu.md`), se
+redacta en condicional si es inferido y nunca bloquea.
+
+**La huella tampoco es un color** *(exploratorio, 16-oct-2026)*: la lectura es un estado transitorio
+(como *Validando*) y el resultado sigue siendo verde o rojo. No vuelve el tercer color azul «Verificar».
+La huella confirma quién es y nunca decide si puede entrar; solo en modo *Obligatoria* puede detener un
+ingreso, siempre con la salida *No puede dar huella* (verde con excepción y aviso silencioso al PMU).
+Tres lecturas legibles que no coinciden dan el rojo operativo *Posible cédula prestada*.
+
 Siempre con texto e icono al lado del color, nunca solo el color.
+
+## Estados transversales
+
+- **Derecho de ingreso**: vigente → usado.
+- **Alerta roja**: nueva → en atención → cerrada. **Aviso al PMU**: nuevo → revisado.
 
 ## Patrones de interfaz
 

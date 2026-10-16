@@ -18,7 +18,7 @@ window.SVN_DATOS = {
     { paso: 3, n: 6, id: 'integracion', grupo: 'integracion', nombre: 'API y portal de integración', quien: 'Entidades', disp: 'Portal web', icono: 'link', roles: ['comercializadora'], ruta: '#/integracion' },
     { paso: 4, n: 2, id: 'entidades', grupo: 'estado', nombre: 'Entidades y comercializadoras', disp: 'Escritorio', icono: 'official-stores', roles: ['club', 'comercializadora'], ruta: '#/entidades' },
     { paso: 5, n: 4, id: 'backoffice', grupo: 'evento', nombre: 'Backoffice de eventos', quien: 'IVC', disp: 'Escritorio', icono: 'calendar', roles: ['organizador'], ruta: '../suid/app.html#/control-acceso/eventos' },
-    { paso: 6, n: '6 y 7', id: 'compra', grupo: 'integracion', nombre: 'Vender la boleta', quien: 'Comercializadora > Persona', disp: 'Celular · escritorio', icono: 'payment', roles: ['persona', 'comercializadora'], ruta: '#/compra' },
+    { paso: 6, n: '6 y 7', id: 'compra', grupo: 'integracion', nombre: 'Comprar y asignar ingresos', quien: 'Comercializadora > Persona', disp: 'Celular · escritorio', icono: 'payment', roles: ['persona', 'comercializadora'], ruta: '#/compra' },
     { paso: 7, n: 5, id: 'puerta', grupo: 'evento', nombre: 'Acceso en puerta', disp: 'Celular · tablet · consola', icono: 'qr-code', roles: ['operador', 'policia'], ruta: '#/puerta' },
     { paso: 8, n: 3, id: 'pmu', grupo: 'estado', nombre: 'Monitor PMU', disp: 'Tablet · escritorio', icono: 'view-grid', roles: ['policia', 'supervisor'], ruta: '#/policia' },
     // Autoridad primero (roles[0]). Auditoría vive en el IVC: Eventos > Pasados > Registros; apps/auditoria.js queda de respaldo.
@@ -32,44 +32,47 @@ window.SVN_DATOS = {
     // En el orden del flujo de la demo; los que no tienen `ruta` bajan a chips en ese mismo orden.
     { id: 'organizador', rol: 'Organizador', ini: 'OR', color: 'pink', desc: 'Configura escenario, evento y puertas.', app: 'backoffice', ruta: '../suid/app.html#/control-acceso/eventos' },
     { id: 'comercializadora', rol: 'Comercializadora', ini: 'CO', color: 'cyan', desc: 'Se integra y consulta en cada venta.', app: 'integracion', ruta: '#/integracion' },
-    { id: 'persona', rol: 'Persona', ini: 'PE', color: 'orange', desc: 'Consulta su estado y sus boletas.', app: 'portal', ruta: '#/portal' },
-    { id: 'operador', rol: 'Operador de puerta', ini: 'OP', color: 'orange', desc: 'Lee documentos y boletas; decide los amarillos.', app: 'puerta', ruta: '#/puerta' },
+    { id: 'persona', rol: 'Persona', ini: 'PE', color: 'orange', desc: 'Consulta su estado y sus ingresos.', app: 'portal', ruta: '#/portal' },
+    { id: 'operador', rol: 'Operador de puerta', ini: 'OP', color: 'orange', desc: 'Lee documentos; en un rojo decide si llama a la autoridad.', app: 'puerta', ruta: '#/puerta' },
     { id: 'policia', rol: 'Autoridad de seguridad', ini: 'AS', color: 'blue', desc: 'Sigue el evento en vivo, atiende los rojos y consulta la auditoría.', app: 'pmu', ruta: '#/policia' },
     { id: 'ivc', rol: 'Profesional del IVC', ini: 'IV', color: 'purple', desc: 'Radica las medidas desde el oficio.', app: 'registro', ruta: '../index.html' },
     { id: 'mindeporte', rol: 'Mindeporte', ini: 'MD', color: 'amber', desc: 'Consulta la auditoría; homologa comercializadoras.', app: 'auditoria', ruta: '../suid/app.html#/control-acceso/eventos?momento=pasados' },
     { id: 'supervisor', rol: 'Supervisor del evento', ini: 'SE', color: 'teal', desc: 'Sigue ingresos y alertas en vivo.', app: 'pmu' },
     { id: 'club', rol: 'Club o entidad', ini: 'CL', color: 'green', desc: 'Reporta su comercializadora e incidentes.', app: 'entidades', ruta: '#/entidades' },
-    { id: 'soporte', rol: 'Soporte', ini: 'SO', color: 'blue', desc: 'Resuelve reclamaciones de boletas.', app: 'soporte', ruta: '#/soporte' }
+    { id: 'soporte', rol: 'Soporte', ini: 'SO', color: 'blue', desc: 'Resuelve reclamaciones de ingreso.', app: 'soporte', ruta: '#/soporte' }
   ],
 
-  evento: { puerta: 'Puerta 4 · Oriental', partido: 'Nacional vs. Medellín', hora: '19:00', escenario: 'Estadio Atanasio Girardot' },
+  // Huella modular (hipótesis 16-oct-2026): apagada de salida; la excepción por sector solo rige con el módulo encendido.
+  evento: { puerta: 'Puerta 4 · Oriental', partido: 'Nacional vs. Medellín', hora: '19:00', escenario: 'Estadio Atanasio Girardot', huella: { modo: 'apagada', sectores: { 'Oriental Alta': 'obligatoria' } } },
 
-  // Casos de la puerta. Rojo por medida: sin nombre y con alerta al PMU. Rojo operativo: boleta; con nombre y Autoridad opcional.
+  // Casos de la puerta. La puerta revisa el documento (derecho de ingreso), no la boleta. Rojo por medida: sin nombre y con alerta al PMU.
+  // Rojo operativo: con nombre y Autoridad opcional. Los antecedentes entran como verde y solo generan un aviso al PMU (policia.tablero.avisosPuerta).
   casos: [
-    { id: 'verde', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Entra', color: 'verde', nombre: 'Andrés Felipe Restrepo Gil', doc: 'CC 1.036.482.117', detalle: 'Oriental Baja · Fila E · Silla 18' },
-    { id: 'veto', foto: 'assets/fotos/amarillo.webp', punto: 'amarillo', etiqueta: 'Veto levantado', color: 'amarillo', causa: 'Veto levantado', detalle: 'Medida levantada el 25 sep · Resolución 0198.', nombre: 'Mateo Giraldo Paz', doc: 'CC 1.001.246.583' },
-    // Entran con aviso: la sanción ya se cumplió. `antecedente` alimenta la capa y el aviso de la Autoridad (DC-030/031).
-    { id: 'cumplida', foto: 'assets/fotos/verde.webp', punto: 'amarillo', etiqueta: 'Sanción cumplida', color: 'amarillo', causa: 'Antecedente: sanción cumplida', detalle: 'Sanción cumplida el 3 sep 2025 · bebidas alcohólicas.', nombre: 'Hernán Darío Giraldo Mora', doc: 'CC 1.017.402.188',
-      antecedente: { res: 'Res. 0098/2025', texto: 'Sanción por bebidas alcohólicas cumplida el 3 sep 2025', sube: 'Cumplida hace 13 meses' } },
-    { id: 'agresion', foto: 'assets/fotos/verde-cc.webp', punto: 'amarillo', etiqueta: 'Antecedente por agresión', color: 'amarillo', causa: 'Antecedente: sanción cumplida', detalle: 'Sanción por agresión cumplida el 12 jun 2026.', nombre: 'Luis Fernando Betancur Ríos', doc: 'CC 71.633.250',
-      antecedente: { res: 'Res. 0214/2025', texto: 'Sanción por agresión verbal cumplida el 12 jun 2026', sube: 'Cumplida hace 4 meses' } },
-    { id: 'riesgo', foto: 'assets/fotos/amarillo.webp', punto: 'amarillo', etiqueta: 'En riesgo', color: 'amarillo', riesgo: true, causa: 'Posible riesgo en este partido', detalle: 'Posible hincha de equipo rival.', nombre: 'Daniel Ospina Cano', doc: 'CC 1.020.774.310' },
-    { id: 'solocc', foto: 'assets/fotos/verde-cc.webp', punto: 'verde', etiqueta: 'Entra solo con CC', color: 'verde', soloCC: true, nombre: 'Felipe Osorio Marín', doc: 'CC 1.037.615.208', detalle: 'Oriental Baja · Fila H · Silla 12', registro: 'Entró · solo con CC · Oriental Baja' },
+    { id: 'verde', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Entra escaneando cédulas', color: 'verde', nombre: 'Andrés Felipe Restrepo Gil', doc: 'CC 1.036.482.117', detalle: 'Oriental Baja · Fila E · Silla 18' },
+    { id: 'solocc', foto: 'assets/fotos/verde-cc.webp', punto: 'verde', etiqueta: 'Entra solo con cédula', color: 'verde', digitado: true, nombre: 'Felipe Osorio Marín', doc: 'CC 1.037.615.208', detalle: 'Oriental Baja · Fila H · Silla 12', registro: 'Entró · documento digitado · Oriental Baja' },
     { id: 'medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Medida vigente', color: 'rojo', doc: 'CC •••• 4447' },
-    { id: 'otro', foto: 'assets/fotos/sospechoso-otro.webp', punto: 'rojo', etiqueta: 'Otro partido', color: 'rojo', operativo: true, causa: 'Boleta de otro partido', dato: 'Documento no registra entrada para este partido', nombre: 'Andrés Zuluaga Mejía', doc: 'CC 1.017.335.902' },
-    { id: 'usada', foto: 'assets/fotos/sospechoso-sin.webp', punto: 'rojo', etiqueta: 'Boleta ya usada', color: 'rojo', operativo: true, causa: 'Boleta ya usada', dato: 'Documento ya ingresado', nombre: 'Mateo Giraldo Paz', doc: 'CC 1.001.246.583' },
-    { id: 'sin', foto: 'assets/fotos/amarillo.webp', punto: 'rojo', etiqueta: 'Sin boleta', color: 'rojo', operativo: true, causa: 'Sin boleta para este partido', nombre: 'Sebastián Cardona Ruiz', doc: 'CC 1.152.708.664' },
-    { id: 'sindoc', punto: 'amarillo', etiqueta: 'Solo la boleta, sin documento', color: 'amarillo', sinDoc: true, causa: 'Falta el documento', detalle: 'La boleta es nominativa: entra quien la tiene asignada, con su documento.', nombre: 'Sin identificar', doc: 'Boleta B-7731-0192' },
-    { id: 'prestada', punto: 'rostro', etiqueta: 'Posible cédula prestada', color: 'rostro', prestada: true, foto: 'assets/fotos/sospechoso-otro.webp', nombre: 'Andrés Zuluaga Mejía', doc: 'CC 1.017.335.902', detalle: 'Oriental Alta · Fila C · Silla 9', motivo: 'La boleta es de este documento, pero la huella no coincide.', motivoRostro: 'La boleta es de este documento, pero el rostro no coincide con la referencia.' }
+    { id: 'sin', foto: 'assets/fotos/amarillo.webp', punto: 'rojo', etiqueta: 'Sin ingreso a este partido', color: 'rojo', operativo: true, causa: 'Sin ingreso a este partido', nombre: 'Sebastián Cardona Ruiz', doc: 'CC 1.152.708.664' },
+    { id: 'usada', foto: 'assets/fotos/sospechoso-sin.webp', punto: 'rojo', etiqueta: 'Ya ingresó', color: 'rojo', operativo: true, causa: 'Ya ingresó', nombre: 'Mateo Giraldo Paz', doc: 'CC 1.001.246.583' },
+    { id: 'puerta', foto: 'assets/fotos/verde-cc.webp', punto: 'rojo', etiqueta: 'Puerta equivocada', color: 'rojo', operativo: true, sinPolicia: true, causa: 'Puerta equivocada', dato: 'Diríjase a la Puerta 6 · Sur', nombre: 'Camilo Andrés Vélez Soto', doc: 'CC 1.020.553.771' },
+    { id: 'prestada', foto: 'assets/fotos/sospechoso-otro.webp', punto: 'rojo', etiqueta: 'Posible cédula prestada', color: 'rojo', operativo: true, prestada: true, causa: 'Posible cédula prestada', dato: 'La foto del documento no coincide con la persona', nombre: 'Andrés Zuluaga Mejía', doc: 'CC 1.017.335.902' },
+    // Con huella: el verde es candidato y la lectura simulada (`huella`) fija el resultado. `modo` es el mínimo con el que el caso tiene sentido.
+    { id: 'huella-ok', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Huella coincide', color: 'verde', huella: 'coincide', modo: 'opcional', que: 'La huella coincide: entra como identidad verificada', nombre: 'Laura Camila Ortiz Pérez', doc: 'CC 1.020.714.390', detalle: 'Oriental Baja · Fila C · Silla 9' },
+    { id: 'huella-excepcion', foto: 'assets/fotos/verde-cc.webp', punto: 'verde', etiqueta: 'No puede dar huella', color: 'verde', huella: 'ilegible', modo: 'opcional', que: 'Tres lecturas ilegibles: pasa a ingreso sin huella con motivo', nombre: 'Jairo Alberto Mena Cruz', doc: 'CC 1.037.902.455', detalle: 'Oriental Baja · Fila K · Silla 3' },
+    { id: 'huella-sinref', foto: 'assets/fotos/amarillo.webp', punto: 'verde', etiqueta: 'Sin huella de referencia', color: 'verde', huella: 'sinref', modo: 'opcional', que: 'El documento no tiene huella de referencia: no hay lectura', nombre: 'Yusmary Josefina Rojas Colmenares', doc: 'CE 884.201', detalle: 'Oriental Alta · Fila A · Silla 14' },
+    { id: 'huella-lector', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Lector de huella sin servicio', color: 'verde', huella: 'lector', modo: 'opcional', que: 'Apaga el lector: sin huella hasta que el supervisor active la contingencia', nombre: 'Mónica Patricia Ariza Lozano', doc: 'CC 1.098.331.760', detalle: 'Oriental Baja · Fila F · Silla 21' },
+    { id: 'huella-no', foto: 'assets/fotos/sospechoso-otro.webp', punto: 'rojo', etiqueta: 'Huella no coincide', color: 'verde', huella: 'no', modo: 'opcional', que: 'Tiene derecho de ingreso, pero la huella no coincide con el documento: tres lecturas legibles y rojo', nombre: 'Esteban Cardona Arias', doc: 'CC 1.001.774.218', detalle: 'Oriental Baja · Fila D · Silla 7' },
+    { id: 'huella-sinderecho', foto: 'assets/fotos/sospechoso-sin.webp', punto: 'rojo', etiqueta: 'Huella válida, sin derecho de ingreso', color: 'rojo', operativo: true, base: 'sin', huella: 'coincide', modo: 'opcional', que: 'La huella coincide, pero el documento no tiene derecho de ingreso', causa: 'Sin ingreso a este partido', registro: 'No entró · sin derecho de ingreso (huella coincide)', nombre: 'Hernán Darío Quintero Salas', doc: 'CC 1.044.205.836' },
+    { id: 'huella-medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Huella válida con medida vigente', color: 'rojo', base: 'medida', huella: 'coincide', modo: 'opcional', que: 'La huella coincide, pero la medida vigente cierra el paso: alerta al PMU', doc: 'CC •••• 5120' }
   ],
 
+  // El operador no ve los antecedentes: se guardan en `aviso` y la auditoría del turno los recoge.
   historial: [
     { color: 'verde', texto: 'Entró · Oriental Baja', hora: '18:39', lectura: true },
-    { color: 'amarillo', texto: 'Entró · aviso · Medida levantada', hora: '18:37', lectura: true },
+    { color: 'verde', texto: 'Entró · Oriental Baja', hora: '18:37', lectura: true, aviso: 'Medida levantada' },
     { color: 'verde', texto: 'Entró · Oriental Alta', hora: '18:36', lectura: true },
     { color: 'verde', texto: 'Entró · Oriental Baja', hora: '18:35', lectura: true }
   ],
-  turno: { ingresos: 312, avisos: 5, rojos: 1 },
+  turno: { ingresos: 312, rojos: 1 },
 
   // Vista de seguridad: señales explicables, sin puntaje. Solo el club afín decide un acceso.
   policia: {
@@ -77,9 +80,9 @@ window.SVN_DATOS = {
     eventos: [
       { id: 'e1', estado: 'vivo', fecha: '2026-09-28', dia: 'Hoy · lunes 28 de septiembre', hora: '19:00', partido: 'Nacional vs. Medellín', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Puertas abiertas', dato: { principal: '4.812', total: '38.000', etiqueta: 'ingresados' }, alertas: 2, tablero: true },
       { id: 'e2', estado: 'vivo', fecha: '2026-09-28', dia: 'Hoy · lunes 28 de septiembre', hora: '18:00', partido: 'Junior vs. Santa Fe', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Metropolitano', ciudad: 'Barranquilla', foto: 'metropolitano', nota: 'En juego · 2.º tiempo', dato: { principal: '41.230', total: '46.000', etiqueta: 'ingresados' }, alertas: 0, estados: { nueva: 0, atencion: 1, cerrada: 3 } },
-      { id: 'e3', estado: 'proximo', fecha: '2026-09-29', dia: 'Mañana · martes 29 de septiembre', hora: '20:00', partido: 'Millonarios vs. América', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Puertas abren 17:30', dato: { principal: '28.400', total: '36.000', etiqueta: 'boletas emitidas', resto: '12 ventas bloqueadas' } },
-      { id: 'e4', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '16:00', partido: 'América vs. Once Caldas', competicion: 'Liga profesional · fecha 13', escenario: 'Estadio Olímpico Pascual Guerrero', ciudad: 'Cali', foto: 'pascual-guerrero', nota: 'Sin hinchada visitante', dato: { principal: '14.020', total: '36.000', etiqueta: 'boletas emitidas', resto: '3 ventas bloqueadas' } },
-      { id: 'e5', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '18:30', partido: 'Real Cartagena vs. Unión Magdalena', competicion: 'Torneo de ascenso · fecha 9', escenario: 'Estadio Jaime Morón', ciudad: 'Cartagena', foto: 'jaime-moron', nota: 'Venta abierta', dato: { principal: '9.310', total: '16.000', etiqueta: 'boletas emitidas', resto: '1 venta bloqueada' } },
+      { id: 'e3', estado: 'proximo', fecha: '2026-09-29', dia: 'Mañana · martes 29 de septiembre', hora: '20:00', partido: 'Millonarios vs. América', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Puertas abren 17:30', dato: { principal: '28.400', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '12 ventas bloqueadas' } },
+      { id: 'e4', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '16:00', partido: 'América vs. Once Caldas', competicion: 'Liga profesional · fecha 13', escenario: 'Estadio Olímpico Pascual Guerrero', ciudad: 'Cali', foto: 'pascual-guerrero', nota: 'Sin hinchada visitante', dato: { principal: '14.020', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '3 ventas bloqueadas' } },
+      { id: 'e5', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '18:30', partido: 'Real Cartagena vs. Unión Magdalena', competicion: 'Torneo de ascenso · fecha 9', escenario: 'Estadio Jaime Morón', ciudad: 'Cartagena', foto: 'jaime-moron', nota: 'Venta abierta', dato: { principal: '9.310', total: '16.000', etiqueta: 'con derecho de ingreso', resto: '1 venta bloqueada' } },
       { id: 'e6', estado: 'pasado', fecha: '2026-09-27', dia: 'Ayer · domingo 27 de septiembre', hora: '17:00', partido: 'Medellín vs. Junior', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Finalizado', dato: { principal: '35.102', total: '38.000', etiqueta: 'asistentes', resto: '3 rojos · alertas cerradas' } },
       { id: 'e7', estado: 'pasado', fecha: '2026-09-26', dia: 'Sábado 26 de septiembre', hora: '19:30', partido: 'Santa Fe vs. Nacional', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Finalizado', dato: { principal: '29.880', total: '36.000', etiqueta: 'asistentes', resto: '5 rojos · alertas cerradas' } }
     ],
@@ -91,29 +94,33 @@ window.SVN_DATOS = {
         { nombre: 'Puerta 1 · Norte', flujo: 34, ing: 812, avisos: 4, rojos: 1 },
         { nombre: 'Puerta 2 · Norte', flujo: 22, ing: 640, avisos: 3, rojos: 1 },
         { nombre: 'Puerta 3 · Occidental', flujo: 20, ing: 588, avisos: 2, rojos: 0 },
-        { nombre: 'Puerta 4 · Oriental', flujo: 28, ing: 701, avisos: 5, rojos: 1 },
+        { nombre: 'Puerta 4 · Oriental', flujo: 28, ing: 701, avisos: 5, rojos: 1, lector: 'ok' },
         { nombre: 'Puerta 5 · Oriental', flujo: 26, ing: 624, avisos: 3, rojos: 0 },
-        { nombre: 'Puerta 6 · Sur', flujo: 19, ing: 512, avisos: 2, rojos: 1 },
+        { nombre: 'Puerta 6 · Sur', flujo: 19, ing: 512, avisos: 2, rojos: 1, lector: 'revisar' },
         { nombre: 'Puerta 7 · Sur', flujo: 0, ing: 455, avisos: 1, rojos: 0, off: true },
         { nombre: 'Puerta 8 · Occidental', flujo: 37, ing: 480, avisos: 3, rojos: 1 }
       ],
       alertas: [
         { id: 'a1', estado: 'nueva', puerta: 'Puerta 4 · Oriental', hora: '18:42', doc: 'CC •••• 4447', causa: 'Medida vigente', origen: 'Lectura en puerta',
           pasos: [{ hora: '18:42', texto: 'Generada en la puerta', quien: 'Op. L. Mejía' }] },
-        { id: 'a2', estado: 'nueva', puerta: 'Puerta 6 · Sur', hora: '18:40', doc: 'CC •••• 9013', causa: 'Boleta falsa', origen: 'Llamado del operador',
+        { id: 'a2', estado: 'nueva', puerta: 'Puerta 6 · Sur', hora: '18:40', doc: 'CC •••• 9013', causa: 'Posible cédula prestada', origen: 'Llamado del operador',
           pasos: [{ hora: '18:40', texto: 'El operador llamó a la autoridad', quien: 'Op. D. Salazar' }] },
         { id: 'a3', estado: 'atencion', puerta: 'Puerta 2 · Norte', hora: '18:31', doc: 'CC •••• 2208', causa: 'Medida vigente', origen: 'Lectura en puerta',
           pasos: [{ hora: '18:31', texto: 'Generada en la puerta', quien: 'Op. J. Ríos' }, { hora: '18:31', texto: 'Asignada a Pt. M. Castaño', quien: 'Pt. R. Gómez' }, { hora: '18:32', texto: 'Tomada', quien: 'Pt. M. Castaño' }, { hora: '18:35', texto: 'En la puerta con la persona', quien: 'Pt. M. Castaño' }] },
         { id: 'a4', estado: 'cerrada', puerta: 'Puerta 1 · Norte', hora: '18:05', doc: 'CC •••• 7730', causa: 'Medida vigente', origen: 'Lectura en puerta', resultado: 'Conducido',
           pasos: [{ hora: '18:05', texto: 'Generada en la puerta', quien: 'Op. A. Rueda' }, { hora: '18:05', texto: 'Asignada a Pt. A. Duarte', quien: 'Pt. R. Gómez' }, { hora: '18:06', texto: 'Tomada', quien: 'Pt. A. Duarte' }, { hora: '18:14', texto: 'Cerrada · Conducido', quien: 'Pt. A. Duarte' }] },
-        { id: 'a5', estado: 'cerrada', puerta: 'Puerta 8 · Occidental', hora: '17:48', doc: 'CC •••• 5561', causa: 'Boleta falsa', origen: 'Llamado del operador', resultado: 'No encontrado',
+        { id: 'a5', estado: 'cerrada', puerta: 'Puerta 8 · Occidental', hora: '17:48', doc: 'CC •••• 5561', causa: 'Sin ingreso a este partido', origen: 'Llamado del operador', resultado: 'No encontrado',
           pasos: [{ hora: '17:48', texto: 'El operador llamó a la autoridad', quien: 'Op. M. Cano' }, { hora: '17:49', texto: 'Tomada', quien: 'Sub. C. Pérez' }, { hora: '17:57', texto: 'Cerrada · No encontrado', quien: 'Sub. C. Pérez' }] }
       ],
-      // Avisos de antecedentes: personas que entraron con aviso amarillo y tuvieron una sanción ya cumplida (DC-030/031).
-      antecedentes: [
-        { id: 'v1', puerta: 'Puerta 5 · Oriental', hora: '18:39', doc: 'CC •••• 6583', causa: 'Antecedente: sanción cumplida', detalle: 'Medida levantada el 25 sep · Res. 0198', quien: 'Op. S. León' },
-        { id: 'v2', puerta: 'Puerta 3 · Occidental', hora: '18:36', doc: 'CC •••• 2188', causa: 'Antecedente: sanción cumplida', detalle: 'Bebidas alcohólicas · cumplida el 3 sep 2025', quien: 'Op. D. Salazar' },
-        { id: 'v3', puerta: 'Puerta 1 · Norte', hora: '18:29', doc: 'CC •••• 3250', causa: 'Antecedente: sanción cumplida', detalle: 'Agresión verbal · cumplida el 12 jun 2026', quien: 'Op. A. Rueda' }
+      // Avisos silenciosos de la puerta (no son alertas): la persona entró como verde y el PMU recibe causa, puerta y hora.
+      avisosPuerta: [
+        { id: 'v1', tipo: 'veto', etiqueta: 'Medida levantada', puerta: 'Puerta 5 · Oriental', hora: '18:39', doc: 'CC •••• 6583', causa: 'Medida recién levantada', detalle: 'Medida levantada el 25 sep · Res. 0198', quien: 'Op. S. León' },
+        { id: 'v2', tipo: 'cumplida', etiqueta: 'Sanción cumplida', puerta: 'Puerta 3 · Occidental', hora: '18:36', doc: 'CC •••• 2188', causa: 'Antecedente: sanción cumplida', detalle: 'Bebidas alcohólicas · cumplida el 3 sep 2025', quien: 'Op. D. Salazar' },
+        { id: 'v3', tipo: 'agresion', etiqueta: 'Antecedente por agresión', puerta: 'Puerta 1 · Norte', hora: '18:29', doc: 'CC •••• 3250', causa: 'Antecedente: sanción cumplida', detalle: 'Agresión verbal · cumplida el 12 jun 2026', quien: 'Op. A. Rueda' },
+        { id: 'v4', tipo: 'riesgo', etiqueta: 'Posible riesgo', puerta: 'Puerta 8 · Occidental', hora: '18:24', doc: 'CC •••• 0310', causa: 'Posible riesgo en este partido', detalle: 'Posible hincha de equipo rival · señal, no certeza', quien: 'Op. M. Cano' },
+        // Huella: la excepción (solo en modo obligatorio) y la contingencia del lector, que es un solo aviso por puerta y no de una persona.
+        { id: 'v5', tipo: 'sin-huella', etiqueta: 'Sin huella', puerta: 'Puerta 3 · Occidental', hora: '18:19', doc: 'CC •••• 5502', causa: 'Ingreso sin huella · discapacidad o lesión', detalle: 'Modo obligatorio · entró con excepción documentada · señal, no certeza', quien: 'Op. D. Salazar' },
+        { id: 'v6', tipo: 'contingencia-huella', etiqueta: 'Contingencia de huella', puerta: 'Puerta 6 · Sur', hora: '18:12', doc: 'Toda la puerta', causa: 'Lector sin servicio · contingencia activa', detalle: 'Activada por el supervisor · cada ingreso queda marcado «contingencia»', origen: 'Supervisor de puerta', quien: 'Sup. M. Lozano' }
       ]
     },
     // Agentes de la jurisdicción para asignar una alerta: el puesto dice qué tan cerca está de la puerta.
@@ -136,9 +143,12 @@ window.SVN_DATOS = {
         { hora: '18:43', tipo: 'consulta', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 4447', origen: 'Vista de seguridad', detalle: 'Abrió el perfil desde la alerta', quien: 'Pt. R. Gómez' },
         { hora: '18:42', tipo: 'medida', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 4447', origen: 'Lectura en puerta', detalle: 'No entró · alerta al PMU', quien: 'Op. L. Mejía' },
         { hora: '18:41', tipo: 'verde', puerta: 'Puerta 1 · Norte', doc: 'CC •••• 2117', origen: 'Lectura en puerta', detalle: 'Entró · Oriental Baja, fila E', quien: 'Op. A. Rueda' },
-        { hora: '18:40', tipo: 'operativo', puerta: 'Puerta 6 · Sur', doc: 'CC •••• 9013', origen: 'Lectura en puerta', detalle: 'Boleta falsa · llamó a la autoridad', quien: 'Op. D. Salazar' },
-        { hora: '18:39', tipo: 'amarillo', puerta: 'Puerta 5 · Oriental', doc: 'CC •••• 6583', origen: 'Lectura en puerta', detalle: 'Entró con aviso · veto levantado', quien: 'Op. S. León' },
-        { hora: '18:37', tipo: 'operativo', puerta: 'Puerta 2 · Norte', doc: 'CC •••• 7702', origen: 'Lectura en puerta', detalle: 'Boleta ya usada · no llamó a la autoridad', quien: 'Op. J. Ríos' },
+        { hora: '18:41', tipo: 'verde', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 0390', origen: 'Lectura en puerta', detalle: 'Entró · huella coincide · Oriental Baja, fila C', quien: 'Op. L. Mejía' },
+        { hora: '18:40', tipo: 'operativo', puerta: 'Puerta 6 · Sur', doc: 'CC •••• 9013', origen: 'Lectura en puerta', detalle: 'Posible cédula prestada · llamó a la autoridad', quien: 'Op. D. Salazar' },
+        { hora: '18:39', tipo: 'amarillo', puerta: 'Puerta 5 · Oriental', doc: 'CC •••• 6583', origen: 'Lectura en puerta', detalle: 'Entró · aviso al PMU · medida levantada', quien: 'Op. S. León' },
+        { hora: '18:38', tipo: 'amarillo', puerta: 'Puerta 3 · Occidental', doc: 'CC •••• 5502', origen: 'Lectura en puerta', detalle: 'Entró · aviso al PMU · sin huella · discapacidad o lesión', quien: 'Op. D. Salazar' },
+        { hora: '18:37', tipo: 'operativo', puerta: 'Puerta 2 · Norte', doc: 'CC •••• 7702', origen: 'Lectura en puerta', detalle: 'Ya ingresó · no llamó a la autoridad', quien: 'Op. J. Ríos' },
+        { hora: '18:36', tipo: 'operativo', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 4218', origen: 'Lectura en puerta', detalle: 'Posible cédula prestada · la huella no coincide (3 lecturas legibles)', quien: 'Op. L. Mejía' },
         { hora: '18:35', tipo: 'policia', puerta: 'Puerta 2 · Norte', doc: 'CC •••• 2208', origen: 'Vista de seguridad', detalle: 'En la puerta con la persona', quien: 'Pt. M. Castaño' },
         { hora: '18:32', tipo: 'consulta', puerta: 'Puerta 2 · Norte', doc: 'CC •••• 2208', origen: 'Vista de seguridad', detalle: 'Abrió el perfil desde la alerta', quien: 'Pt. R. Gómez' },
         { hora: '18:32', tipo: 'policia', puerta: 'Puerta 2 · Norte', doc: 'CC •••• 2208', origen: 'Vista de seguridad', detalle: 'Alerta tomada', quien: 'Pt. M. Castaño' },
@@ -150,7 +160,7 @@ window.SVN_DATOS = {
         { hora: '18:05', tipo: 'medida', puerta: 'Puerta 1 · Norte', doc: 'CC •••• 7730', origen: 'Lectura en puerta', detalle: 'No entró · alerta al PMU', quien: 'Op. A. Rueda' },
         { hora: '17:57', tipo: 'policia', puerta: 'Puerta 8 · Occidental', doc: 'CC •••• 5561', origen: 'Vista de seguridad', detalle: 'Alerta cerrada · No encontrado', quien: 'Sub. C. Pérez' },
         { hora: '17:49', tipo: 'policia', puerta: 'Puerta 8 · Occidental', doc: 'CC •••• 5561', origen: 'Vista de seguridad', detalle: 'Alerta tomada', quien: 'Sub. C. Pérez' },
-        { hora: '17:48', tipo: 'operativo', puerta: 'Puerta 8 · Occidental', doc: 'CC •••• 5561', origen: 'Lectura en puerta', detalle: 'Boleta falsa · llamó a la autoridad', quien: 'Op. M. Cano' },
+        { hora: '17:48', tipo: 'operativo', puerta: 'Puerta 8 · Occidental', doc: 'CC •••• 5561', origen: 'Lectura en puerta', detalle: 'Sin ingreso a este partido · llamó a la autoridad', quien: 'Op. M. Cano' },
         { hora: '16:22', tipo: 'venta', puerta: '—', doc: 'CC •••• 6583', origen: 'Comercializadora A', detalle: 'Venta autorizada · con aviso', quien: 'Canal web' },
         { hora: '15:08', tipo: 'venta', puerta: '—', doc: 'CC •••• 4447', origen: 'Comercializadora B', detalle: 'Venta bloqueada · medida vigente', quien: 'Canal web' },
         { hora: '14:51', tipo: 'venta', puerta: '—', doc: 'CC •••• 2117', origen: 'Comercializadora A', detalle: 'Venta autorizada', quien: 'Canal web' },
@@ -166,7 +176,7 @@ window.SVN_DATOS = {
       { l: 'Tribuna habitual', v: 'Sur', por: '11 de 16 ingresos por la tribuna Sur.' },
       { l: 'Frecuencia', v: '16 partidos en 6 meses', por: 'Ingresos reales registrados en la puerta.' },
       { l: 'Viajes de visitante', v: '3', por: 'Ingresos en escenarios de otras ciudades.' },
-      { l: 'Con quién va', v: '2 personas que han tenido medidas', por: 'Comparten boletas del mismo propietario.' },
+      { l: 'Con quién va', v: '2 personas que han tenido medidas', por: 'Compraron juntos o entran juntos.' },
       { l: 'Intentos fallidos', v: '1 hoy', por: 'Puerta 4 · Oriental, 18:42.' }
     ]
   },

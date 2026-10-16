@@ -7,7 +7,7 @@
 | **Quién** | Clubes y entidades deportivas (reportan); Mindeporte (homologa) |
 | **Dispositivo** | Web de escritorio |
 | **Cuándo** | Cada semestre, y después de cada evento |
-| **Módulos** | 4 · Boletería (comercializadoras y homologación); 1 · Medidas (reportes de incidentes) |
+| **Módulos** | 4 · Boletería y asignación (comercializadoras y homologación); 1 · Medidas (reportes de incidentes) |
 | **Preguntas que responde** | Club: ¿mi comercializadora puede vender este semestre? ¿En qué quedó mi reporte? · Mindeporte: ¿qué clubes están habilitados y qué falta? |
 
 **Prototipo:** [prototipo](../../README.md), ruta `#/entidades` (escritorio): cara del club y de Mindeporte con «Ver como», reporte semestral, reportes de incidentes, certificación y homologación, con panel de 13 casos.
@@ -19,6 +19,7 @@ Tiene **dos caras** con la misma data: la del club, que reporta, y la de Mindepo
 | Pantalla | Rol | Para qué | Contenido clave |
 |---|---|---|---|
 | **Reporte semestral** | Club | Cargar qué comercializadora vende en su estadio | Semestre, estadio, comercializadora; estado de su certificación |
+| **Reporte de ventas** | Comercializadora | Enviar a Mindeporte sus cifras por evento o semestre | Cifras del SVN que no se editan, en **derechos de ingreso por sector** (*exploratorio*, 16-oct-2026): cupo asignado, vendidos, sin vender, vigentes y usados, anulados o congelados, ventas no realizadas. Solo agrega una nota; sigue hablando de su comprobante de compra |
 | **Reportes de incidentes** | Club | Reportar lo que vio su logística y seguirlo | Persona (tipo y número, verificada con el ANI), evento, fecha, conductas del catálogo, descripción, evidencia; estado |
 | **Auditoría de mis eventos** | Club | Ver lo que pasó en sus eventos | Transacciones de sus eventos (ver superficie 3) |
 | **Reportes semestrales** | Mindeporte | Aprobar el reporte de cada club | Un registro por club, estadio y semestre; *Aprobar* solo si la comercializadora está certificada |

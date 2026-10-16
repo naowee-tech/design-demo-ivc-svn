@@ -1,5 +1,5 @@
 /* Contrato con B: COMPRA.registrar(id, { render(ctx) -> html, onClick?(el, ev, ctx), onInput?(ev, ctx), alMontar?(ctx) }); ids 'titulares' y 'titular'.
- * ctx = { D, st, repintar, toast, esc, ir, consultar(n, alTerminar, extra?), raiz }; ayudas: COMPRA.marco/ico/qr/dinero/TIPOS_DOC y los ayudantes de cupos.
+ * ctx = { D, st, repintar, toast, esc, ir, consultar(n, alTerminar, extra?), raiz }; ayudas: COMPRA.marco/ico/dinero/TIPOS_DOC y los ayudantes de cupos.
  * Orden: evento, identificar, cantidad, titulares (titular), pago, listo. Detalle del estado y de las consultas en README.md. */
 window.PANTALLAS = window.PANTALLAS || {};
 window.COMPRA = window.COMPRA || {};
@@ -20,7 +20,6 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     var p = String(doc || '').split(' '), tipo = p.shift(), cola = p.join('').replace(/[^A-Za-z0-9]/g, '');
     return cola ? tipo + ' •••• ' + cola.slice(-4) : String(doc || '');
   }
-  function seedDe(doc) { var s = 0; String(doc || '').split('').forEach(function (c) { s = (s * 31 + c.charCodeAt(0)) % 100003; }); return s + 1; }
 
   /* ---------- Iconos de trazo ---------- */
   var ICO = {
@@ -35,7 +34,8 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     alerta: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/>', triangulo: '<path d="M12 4 3 20h18z"/><path d="M12 10v5M12 17.5h.01"/>',
     menos: '<path d="M6 12h12"/>', mas: '<path d="M12 6v12M6 12h12"/>', puerta: '<path d="M3 21h18M5 21V4a1 1 0 0 1 1-1h8v18M14 5h4v16"/><path d="M11 12h.01"/>',
     tarjeta: '<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/>', banco: '<path d="M3 10l9-5 9 5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',
-    girar: '<path d="M12 3a9 9 0 1 0 9 9"/>', cambio: '<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>'
+    girar: '<path d="M12 3a9 9 0 1 0 9 9"/>', cambio: '<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>',
+    documento: '<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.7-2.2 3-2.2s2.4.6 3 2.2M14 10h4M14 13h3"/>'
   };
   function ico(n, t, extra) {
     return '<svg width="' + (t || 20) + '" height="' + (t || 20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (n === 'menos' || n === 'mas' || n === 'girar' ? 2.4 : 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + ICO[n] + '</svg>';
@@ -49,7 +49,8 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     { id: 'PA', nombre: 'Pasaporte', min: 5, max: 12, alfa: true },
     { id: 'PPT', nombre: 'Permiso por protección temporal', min: 5, max: 11, alfa: false },
     { id: 'PEP', nombre: 'Permiso especial de permanencia', min: 5, max: 11, alfa: false },
-    { id: 'RUMV', nombre: 'Registro único de migrantes venezolanos', min: 5, max: 11, alfa: false }
+    { id: 'RUMV', nombre: 'Registro único de migrantes venezolanos', min: 5, max: 11, alfa: false },
+    { id: 'RC', nombre: 'Registro civil (menor, con su representante)', min: 5, max: 11, alfa: false }
   ];
   function tipoDoc(id) { return TIPOS_DOC.filter(function (t) { return t.id === id; })[0] || null; }
   function limpio(num) { return String(num || '').replace(/[\s.\-]/g, ''); }
@@ -98,36 +99,36 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   // `c` = consulta que corta (0 no corta); `ini` = pantalla donde abre el caso; `malo` = a quien la consulta le dice que no;
   // `que` = qué pasa; `ve` = qué ve la persona.
   var CASOS = [
-    { id: 'feliz', corto: 'Compra sin problemas', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, que: 'Todo sale bien: la persona compra y recibe sus boletas.', ve: 'Se identifica, elige 2 boletas, asigna la otra boleta a Santiago, paga y recibe sus boletas con código QR.' },
+    { id: 'feliz', corto: 'Compra sin problemas', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, que: 'Todo sale bien: la persona compra y queda con su ingreso.', ve: 'Se identifica, elige 2 ingresos, asigna el otro a Santiago, paga y ve con qué documento entra cada uno.' },
     { id: 'medida-id', corto: 'Bloqueo por medida', punto: 'rojo', c: 1, paso: 'Medidas · DB', codigo: 'Medida restrictiva vigente', persona: P.julian, que: 'Se detiene al identificarse: la persona tiene una medida vigente y no puede comprar.', ve: 'Ve un resultado sin explicación del motivo y un enlace a su portal. No llega a elegir la cantidad.' },
-    { id: 'limite-id', corto: 'Límite al identificarse', punto: 'rojo', c: 1, paso: 'Límite', codigo: 'Límite de venta excedido', persona: P.mariana, previas: 5, loc: 'ori', que: 'Se detiene al identificarse: ya tiene 5 boletas para este partido y el máximo es 5 por persona.', ve: 'Ve la regla de 5 boletas por persona y puede volver al evento. Con menos boletas sí avanza, hasta el tope que le quede.' },
-    { id: 'limite-carrera', corto: 'Límite al pagar', punto: 'rojo', c: 3, paso: 'Límite', codigo: 'Límite de venta excedido', persona: P.mariana, carrera: 4, loc: 'ori', ini: 'pago', que: 'Se detiene al pagar: mientras pagaba se completó el máximo de 5 boletas por persona.', ve: 'Llega a Pago con los titulares ya validados. Ve la misma regla y un aviso de que no se hizo ningún cobro. Su reserva se libera.' },
+    { id: 'limite-id', corto: 'Límite al identificarse', punto: 'rojo', c: 1, paso: 'Límite', codigo: 'Límite de venta excedido', persona: P.mariana, previas: 5, loc: 'ori', que: 'Se detiene al identificarse: ya tiene 5 ingresos para este partido y el máximo es 5 por persona.', ve: 'Ve la regla de 5 ingresos por persona y puede volver al evento. Con menos ingresos sí avanza, hasta el tope que le quede.' },
+    { id: 'limite-carrera', corto: 'Límite al pagar', punto: 'rojo', c: 3, paso: 'Límite', codigo: 'Límite de venta excedido', persona: P.mariana, carrera: 4, loc: 'ori', ini: 'pago', que: 'Se detiene al pagar: mientras pagaba se completó el máximo de 5 ingresos por persona.', ve: 'Llega a Pago con los titulares ya validados. Ve la misma regla y un aviso de que no se hizo ningún cobro. Su reserva se libera.' },
     { id: 'identidad', corto: 'Nombre no coincide', punto: 'rojo', c: 1, paso: 'Registraduría', codigo: 'Identidad no coincide', persona: P.paula, que: 'Se detiene al identificarse: el nombre no coincide con el documento en la Registraduría.', ve: 'Le piden revisar los datos. Tiene 3 intentos; después ve un resultado genérico. Si los corrige, sigue.' },
     { id: 'doc-invalido', corto: 'Cédula no válida', punto: 'rojo', c: 1, paso: 'Registraduría', codigo: 'Documento no válido', persona: P.rosa, que: 'Se detiene al identificarse: la cédula no es válida en la Registraduría.', ve: 'Ve un resultado sin explicación del motivo. No llega a elegir la cantidad.' },
     { id: 'cambio-medida', corto: 'Medida durante el pago', punto: 'rojo', c: 3, paso: 'Medidas · DB', codigo: 'Medida restrictiva vigente', persona: P.kevin, ini: 'pago', que: 'Se detiene al pagar: mientras pagaba apareció una medida vigente a su nombre.', ve: 'Ve un resultado sin explicación del motivo, un aviso de que no se cobró y otro de que su reserva se liberó.' },
-    { id: 'acomp-medida', corto: 'Titular con medida', punto: 'rojo', c: 2, paso: 'Medidas · DB', persona: P.andres, ini: 'titulares', malo: P.julian, sug: conSug(P.julian), falla: F_MEDIDA, que: 'Se detiene al asignar la boleta: la persona escrita como titular tiene una medida vigente.', ve: '«No es posible asignar esta boleta a esta persona», sin motivo. No puede pagar hasta asignar esa boleta a otra persona.' },
-    { id: 'acomp-boleta', corto: 'Titular ya tiene boleta', punto: 'rojo', c: 2, paso: 'Una por evento', codigo: 'YA_TIENE_BOLETA', persona: P.andres, ini: 'titulares', malo: P.daniela, sug: conSug(P.daniela), falla: falla('Una por evento', 'Ya tiene una boleta para este evento, en cualquier comercializadora', 'Ya tiene boleta ✕', 'YA_TIENE_BOLETA'), que: 'Se detiene al asignar la boleta: el titular ya tiene una boleta para este partido, comprada en cualquier comercializadora (solo se permite una).', ve: 'El mismo aviso que en el caso anterior, sin motivo. En la auditoría queda el código YA_TIENE_BOLETA.' },
-    { id: 'acomp-afinidad', corto: 'Titular es hincha visitante', punto: 'rojo', c: 2, paso: 'Afinidad y sector', sinVisitante: true, persona: P.andres, ini: 'titulares', malo: P.cristian, sug: conSug(P.cristian), falla: falla('Afinidad y sector', 'Sin hinchada visitante · afín a Medellín (91 %)', 'No cumple ✕', 'Regla del partido (propuesto)'), que: 'Se detiene al asignar la boleta: el titular es hincha del club visitante y este partido va sin hinchada visitante.', ve: 'El mismo aviso que en el caso anterior. La tribuna Sur queda cerrada para este partido.' },
-    { id: 'afinidad-no-concluyente', corto: 'Afinidad dudosa: pasa', punto: 'verde', c: 0, paso: 'Deja pasar', noConcluyente: true, persona: P.andres, ini: 'titulares', sug: [P.tomas].concat(SUG), que: 'No se detiene: no queda claro de qué club es hincha el titular, así que se deja pasar.', ve: 'Asigna la boleta a Tomás y avanza a Pago, como en la compra sin problemas. El motivo queda anotado en la auditoría.' },
-    { id: 'compro-otros', corto: 'Compro para otros', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, ini: 'titulares', yoVoy: false, cantidad: 2, que: 'No se detiene: quien compra no va a entrar y deja «Yo también voy» apagado.', ve: 'Las 2 boletas quedan para otras personas; ninguna va a su nombre.' },
-    { id: 'doc-repetido', corto: 'Documento repetido', punto: 'rojo', c: 0, paso: 'Sin consulta', persona: P.andres, ini: 'titulares', cantidad: 3, llenos: 1, sug: [P.santiago, P.santiago, P.lucia], que: 'No llega a consultar: el mismo documento no puede estar en dos boletas de la orden.', ve: 'Al escribir el documento de Santiago en la tercera boleta, el campo marca «Este documento ya está en la boleta 2».' },
-    { id: 'titular-medida-pago', corto: 'Titular con medida al pagar', punto: 'rojo', c: 3, paso: 'Medidas · DB', persona: P.andres, ini: 'pago', cantidad: 3, sug: [P.santiago, P.julian], cupoFalla: 3, falla: F_MEDIDA, que: 'Se detiene al pagar: mientras pagaba apareció una medida vigente a nombre del titular de la boleta 3.', ve: 'No se cobra y la reserva sigue. Vuelve a Titulares con esa boleta marcada para asignarla a otra persona.' },
-    { id: 'transferencia', corto: 'Cambiar titular tras pagar', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, ini: 'listo', cantidad: 2, transfer: P.tomas, que: 'No se detiene: después de pagar, el titular de una boleta se cambia hasta el inicio del partido.', ve: 'En Tus boletas toca «Cambiar titular»; se valida a quien recibe y la boleta pasa a su nombre con un token nuevo.' },
-    { id: 'transferencia-bloqueada', corto: 'Cambio de titular bloqueado', punto: 'rojo', c: 2, paso: 'Medidas · DB', persona: P.andres, ini: 'listo', cantidad: 2, transfer: P.julian, malo: P.julian, falla: F_MEDIDA, que: 'Se detiene al cambiar el titular: la persona que recibiría la boleta tiene una medida vigente.', ve: '«No es posible asignar esta boleta a esta persona», sin motivo. La boleta sigue a nombre del titular actual.' }
+    { id: 'acomp-medida', corto: 'Titular con medida', punto: 'rojo', c: 2, paso: 'Medidas · DB', persona: P.andres, ini: 'titulares', malo: P.julian, sug: conSug(P.julian), falla: F_MEDIDA, que: 'Se detiene al asignar el ingreso: la persona escrita como titular tiene una medida vigente.', ve: '«No es posible asignar este ingreso a esta persona», sin motivo. No puede pagar hasta asignar ese ingreso a otra persona.' },
+    { id: 'acomp-ingreso', corto: 'Titular ya tiene ingreso', punto: 'rojo', c: 2, paso: 'Una por evento', codigo: 'YA_TIENE_INGRESO', persona: P.andres, ini: 'titulares', malo: P.daniela, sug: conSug(P.daniela), falla: falla('Una por evento', 'Ya tiene un derecho de ingreso a este partido, de cualquier comercializadora', 'Ya tiene ingreso ✕', 'YA_TIENE_INGRESO'), que: 'Se detiene al asignar el ingreso: el documento del titular ya tiene derecho de ingreso a este partido, de cualquier comercializadora (solo se permite uno).', ve: '«No es posible asignar este ingreso a esta persona», sin motivo. En la auditoría queda el código YA_TIENE_INGRESO.' },
+    { id: 'acomp-afinidad', corto: 'Titular es hincha visitante', punto: 'rojo', c: 2, paso: 'Afinidad y sector', sinVisitante: true, persona: P.andres, ini: 'titulares', malo: P.cristian, sug: conSug(P.cristian), falla: falla('Afinidad y sector', 'Sin hinchada visitante · afín a Medellín (91 %)', 'No cumple ✕', 'Regla del partido (propuesto)'), que: 'Se detiene al asignar el ingreso: el titular es hincha del club visitante y este partido va sin hinchada visitante.', ve: '«No es posible asignar este ingreso a esta persona», sin motivo. La tribuna Sur queda cerrada para este partido.' },
+    { id: 'afinidad-no-concluyente', corto: 'Afinidad dudosa: pasa', punto: 'verde', c: 0, paso: 'Deja pasar', noConcluyente: true, persona: P.andres, ini: 'titulares', sug: [P.tomas].concat(SUG), que: 'No se detiene: no queda claro de qué club es hincha el titular, así que se deja pasar.', ve: 'Asigna el ingreso a Tomás y avanza a Pago, como en la compra sin problemas. El motivo queda anotado en la auditoría.' },
+    { id: 'compro-otros', corto: 'Compro para otros', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, ini: 'titulares', yoVoy: false, cantidad: 2, que: 'No se detiene: quien compra no va a entrar y deja «Yo también voy» apagado.', ve: 'Los 2 ingresos quedan para otras personas; ninguno con su documento.' },
+    { id: 'doc-repetido', corto: 'Documento repetido', punto: 'rojo', c: 0, paso: 'Sin consulta', persona: P.andres, ini: 'titulares', cantidad: 3, llenos: 1, sug: [P.santiago, P.santiago, P.lucia], que: 'No llega a consultar: el mismo documento no puede estar en dos ingresos de la orden.', ve: 'Al escribir el documento de Santiago en el tercer ingreso, el campo marca «Este documento ya está en el ingreso 2».' },
+    { id: 'titular-medida-pago', corto: 'Titular con medida al pagar', punto: 'rojo', c: 3, paso: 'Medidas · DB', persona: P.andres, ini: 'pago', cantidad: 3, sug: [P.santiago, P.julian], cupoFalla: 3, falla: F_MEDIDA, que: 'Se detiene al pagar: mientras pagaba apareció una medida vigente del documento del titular del ingreso 3.', ve: 'No se cobra y la reserva sigue. Vuelve a Titulares con ese ingreso marcado para asignarlo a otra persona.' },
+    { id: 'transferencia', corto: 'Cambiar titular tras pagar', punto: 'verde', c: 0, paso: 'No corta', persona: P.andres, ini: 'listo', cantidad: 2, transfer: P.tomas, que: 'No se detiene: después de pagar, el titular de un ingreso se cambia hasta el inicio del partido.', ve: 'En Tus ingresos toca «Cambiar titular»; se valida a quien recibe y el ingreso pasa a su documento.' },
+    { id: 'transferencia-bloqueada', corto: 'Cambio de titular bloqueado', punto: 'rojo', c: 2, paso: 'Medidas · DB', persona: P.andres, ini: 'listo', cantidad: 2, transfer: P.julian, malo: P.julian, falla: F_MEDIDA, que: 'Se detiene al cambiar el titular: la persona que recibiría el ingreso tiene una medida vigente.', ve: '«No es posible asignar este ingreso a esta persona», sin motivo. El ingreso sigue con el titular actual.' }
   ];
   CASOS.forEach(function (c, i) { c.n = i + 1; });
   function casoPorId(id) { return CASOS.filter(function (c) { return c.id === id; })[0] || CASOS[0]; }
 
   function loc(x) { var id = x && x.id ? x.id : x; return LOCS.filter(function (l) { return l.id === id; })[0] || LOCS[1]; }
   function total(st) { return st.cantidad * (loc(st.localidad).p + CARGO); }
-  function token(seed) { var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789', s = Number(seed) || 7, r = ''; for (var i = 0; i < 8; i++) { s = (s * 16807) % 2147483647; r += a.charAt(s % a.length); if (i === 3) { r += ' · '; } } return r; }
+  // La silla es dato de la comercializadora: el derecho de ingreso solo lleva documento, evento y sector.
   function puesto(st, n) { var l = loc(st.localidad); return l.fila ? 'Fila ' + l.fila + ' · Silla ' + (17 + n) : 'General'; }
 
-  /* ---------- Cupos: una boleta por persona, cada una con su titular ---------- */
+  /* ---------- Cupos: un ingreso por persona, cada uno con su titular ---------- */
   function cupoVacio(n) { return { n: n, titular: null, estado: 'vacio', codigo: null, esPropietario: false, intentos: 0 }; }
   function datosDe(p) { return { tipo: p.tipo, num: p.num, nombre: p.nombre, doc: p.tipo + ' ' + p.num }; }
   function ponerPropietario(st, c) { c.titular = datosDe(st.persona); c.estado = 'ok'; c.codigo = null; c.esPropietario = true; }
-  // Devuelve el nombre de quien perdió su lugar si no quedaba boleta libre para el propietario.
+  // Devuelve el nombre de quien perdió su lugar si no quedaba ingreso libre para el propietario.
   function asegurarPropietario(st) {
     if (!st.yoVoy || !st.persona || st.cupos.some(function (c) { return c.esPropietario; })) { return null; }
     var libres = st.cupos.filter(function (c) { return c.estado !== 'ok'; }), c = libres[0] || st.cupos[st.cupos.length - 1];
@@ -160,19 +161,19 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   function faltante(st) {
     var f = st.cupos.filter(function (c) { return c.estado !== 'ok'; });
     if (!f.length) { return ''; }
-    if (f.length > 1) { return 'Faltan ' + f.length + ' boletas por asignar.'; }
-    return f[0].estado === 'denegado' ? 'La boleta ' + f[0].n + ' necesita otra persona.' : 'Falta asignar la boleta ' + f[0].n + '.';
+    if (f.length > 1) { return 'Faltan ' + f.length + ' ingresos por asignar.'; }
+    return f[0].estado === 'denegado' ? 'El ingreso ' + f[0].n + ' necesita otra persona.' : 'Falta asignar el ingreso ' + f[0].n + '.';
   }
-  // Quién ya tiene ese documento en la orden: número de boleta, -1 si es el propietario sin «Yo también voy», 0 si nadie.
+  // Quién ya tiene ese documento en la orden: número de ingreso, -1 si es el propietario sin «Yo también voy», 0 si nadie.
   function ocupante(st, tipo, num, exceptoN) {
-    var k = claveDoc(tipo, num), lista = st.pagado ? st.boletas : st.cupos, i;
+    var k = claveDoc(tipo, num), lista = st.pagado ? st.ingresos : st.cupos, i;
     for (i = 0; i < lista.length; i++) {
       if (lista[i].n !== exceptoN && lista[i].titular && claveDoc(lista[i].titular.tipo, lista[i].titular.num) === k) { return lista[i].n; }
     }
     if (!st.pagado && !st.yoVoy && st.persona && claveDoc(st.persona.tipo, st.persona.num) === k) { return -1; }
     return 0;
   }
-  // Persona que el panel propone para esa boleta; tras un rechazo salta a la siguiente que no esté ya en la orden.
+  // Persona que el panel propone para ese ingreso; tras un rechazo salta a la siguiente que no esté ya en la orden.
   function sugerido(st, n) {
     var sug = st.caso.sug || SUG, c = st.cupos.filter(function (x) { return x.n === n; })[0], intentos = c ? c.intentos : 0;
     var k = st.cupos.filter(function (x) { return x.n < n && !x.esPropietario; }).length + intentos, p;
@@ -197,7 +198,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       persona: null, localidad: loc(caso.loc || 'ori'), cantidad: caso.cantidad || 2, disponibles: MAX - (caso.previas || 0), medio: 'tarjeta',
       form: { tipo: caso.persona.tipo, doc: caso.persona.num, nombre: caso.persona.nombre },
       id: { estado: 'espera', restantes: 3, error: false }, consultando: 0, bloqueo: null,
-      reservaFin: 0, pagado: false, yoVoy: caso.yoVoy !== false, cupos: [], boletas: [], edit: null, avisoPago: 0
+      reservaFin: 0, pagado: false, yoVoy: caso.yoVoy !== false, cupos: [], ingresos: [], edit: null, avisoPago: 0
     };
     // Cada caso abre donde importa, sin repetir los pasos de compra que no le aportan.
     if (caso.ini) {
@@ -205,7 +206,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       st.persona = caso.persona; st.id.estado = 'ok';
       st.reservaFin = Date.now() + RESERVA;
       armarCupos(st);
-      if (caso.ini === 'listo') { st.pagado = true; st.reservaFin = 0; crearBoletas(st); }
+      if (caso.ini === 'listo') { st.pagado = true; st.reservaFin = 0; crearIngresos(st); }
     }
     return st;
   }
@@ -213,14 +214,16 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   /* ---------- Definiciones de las consultas (a la app se presentan como consulta a DB) ---------- */
   function paso(n, logo, texto, baja, sube, ms) { return { n: n, logo: logo, texto: texto, baja: baja, sube: sube, r: 'ok', ms: ms }; }
   function marcar(p, texto, sube) { p.texto = texto; p.sube = sube; p.r = 'falla'; }
-  function boletas(n) { return n + (n === 1 ? ' boleta' : ' boletas'); }
+  function ingresos(n) { return n + (n === 1 ? ' ingreso' : ' ingresos'); }
+  // Casos de prueba (shared/demo-casos.js): una sanción vigente en el IVC corta la venta sin decir el motivo.
+  function conMedida(tipo, num) { return !!(window.DemoCasos && window.DemoCasos.bloqueado(tipo, num)); }
   function dePaso(p, nombre) { return p.filter(function (x) { return x.n === nombre; })[0]; }
 
   // Consulta 1 · ¿Puede comprar? Valida a quien compra; `extra.cantidad` es lo que pide al subir la cantidad en Titulares.
   function def1(st, extra) {
     var c = st.caso, tf = { doc: st.form.tipo + ' ' + st.form.doc }, previas = c.previas || 0, pide = extra.cantidad || st.cantidad;
     var p = [
-      paso('Graderío', 'GR', 'Envía documento, nombre, evento y cantidad', tf.doc + ' · ' + boletas(pide), 'Recibida', 120),
+      paso('Graderío', 'GR', 'Envía documento, nombre, evento y cantidad', tf.doc + ' · ' + ingresos(pide), 'Recibida', 120),
       paso('Registraduría', 'ANI', 'Documento vigente · nombre coincide', 'Documento · Nombre', 'Vigente ✓', 320),
       paso('Medidas', 'DB', 'Sin medida correctiva vigente', 'Documento', 'Sin medida ✓', 210),
       paso('Límite', 'DB', previas + ' de 5 para este evento · puede comprar hasta ' + Math.max(0, MAX - previas), 'Evento · Cantidad', 'Dentro del límite ✓', 140),
@@ -231,53 +234,60 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     if (c.id === 'medida-id') { corta(2, 'Tiene una medida correctiva vigente', 'Medida vigente ✕', 'Medida restrictiva vigente'); }
     else if (c.id === 'doc-invalido') { corta(1, 'Cédula cancelada en el ANI', 'No válido ✕', 'Documento no válido'); }
     else if (c.id === 'identidad' && !extra.corregido) { corta(1, 'El nombre no corresponde al documento', 'No coincide ✕', 'Identidad no coincide'); }
-    else if (previas + pide > MAX) { corta(3, 'Ya tiene ' + previas + ' boletas para este evento en otra comercializadora · pide ' + pide, 'Supera 5 ✕', 'Límite de venta excedido'); }
+    else if (conMedida(st.form.tipo, st.form.doc)) { corta(2, 'Tiene una medida correctiva vigente', 'Medida vigente ✕', 'Medida restrictiva vigente'); }
+    else if (previas + pide > MAX) { corta(3, 'Ya tiene ' + previas + ' ingresos para este evento en otra comercializadora · pide ' + pide, 'Supera 5 ✕', 'Límite de venta excedido'); }
     else if (previas) { p[3].texto = previas + ' de 5 en otra comercializadora · pide ' + pide; }
     return def;
   }
 
-  // Consulta 2 · ¿Puede recibir? Una por boleta: la comercializadora envía documento y nombre, el sistema solo dice sí o no.
+  // Consulta 2 · ¿Puede recibir? Una por ingreso: la comercializadora envía documento y nombre, el sistema solo dice sí o no.
   function def2(st, extra) {
     var c = st.caso, t = extra.titular, tr = extra.transferencia, k = extra.cupo;
     var p = [
-      paso('Graderío', 'GR', tr ? 'Envía el cambio de titular de la boleta ' + k : 'Envía la boleta ' + k + ' con su titular', t.doc + ' · ' + t.nombre, 'Recibida', 110),
+      paso('Graderío', 'GR', tr ? 'Envía el cambio de titular del ingreso ' + k : 'Envía el ingreso ' + k + ' con su titular', t.doc + ' · ' + t.nombre, 'Recibida', 110),
       paso('Registraduría', 'ANI', 'Documento vigente · nombre coincide', 'Documento · Nombre', 'Vigente ✓', 260),
       paso('Medidas', 'DB', 'Sin medida correctiva vigente', 'Documento', 'Sin medida ✓', 190),
-      paso('Una por evento', 'DB', 'No tiene otra boleta para este evento', 'Evento', 'Sin otra boleta ✓', 120),
+      paso('Una por evento', 'DB', 'Su documento no tiene otro derecho de ingreso a este partido', 'Evento', 'Sin otro derecho ✓', 120),
       paso('Afinidad y sector', 'DB', loc(st.localidad).n + ' habilitada para esta persona', 'Sector · Partido', 'Cumple ✓', 150),
-      paso('Decisión · DB', 'DB', tr ? 'Autorizado · la boleta cambia de titular' : 'Autorizado · boleta ' + k + ' asignada', null, 'Autorizado', 50)
+      paso('Decisión · DB', 'DB', tr ? 'Autorizado · el derecho de ingreso cambia de documento' : 'Autorizado · ingreso ' + k + ' asignado', null, 'Autorizado', 50)
     ];
-    if (tr) { p.splice(1, 0, paso('Titular actual', 'DB', 'Sigue siendo titular · antes del inicio del partido', 'Boleta ' + k, 'Vigente ✓', 100)); }
-    var def = { consulta: 'Consulta 2 de 3 · ¿Puede recibir? · Boleta ' + k + (tr ? ' (cambio de titular)' : ''), tag: 'Autorizado', pasos: p, codigo: 'Autorizado' };
+    if (tr) { p.splice(1, 0, paso('Titular actual', 'DB', 'Sigue siendo titular · antes del inicio del partido', 'Ingreso ' + k, 'Vigente ✓', 100)); }
+    var def = { consulta: 'Consulta 2 de 3 · ¿Puede recibir? · Ingreso ' + k + (tr ? ' (cambio de titular)' : ''), tag: 'Autorizado', pasos: p, codigo: 'Autorizado' };
     if (c.noConcluyente) { var af = dePaso(p, 'Afinidad y sector'); af.texto = 'Afinidad no concluyente · deja pasar y queda en la auditoría'; af.sube = 'No concluyente ✓'; }
     var f = c.falla;
     if (c.c === 2 && c.malo && f && claveDoc(t.tipo, t.num) === claveDoc(c.malo.tipo, c.malo.num)) {
       marcar(dePaso(p, f.paso), f.texto, f.sube); def.tag = 'Denegado · ' + f.cod; def.codigo = f.cod;
+    } else if (conMedida(t.tipo, t.num)) {
+      marcar(dePaso(p, 'Medidas'), F_MEDIDA.texto, F_MEDIDA.sube); def.tag = 'Denegado · ' + F_MEDIDA.cod; def.codigo = F_MEDIDA.cod;
     }
     return def;
   }
 
-  // Consulta 3 · revalida al pagar a quien compra y a todos los titulares; si pasa, emite un token por boleta.
+  // Consulta 3 · revalida al pagar; si pasa, nace el derecho de ingreso de cada documento.
   function def3(st) {
     var c = st.caso, n = st.cupos.length, previas = c.previas || 0;
     var p = [
-      paso('Graderío', 'GR', 'Envía la orden antes de cobrar', 'Orden · ' + boletas(n) + ' · ' + n + ' titulares', 'Recibida', 110),
+      paso('Graderío', 'GR', 'Envía la orden antes de cobrar', 'Orden · ' + ingresos(n) + ' · ' + n + ' titulares', 'Recibida', 110),
       paso('Registraduría', 'ANI', 'Siguen vigentes el documento de quien compra y los de los ' + n + ' titulares', 'Documentos', 'Vigentes ✓', 230),
       paso('Medidas', 'DB', 'Sin medida vigente en quien compra ni en los titulares', 'Documentos', 'Sin medida ✓', 200),
       paso('Límite', 'DB', 'Sigue en ' + (previas + n) + ' de 5 · sin compras nuevas', 'Evento · Cantidad', 'Dentro del límite ✓', 130),
-      paso('Una por evento', 'DB', 'Ningún titular tiene otra boleta para este evento', 'Evento', 'Sin otra boleta ✓', 120),
-      paso('Token', 'DB', 'Autoriza la orden · ' + n + (n === 1 ? ' token emitido' : ' tokens emitidos, uno por boleta'), null, 'Token ✓', 90)
+      paso('Una por evento', 'DB', 'Ningún titular tiene otro derecho de ingreso a este partido', 'Evento', 'Sin otro derecho ✓', 120),
+      paso('Derecho de ingreso', 'DB', 'Autoriza la orden · ' + n + (n === 1 ? ' derecho registrado' : ' derechos registrados, uno por documento'), 'Documento · Evento · Sector', 'Registrado ✓', 90)
     ];
-    var def = { consulta: 'Consulta 3 de 3 · revalida al pagar', tag: 'Autorizado · ' + (n === 1 ? 'token emitido' : n + ' tokens emitidos'), pasos: p, codigo: 'Autorizado', sujeto: null, cupo: 0 };
+    var def = { consulta: 'Consulta 3 de 3 · revalida al pagar', tag: 'Autorizado · ' + (n === 1 ? 'derecho registrado' : n + ' derechos registrados'), pasos: p, codigo: 'Autorizado', sujeto: null, cupo: 0 };
     var corta = function (nombre, texto, sube, cod, sujeto, cupo) { marcar(dePaso(p, nombre), texto, sube); def.tag = 'Denegado · ' + cod; def.codigo = cod; def.sujeto = sujeto; def.cupo = cupo || 0; };
+    if (!def.sujeto && st.persona && conMedida(st.persona.tipo, st.persona.num)) { corta('Medidas', 'Tiene una medida correctiva vigente', 'Medida vigente ✕', 'Medida restrictiva vigente', 'comprador'); }
+    st.cupos.forEach(function (q) {
+      if (!def.sujeto && q.titular && conMedida(q.titular.tipo, q.titular.num)) { corta('Medidas', 'El titular del ingreso ' + q.n + ' tiene una medida vigente', 'Medida vigente ✕', 'Medida restrictiva vigente', 'cupo', q.n); }
+    });
     if (c.id === 'cambio-medida') { corta('Medidas', 'Se registró una medida de quien compra durante la reserva', 'Medida vigente ✕', 'Medida restrictiva vigente', 'comprador'); }
     if (c.id === 'limite-carrera') { corta('Límite', 'Compró ' + c.carrera + ' en otra comercializadora durante la reserva · ahora serían ' + (c.carrera + n), 'Supera 5 ✕', 'Límite de venta excedido', 'comprador'); }
-    if (c.id === 'titular-medida-pago') { corta('Medidas', 'Se registró una medida del titular de la boleta ' + c.cupoFalla + ' durante la reserva', 'Medida vigente ✕', 'Medida restrictiva vigente', 'cupo', c.cupoFalla); }
+    if (c.id === 'titular-medida-pago') { corta('Medidas', 'Se registró una medida del titular del ingreso ' + c.cupoFalla + ' durante la reserva', 'Medida vigente ✕', 'Medida restrictiva vigente', 'cupo', c.cupoFalla); }
     return def;
   }
 
   /* ---------- Marco de Graderío (celular y escritorio) ---------- */
-  var LOGO = '<span class="pc-logo"><span class="pc-logo__m"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M1 16h16V2h-4v4H9v4H5v4H1z" fill="#FFCC1A"/></svg></span><span class="pc-logo__t">graderío<small>Comercializadora de entradas</small></span></span>';
+  var LOGO = '<span class="pc-logo"><span class="pc-logo__m"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M1 16h16V2h-4v4H9v4H5v4H1z" fill="#FFCC1A"/></svg></span><span class="pc-logo__t">graderío<small>Comercializadora de eventos</small></span></span>';
   /* o = { paso, atras: 'data-acc' | null, cuerpo, pie? } */
   function marco(o) {
     var pie = o.pie ? o.pie : '';
@@ -295,16 +305,6 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     var acc = o.enPie ? '' : botonesRes(o.acciones);
     return '<div class="pc-s-pieza pc-s-pieza--res" role="alert"><div class="pc-s-res"><span class="pc-s-res__ic">' + ico('alerta', 28) + '</span><h2 class="pc-s-h">' + esc(o.titulo) + '</h2><p class="pc-s-p">' + esc(o.texto) + '</p></div>' +
       '<div class="pc-s-res__acc">' + acc + '<div class="pc-s-sello"><img src="assets/mindeporte.svg" alt="Ministerio del Deporte"><i></i><span>Validado</span></div></div></div>';
-  }
-
-  // QR de referencia (no es un código real): módulos seudoaleatorios con los tres cuadros de posición.
-  function qr(seed) {
-    var n = 25, s = Number(seed) || 1, d = '', x, y;
-    var r = function () { s = (s * 16807) % 2147483647; return s / 2147483647; };
-    var zona = function (a, b) { return (a < 8 && b < 8) || (a >= n - 8 && b < 8) || (a < 8 && b >= n - 8); };
-    for (y = 0; y < n; y++) { for (x = 0; x < n; x++) { if (!zona(x, y) && r() < 0.5) { d += 'M' + x + ' ' + y + 'h1v1h-1z'; } } }
-    [[0, 0], [n - 7, 0], [0, n - 7]].forEach(function (f) { d += 'M' + f[0] + ' ' + f[1] + 'h7v7h-7z' + 'M' + (f[0] + 1) + ' ' + (f[1] + 1) + 'v5h5v-5z' + 'M' + (f[0] + 2) + ' ' + (f[1] + 2) + 'h3v3h-3z'; });
-    return '<svg class="pc-qr__img" viewBox="-1 -1 27 27" role="img" aria-label="Código QR de la boleta"><path d="' + d + '" fill="#0B1640" fill-rule="evenodd"/></svg>';
   }
 
   /* ---------- Piezas comunes de las pantallas ---------- */
@@ -328,13 +328,13 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   }
 
   Object.assign(COMPRA, {
-    marco: marco, resultado: resultado, ico: ico, qr: qr, dinero: dinero, iniciales: iniciales, primerNombre: primerNombre, enmascarar: enmascarar, token: token, seedDe: seedDe,
+    marco: marco, resultado: resultado, ico: ico, dinero: dinero, iniciales: iniciales, primerNombre: primerNombre, enmascarar: enmascarar,
     casos: CASOS, localidad: loc, TIPOS_DOC: TIPOS_DOC, validarDoc: validarDoc, ocupante: ocupante, puesto: puesto, sugerido: sugerido, ajustarCupos: ajustarCupos, alternarYo: alternarYo,
     todosOk: todosOk, faltante: faltante, chipReloj: chipReloj, botonCarga: botonCarga, aviso: aviso, MAX: MAX
   });
 
   /* ---------- Pantalla 1 · Evento y localidad ---------- */
-  function totalTexto(st) { return 'Una boleta · ' + loc(st.localidad).n; }
+  function totalTexto(st) { return 'Un ingreso · ' + loc(st.localidad).n; }
   function precioUna(st) { return dinero(loc(st.localidad).p + CARGO); }
   COMPRA.registrar('evento', {
     render: function (cx) {
@@ -349,7 +349,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
           '<span class="pc-evento__liga">LIGA · FECHA 12</span><h1 class="pc-h1" tabindex="-1">Nacional vs. Medellín</h1>' +
           '<div class="pc-evento__meta"><span>' + ico('cal', 16) + 'Lun 28/ Sep/26 · 7:00 p. m.</span><span>' + ico('lugar', 16) + 'Atanasio Girardot, Medellín</span></div></div></section>' +
         '<section class="pc-seccion"><h2 class="pc-h2">Elige tu localidad</h2><div class="pc-opts" role="radiogroup" aria-label="Localidad">' + locs + '</div></section>' +
-        '<p class="pc-sub">Máximo 5 boletas por persona. Cada boleta es para una persona con su documento; la cantidad y los titulares los eliges después de identificarte.</p>';
+        '<p class="pc-sub">Máximo 5 ingresos por persona. Cada ingreso es de una persona con su documento; la cantidad y los titulares los eliges después de identificarte.</p>';
       var pie = '<div class="pc-total"><span class="pc-total__t"><span data-resumen>' + totalTexto(st) + '</span></span><b data-total>' + precioUna(st) + '</b></div>' + boton('cmp-continuar', 'Continuar', 'flecha');
       return marco({ paso: 'evento', atras: null, cuerpo: cuerpo, pie: pie });
     },
@@ -376,17 +376,17 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     if (b.codigo === 'Límite de venta excedido') {
       return marco({ paso: 'identificar', atras: 'cmp-evento', fondo: true, cuerpo:
         '<h2 class="pc-h1 pc-tit">Tus datos</h2>' +
-        '<div class="pc-cab"><h1 class="pc-h1" tabindex="-1">Superas el límite de boletas para este evento</h1><p class="pc-sub">' + esc(quien.nombre) + ' · ' + esc(quien.doc) + '</p></div>' +
-        aviso('Máximo 5 boletas por persona', 'El límite suma las boletas que tengas para este evento en cualquier comercializadora (Decreto 1622 de 2022).') +
-        '<p class="pc-sub pc-centro">No reservamos boletas ni hicimos ningún cobro.</p>',
-      pie: botonesRes([{ acc: 'cmp-portal', texto: 'Ver mis boletas en mi portal', icono: 'externo', clase: 'pc-s-btn--grande' }]) + BTN_VOLVER });
+        '<div class="pc-cab"><h1 class="pc-h1" tabindex="-1">Superas el límite de ingresos para este evento</h1><p class="pc-sub">' + esc(quien.nombre) + ' · ' + esc(quien.doc) + '</p></div>' +
+        aviso('Máximo 5 ingresos por persona', 'El límite suma los ingresos que tengas para este evento en cualquier comercializadora (Decreto 1622 de 2022).') +
+        '<p class="pc-sub pc-centro">No reservamos ingresos ni hicimos ningún cobro.</p>',
+      pie: botonesRes([{ acc: 'cmp-portal', texto: 'Ver mis ingresos en mi portal', icono: 'externo', clase: 'pc-s-btn--grande' }]) + BTN_VOLVER });
     }
     var acciones = [ACC_PORTAL];
     return marco({ paso: 'identificar', atras: 'cmp-evento', fondo: true, cuerpo:
       '<h2 class="pc-h1 pc-tit">Tus datos</h2>' +
       '<div class="pc-card pc-persona"><span class="pc-avatar">' + esc(iniciales(quien.nombre)) + '</span><span class="pc-titular__t"><b>' + esc(quien.nombre) + '</b><span>' + esc(quien.doc) + '</span></span></div>' +
       resultado({ titulo: 'No es posible continuar', texto: 'Consulta tu estado en tu portal de estado.', acciones: acciones, enPie: true }) +
-      '<p class="pc-sub pc-centro">No reservamos boletas ni hicimos ningún cobro.</p>',
+      '<p class="pc-sub pc-centro">No reservamos ingresos ni hicimos ningún cobro.</p>',
       pie: botonesRes(acciones) + BTN_VOLVER });
   }
 
@@ -434,7 +434,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
         if (r.ok) {
           st.persona = { nombre: f.nombre.trim(), tipo: f.tipo, num: f.doc.trim(), doc: f.tipo + ' ' + f.doc.trim() };
           st.id.estado = 'ok'; st.id.error = false;
-          // La reserva corre desde aquí: ya se sabe que puede comprar y cuántas boletas le quedan.
+          // La reserva corre desde aquí: ya se sabe que puede comprar y cuántos ingresos le quedan.
           st.disponibles = MAX - (c.previas || 0); st.cantidad = Math.min(st.cantidad, st.disponibles) || 1; st.reservaFin = Date.now() + RESERVA;
           st.cupos = [];
           // Sin pantalla de éxito: pasa sola a Cantidad (DC-228); la espera deja leer la franja.
@@ -455,14 +455,14 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     render: function (cx) {
       var st = cx.st, l = loc(st.localidad), previas = st.caso.previas || 0;
       var nota = previas
-        ? 'Ya tienes ' + previas + ' para este evento, así que puedes comprar hasta ' + st.disponibles + ' más.'
+        ? 'Ya tienes ' + previas + ' para este partido, así que puedes comprar hasta ' + st.disponibles + ' más.'
         : 'Máximo 5 por persona, contándote a ti si vas a entrar.';
       var cuerpo = '<div class="pc-fila-t"><h1 class="pc-h1 pc-tit" tabindex="-1">Cantidad</h1>' + chipReloj(st) + '</div>' +
-        '<section class="pc-card"><div class="pc-cant"><div class="pc-cant__t"><h2 class="pc-h2">¿Cuántas boletas?</h2><span class="pc-sub">' + esc(l.n) + ' · ' + dinero(l.p + CARGO) + ' cada una, con cargo</span></div>' +
-        '<div class="pc-stepper"><button type="button" class="pc-step" aria-label="Quitar una boleta" data-acc="cmp-menos"' + (st.cantidad <= 1 ? ' disabled' : '') + '>' + ico('menos', 20) + '</button>' +
+        '<section class="pc-card"><div class="pc-cant"><div class="pc-cant__t"><h2 class="pc-h2">¿Cuántos ingresos?</h2><span class="pc-sub">' + esc(l.n) + ' · ' + dinero(l.p + CARGO) + ' cada una, con cargo</span></div>' +
+        '<div class="pc-stepper"><button type="button" class="pc-step" aria-label="Quitar un ingreso" data-acc="cmp-menos"' + (st.cantidad <= 1 ? ' disabled' : '') + '>' + ico('menos', 20) + '</button>' +
         '<span class="pc-step__n" data-cant aria-live="polite">' + st.cantidad + '</span>' +
-        '<button type="button" class="pc-step" aria-label="Agregar una boleta" data-acc="cmp-mas"' + (st.cantidad >= st.disponibles ? ' disabled' : '') + '>' + ico('mas', 20) + '</button></div></div></section>' +
-        '<p class="pc-nota">' + ico('info', 16) + '<span>' + esc(nota) + ' En el siguiente paso asignas cada boleta a una persona con su documento.</span></p>';
+        '<button type="button" class="pc-step" aria-label="Agregar un ingreso" data-acc="cmp-mas"' + (st.cantidad >= st.disponibles ? ' disabled' : '') + '>' + ico('mas', 20) + '</button></div></div></section>' +
+        '<p class="pc-nota">' + ico('info', 16) + '<span>' + esc(nota) + ' En el siguiente paso asignas cada ingreso a una persona con su documento.</span></p>';
       var pie = '<div class="pc-total"><span class="pc-total__t"><span data-resumen>' + st.cantidad + ' × ' + esc(l.n) + '</span></span><b data-total>' + dinero(total(st)) + '</b></div>' + boton('cmp-cant-continuar', 'Continuar', 'flecha');
       return marco({ paso: 'cantidad', atras: 'cmp-atras', cuerpo: cuerpo, pie: pie });
     },
@@ -494,19 +494,19 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       '<p class="pc-nota pc-nota--equipo">' + ico('info', 16) + '<span><b>Nota del equipo, la persona no la ve.</b> Pasó las consultas 1 y 2 al identificarse y al asignar los titulares. Este bloqueo ocurre igual porque su estado cambió durante la reserva (' + causa + ').</span></p>' +
       (medida
         ? resultado({ titulo: 'No es posible continuar', texto: 'Consulta tu estado en tu portal de estado.', acciones: [ACC_PORTAL], enPie: true })
-        : '<div class="pc-cab"><h2 class="pc-h1 pc-h1--m">Superas el límite de boletas para este evento</h2>' + aviso('Máximo 5 boletas por persona', 'Mientras pagabas se registró otra compra tuya para este evento en otra comercializadora.') + '</div>') +
+        : '<div class="pc-cab"><h2 class="pc-h1 pc-h1--m">Superas el límite de ingresos para este evento</h2>' + aviso('Máximo 5 ingresos por persona', 'Mientras pagabas se registró otra compra tuya para este evento en otra comercializadora.') + '</div>') +
       '<section class="pc-card"><p class="pc-nota pc-nota--tinta">' + ico('info', 16) + '<span>No hicimos ningún cobro a tu tarjeta terminada en 4821.</span></p>' +
-      '<p class="pc-nota pc-nota--tinta">' + ico('info', 16) + '<span>Liberamos las ' + st.cantidad + ' boletas de ' + l.n + ' que tenías reservadas.</span></p></section>';
-    var acciones = medida ? [ACC_PORTAL] : [{ acc: 'cmp-portal', texto: 'Ver mis boletas en mi portal', icono: 'externo', clase: 'pc-s-btn--grande' }];
+      '<p class="pc-nota pc-nota--tinta">' + ico('info', 16) + '<span>Liberamos los ' + st.cantidad + ' ingresos de ' + l.n + ' que tenías reservados.</span></p></section>';
+    var acciones = medida ? [ACC_PORTAL] : [{ acc: 'cmp-portal', texto: 'Ver mis ingresos en mi portal', icono: 'externo', clase: 'pc-s-btn--grande' }];
     return marco({ paso: 'pago', atras: null, fondo: true, cuerpo: cuerpo, pie: botonesRes(acciones) + BTN_VOLVER });
   }
 
   function pagoPie(st) {
-    if (st.pagado) { return boton('cmp-ver-boletas', 'Ver mis boletas', 'flecha'); }
+    if (st.pagado) { return boton('cmp-ver-ingresos', 'Ver mis ingresos', 'flecha'); }
     if (st.consultando === 3) { return botonCarga('Confirmando…'); }
     if (!todosOk(st)) {
       return '<button type="button" class="pc-btn" disabled aria-describedby="pc-razon">' + ico('candado', 18) + '<span>Pagar ' + dinero(total(st)) + '</span></button>' +
-        '<p class="pc-sub pc-centro" id="pc-razon">' + esc(faltante(st) || 'Asigna todas las boletas para pagar.') + '</p>';
+        '<p class="pc-sub pc-centro" id="pc-razon">' + esc(faltante(st) || 'Asigna todos los ingresos para pagar.') + '</p>';
     }
     return boton('cmp-pagar', 'Pagar ' + dinero(total(st)), 'candado');
   }
@@ -521,14 +521,14 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     return '<section class="pc-seccion"><h2 class="pc-h2">Medio de pago</h2><div class="pc-opts" role="radiogroup" aria-label="Medio de pago">' + mm + '</div>' +
       '</section>';
   }
-  // Resumen de quién entra con cada boleta, con los documentos enmascarados.
+  // Resumen de quién entra con cada ingreso, con los documentos enmascarados.
   function resumenTitulares(st) {
     var filas = st.cupos.map(function (c) {
       var t = c.titular;
       return '<li class="pc-resumen__fila"><span class="pc-resumen__n">' + c.n + '</span><span class="pc-titular__t"><b>' + esc(t ? t.nombre : 'Sin titular') + (c.esPropietario ? ' (tú)' : '') + '</b><span>' + esc(t ? enmascarar(t.doc) : 'Falta asignar') + '</span></span></li>';
     }).join('');
-    return '<section class="pc-card" aria-label="Boletas para"><div class="pc-pagando__cab"><span class="pc-pagando__t">BOLETAS PARA</span>' +
-      (st.pagado ? '' : '<button type="button" class="pc-enlace" aria-label="Editar los titulares de las boletas" data-acc="cmp-editar">Editar</button>') + '</div><ul class="pc-resumen">' + filas + '</ul></section>';
+    return '<section class="pc-card" aria-label="Ingresos para"><div class="pc-pagando__cab"><span class="pc-pagando__t">INGRESOS PARA</span>' +
+      (st.pagado ? '' : '<button type="button" class="pc-enlace" aria-label="Editar los titulares de los ingresos" data-acc="cmp-editar">Editar</button>') + '</div><ul class="pc-resumen">' + filas + '</ul></section>';
   }
   COMPRA.registrar('pago', {
     render: function (cx) {
@@ -551,15 +551,15 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
         r.querySelectorAll('[data-acc="cmp-medio"]').forEach(function (b) { var s = b === el; b.classList.toggle('pc-opt--sel', s); b.setAttribute('aria-checked', String(s)); });
         return;
       }
-      if (a === 'cmp-ver-boletas') { cx.ir('listo'); return; }
+      if (a === 'cmp-ver-ingresos') { cx.ir('listo'); return; }
       if (a !== 'cmp-pagar' || st.consultando || !todosOk(st)) { return; }
       st.consultando = 3;
       var zonaPie = r.querySelector('[data-pie]') || r.querySelector('.pc-foot');
       zonaPie.innerHTML = pagoPie(st);
       cx.consultar(3, function (res) {
         st.consultando = 0;
-        if (res.ok) { crearBoletas(st); st.pagado = true; st.reservaFin = 0; cx.repintar(); cx.aprobar(); return; }
-        // Falla un titular: no se cobra, la reserva sigue y vuelve a Titulares con esa boleta marcada.
+        if (res.ok) { crearIngresos(st); st.pagado = true; st.reservaFin = 0; cx.repintar(); cx.aprobar(); return; }
+        // Falla un titular: no se cobra, la reserva sigue y vuelve a Titulares con ese ingreso marcado.
         if (res.sujeto === 'cupo') {
           var cupo = st.cupos.filter(function (x) { return x.n === res.cupo; })[0];
           if (cupo) { cupo.titular = null; cupo.estado = 'denegado'; cupo.codigo = res.codigo; cupo.intentos += 1; st.avisoPago = cupo.n; }
@@ -572,32 +572,31 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     }
   });
 
-  // Emite una boleta por cupo, cada una con su titular y su token.
-  function crearBoletas(st) {
+  // Al pagar nace un derecho de ingreso por cupo: documento del titular, evento y sector.
+  function crearIngresos(st) {
     var l = loc(st.localidad);
-    st.boletas = st.cupos.map(function (c) {
-      var seed = seedDe(c.titular.doc);
-      return { n: c.n, esPropietario: c.esPropietario, localidad: l.n, puesto: puesto(st, c.n), puerta: l.puerta, titular: c.titular, token: token(seed), seed: seed, noPosible: false };
+    st.ingresos = st.cupos.map(function (c) {
+      return { n: c.n, esPropietario: c.esPropietario, localidad: l.n, puesto: puesto(st, c.n), puerta: l.puerta, titular: c.titular, noPosible: false };
     });
   }
 
-  /* ---------- Pantalla final · Tus boletas (id interno: listo) ---------- */
+  /* ---------- Pantalla final · Tus ingresos (id interno: listo) ---------- */
   COMPRA.registrar('listo', {
     render: function (cx) {
       var st = cx.st;
-      if (!st.boletas.length) { crearBoletas(st); }
-      var cards = st.boletas.map(function (b) {
-        var cab = '<div class="pc-boleta__cab"><b>' + esc(b.localidad + ' · ' + b.puesto) + '</b><span class="pc-estado pc-estado--claro">' + ico('check', 14) + 'Asignada</span></div>';
-        var cuerpo = '<div class="pc-qr">' + qr(b.seed) + '<div class="pc-qr__d"><div class="pc-titular"><span class="pc-avatar">' + esc(iniciales(b.titular.nombre)) + '</span><span class="pc-titular__t"><b>' + esc(b.titular.nombre) + (b.esPropietario ? ' (tú)' : '') + '</b><span>' + esc(enmascarar(b.titular.doc)) + '</span></span></div>' +
-          '<span class="pc-puerta">' + ico('puerta', 16) + esc(b.puerta) + '</span><span class="pc-token">Token · ' + esc(b.token) + '</span></div></div>';
-        var acc = (b.noPosible ? aviso('No es posible asignar esta boleta a esta persona') : '') +
+      if (!st.ingresos.length) { crearIngresos(st); }
+      var cards = st.ingresos.map(function (b) {
+        var cab = '<div class="pc-ingreso__cab"><b>' + esc(b.localidad + ' · ' + b.puesto) + '</b><span class="pc-estado pc-estado--claro">' + ico('check', 14) + 'Asignado</span></div>';
+        var cuerpo = '<div class="pc-qr"><span class="pc-qr__doc">' + ico('documento', 44) + '</span><div class="pc-qr__d"><div class="pc-titular"><span class="pc-avatar">' + esc(iniciales(b.titular.nombre)) + '</span><span class="pc-titular__t"><b>' + esc(b.titular.nombre) + (b.esPropietario ? ' (tú)' : '') + '</b><span>' + esc(enmascarar(b.titular.doc)) + '</span></span></div>' +
+          '<span class="pc-puerta">' + ico('puerta', 16) + esc(b.puerta) + '</span><span class="pc-nota-doc">Entra con su documento</span></div></div>';
+        var acc = (b.noPosible ? aviso('No es posible asignar este ingreso a esta persona') : '') +
           '<button type="button" class="pc-btn pc-btn--sec" data-acc="lst-cambiar" data-n="' + b.n + '">' + ico('cambio', 18) + '<span>Cambiar titular</span></button>';
-        return '<article class="pc-boleta">' + cab + '<div class="pc-boleta__cuerpo">' + cuerpo + '<div class="pc-boleta__acc">' + acc + '</div></div></article>';
+        return '<article class="pc-ingreso">' + cab + '<div class="pc-ingreso__cuerpo">' + cuerpo + '<div class="pc-ingreso__acc">' + acc + '</div></div></article>';
       }).join('');
-      var n = st.boletas.length;
-      var cuerpo = '<h1 class="pc-h1 pc-tit" tabindex="-1">Tus boletas</h1>' +
-        estadoOk('Listo. ' + (n === 1 ? 'Tu boleta tiene titular.' : 'Tus ' + n + ' boletas tienen titular.'), 'Cada una entra con el documento de su titular.') +
-        '<p class="pc-sub">Puedes cambiar el titular de una boleta hasta el inicio del partido; se valida a quien recibe.</p>' +
+      var n = st.ingresos.length;
+      var cuerpo = '<h1 class="pc-h1 pc-tit" tabindex="-1">Tus ingresos</h1>' +
+        estadoOk('Listo. ' + (n === 1 ? 'Tu ingreso tiene titular.' : 'Tus ' + n + ' ingresos tienen titular.'), 'Cada uno se revisa en la puerta con el documento de su titular.') +
+        '<p class="pc-sub">Puedes cambiar el titular de un ingreso hasta el inicio del partido; se valida a quien recibe.</p>' +
         '<div class="pc-listas">' + cards + '</div>';
       return marco({ paso: 'listo', atras: null, cuerpo: cuerpo });
     },
@@ -615,19 +614,19 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     var ATRAS = { identificar: 'evento', titulares: 'cantidad', pago: 'titulares' };
 
     function toolbar() {
-      return '<nwt-toolbar class="pp-toolbar"><div class="pp-toolbar__marca"><nwt-logo-naowee></nwt-logo-naowee></div>' +
-        '<nwt-title class="pp-toolbar__titulo">Vender la boleta<span slot="subtitle">Paso 6 del flujo · Graderío (comercializadora ficticia)</span></nwt-title>' +
+      return '<nwt-toolbar class="pp-toolbar">' +
+        '<nwt-title class="pp-toolbar__titulo">Comprar y asignar ingresos<span slot="subtitle">Paso 6 del flujo · Graderío (comercializadora ficticia)</span></nwt-title>' +
         '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Volver al inicio</nwt-button></nwt-toolbar>';
     }
     // Mismo semáforo y marcado que la lista de /puerta, para que los dos paneles se lean igual.
     var ASPECTO = { verde: ['positive', 'positive'], amarillo: ['warning', 'attention'], rojo: ['negative', 'negative'] };
     function itemCaso(c) {
       var a = ASPECTO[c.punto] || ASPECTO.verde;
-      return '<nwt-detail-item actionable nwt-theme="' + a[0] + '" data-caso="' + c.id + '"><span class="pp-caso__punto pp-caso__punto--' + c.punto + '" aria-hidden="true"></span>' + esc(c.corto) + '</nwt-detail-item>';
+      return '<nwt-detail-item actionable nwt-theme="' + a[0] + '" data-caso="' + c.id + '">' + esc(c.corto) + '<span class="pp-caso__punto pp-caso__punto--' + c.punto + '" aria-hidden="true"></span></nwt-detail-item>';
     }
     // Los casos se agrupan por el momento del flujo en que ocurren, no todos son de compra: hay pago y asignación a otra persona.
     var GRUPOS = [['Sin problemas', ['feliz', 'compro-otros']], ['Al identificarse', ['medida-id', 'limite-id', 'identidad', 'doc-invalido']],
-      ['Al asignar titulares', ['acomp-medida', 'acomp-boleta', 'acomp-afinidad', 'afinidad-no-concluyente', 'doc-repetido']],
+      ['Al asignar titulares', ['acomp-medida', 'acomp-ingreso', 'acomp-afinidad', 'afinidad-no-concluyente', 'doc-repetido']],
       ['Al pagar', ['limite-carrera', 'cambio-medida', 'titular-medida-pago']], ['Después de pagar', ['transferencia', 'transferencia-bloqueada']]];
     // Verdes primero (grupos y casos); el que no es rojo cuenta como verde. Cada grupo es un acordeón.
     var rojo = function (c) { return c.punto === 'rojo' ? 1 : 0; };
@@ -652,7 +651,9 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
           '<div class="pc-grupo__lista"' + (ab ? '' : ' hidden') + '>' + g.cs.map(itemCaso).join('') + '</div></section>';
       }).join('');
     }
+    // Acordeón exclusivo (DC-059): al abrir un grupo se cierran los demás.
     function abrirGrupo(sec, ab) {
+      if (ab) { sec.parentNode.querySelectorAll('.pc-grupo--abierto').forEach(function (o) { if (o !== sec) { abrirGrupo(o, false); } }); }
       sec.classList.toggle('pc-grupo--abierto', ab);
       sec.querySelector('[data-grupo]').setAttribute('aria-expanded', String(ab));
       sec.querySelector('.pc-grupo__lista').hidden = !ab;
@@ -671,11 +672,10 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     }
     function infoCaso() {
       var c = st.caso;
-      var quien = 'Compra: ' + c.persona.nombre + ' (' + c.persona.doc + ')' + (c.malo ? '. Titular al que le dicen que no: ' + c.malo.nombre + ' (' + c.malo.doc + ').' : '.');
-      var nota = c.c === 2 ? 'Esta consulta ocurre al asignar una boleta en Titulares' + (c.ini === 'listo' ? ' o al cambiar su titular.' : '.')
-        : c.cupoFalla ? 'Esta consulta ocurre al pagar, con el titular de la boleta ' + c.cupoFalla + '.' : '';
+      var nota = c.c === 2 ? 'Esta consulta ocurre al asignar un ingreso en Titulares' + (c.ini === 'listo' ? ' o al cambiar su titular.' : '.')
+        : c.cupoFalla ? 'Esta consulta ocurre al pagar, con el titular del ingreso ' + c.cupoFalla + '.' : '';
       var el = raiz.querySelector('#pc-caso-info');
-      if (el) { el.innerHTML = '<p class="pc-caso-info__t">' + esc(c.que) + '</p><p>' + esc(quien) + '</p><p><b>Lo que ve:</b> ' + esc(c.ve) + '</p>' + (nota ? '<p class="pc-caso-info__n">' + esc(nota) + '</p>' : ''); }
+      if (el) { el.innerHTML = '<p class="pc-caso-info__t">' + esc(c.que) + '</p><p><b>Lo que ve:</b> ' + esc(c.ve) + '</p>' + (nota ? '<p class="pc-caso-info__n">' + esc(nota) + '</p>' : ''); }
       raiz.querySelectorAll('#pc-casos nwt-detail-item').forEach(function (n) {
         var on = n.dataset.caso === c.id; n.classList.toggle('pc-caso--activo', on);
         if (on) { abrirGrupo(n.closest('.pc-grupo'), true); }
@@ -768,7 +768,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       var v = pan.querySelector('.pc-aprob'); if (v) { v.remove(); }
       pan.insertAdjacentHTML('beforeend', '<div class="pc-aprob pc-aprob--' + M.disp + '" role="status" style="--pc-t:-' + (Date.now() - aprob.ini) + 'ms">' +
         '<svg class="pc-aprob__ic" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" pathLength="1"/><path d="M28 50l14 14 27-30" pathLength="1"/></svg>' +
-        '<p class="pc-aprob__t">Compra aprobada</p><p class="pc-aprob__r">' + esc(boletas(st.cantidad) + ' · Nacional vs. Medellín · ' + dinero(total(st))) + '</p></div>');
+        '<p class="pc-aprob__t">Compra aprobada</p><p class="pc-aprob__r">' + esc(ingresos(st.cantidad) + ' · Nacional vs. Medellín · ' + dinero(total(st))) + '</p></div>');
       if (app) { app.setAttribute('inert', ''); }
       if (document.activeElement && document.activeElement.blur) { document.activeElement.blur(); }
     }
@@ -800,7 +800,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     function alEvento() {
       cancelarAprob();
       gen++; if (capa) { capa.detener(); }
-      st.bloqueo = null; st.reservaFin = 0; st.consultando = 0; st.pagado = false; st.boletas = [];
+      st.bloqueo = null; st.reservaFin = 0; st.consultando = 0; st.pagado = false; st.ingresos = [];
       st.cupos = []; st.yoVoy = st.caso.yoVoy !== false; st.edit = null; st.avisoPago = 0; st.cantidad = st.caso.cantidad || 2;
       st.id = { estado: 'espera', restantes: 3, error: false };
       st.pantalla = 'evento';
@@ -856,7 +856,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       if (!st.reservaFin) { return; }
       disp.querySelectorAll('[data-reloj]').forEach(function (n) { n.textContent = relojTexto(st); });
       if (Date.now() >= st.reservaFin && CON_RELOJ[st.pantalla] && !st.pagado && !st.bloqueo && !st.consultando) {
-        alEvento(); toast('La reserva venció', 'Las boletas volvieron a la venta. Elige de nuevo.');
+        alEvento(); toast('La reserva venció', 'Los ingresos volvieron a la venta. Elige de nuevo.');
       }
     }, 1000);
 

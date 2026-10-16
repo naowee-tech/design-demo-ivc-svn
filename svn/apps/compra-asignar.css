@@ -11,7 +11,7 @@
 .pca-sw:focus-visible { outline: 3px solid var(--pc-blue); outline-offset: 2px; }
 .pca-sw:disabled { opacity: .5; cursor: not-allowed; }
 
-/* Tarjeta de cada boleta */
+/* Tarjeta de cada ingreso */
 .pca-cupo { flex-shrink: 0; background: #fff; border: 1px solid var(--pc-line); border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; }
 .pca-cupo--denegado { border: 1.5px solid var(--pc-s-bad); }
 .pca-cupo__cab { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--pc-ink); color: #fff; }
@@ -26,7 +26,7 @@
 .pca-nota[hidden] { display: none; }
 .pca-nota svg { flex: none; margin-top: 1px; }
 
-/* Vista inmersiva de una boleta: sin cabecera de Graderío, botón fijo al fondo. */
+/* Vista inmersiva de un ingreso: sin cabecera de Graderío, botón fijo al fondo. */
 .pca-imm { background: var(--pc-bg); }
 .pca-imm__top { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 8px; background: #fff; border-bottom: 1px solid var(--pc-line); }
 .pca-imm__volver { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px 0 8px; border: 0; border-radius: 12px; background: transparent; color: var(--pc-ink); font: 700 15px 'Figtree', system-ui, sans-serif; cursor: pointer; }
