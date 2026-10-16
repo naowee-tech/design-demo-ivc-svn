@@ -148,3 +148,8 @@
   .ev-aud-pie__pag { display: none; }
   .ev-aud-pie > span:first-child { margin-right: auto; }
 }
+
+/* Puertas en vivo: tabla en lugar de tarjetas; la fila con novedad lleva el acento ámbar a la izquierda. */
+.ev-aud-pfila--w { box-shadow: inset 3px 0 0 var(--naotech-color-yellow-900); background: color-mix(in srgb, var(--naotech-color-yellow-100) 35%, var(--naotech-app-background)); }
+.ev-aud-pequipo { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.ev-aud-ptabla .is-mal { color: var(--naotech-color-red-900); font-weight: 700; }

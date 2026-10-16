@@ -276,25 +276,32 @@
     var ref = 16 * 60 + 8, senal = function (h) { var p = h.split(':'); return X.hhmm(A.corte - (ref - (+p[0] * 60 + +p[1]))); };
     var abiertasDe = function (n) { return al.abiertas.filter(function (f) { return f.p === n; }).length; };
     var malas = 0, libres = E.dispositivos.filter(function (d) { return !d.puerta; }).map(function (d) { return { id: d.id, tipo: d.tipo, estado: 'linea', senal: d.senal }; });
-    var tarjetas = E.puertas.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) {
+    var tot = { ent: 0, no: 0, ab: 0 };
+    var filas = E.puertas.slice().sort(function (a, b) { return a.n - b.n; }).map(function (p) {
       var ds = E.dispositivos.filter(function (d) { return d.puerta === p.n; }), c = pu[p.n] || { entraron: 0, boleta: 0, medida: 0 };
       // Una puerta sin equipo en el escenario base opera con el de reserva, como se resolvió en Listo para abrir.
       if (!ds.length && libres.length) { ds = [libres.shift()]; }
       var peor = ds.filter(function (d) { return d.estado === 'sinred'; })[0] || ds.filter(function (d) { return d.estado === 'paquete'; })[0];
       var chip = !ds.length ? ['neutro', 'Sin dispositivo'] : peor ? DISP[peor.estado] : DISP.linea;
       if (chip[0] !== 'ok') { malas++; }
-      var ab = abiertasDe(p.n);
-      return '<div class="pbe-pcard' + (chip[0] === 'alerta' ? ' ev-aud-pcard--w' : '') + '"><div class="pbe-pcard__c"><span class="pbe-pu__c">' + p.n + '</span><span class="pbe-pu__t"><b>Puerta ' + p.n + '</b><span>' + esc(nombreSector(A, p.sector)) + '</span></span>' +
-        '<span class="pb-badge pb-badge--' + chip[0] + '">' + chip[1] + '</span></div><dl>' +
-        '<dt>Entraron</dt><dd class="pb-num">' + fmt(c.entraron) + '</dd>' +
-        '<dt>No entraron</dt><dd class="pb-num">' + fmt(c.boleta + c.medida) + (c.medida ? ' <span class="pb-sub">· ' + c.medida + ' por medida</span>' : '') + '</dd>' +
-        '<dt>Alertas</dt><dd class="' + (ab ? 'is-mal' : '') + '">' + (ab ? ab + (ab === 1 ? ' abierta' : ' abiertas') : 'Ninguna abierta') + '</dd>' +
-        '<dt>Equipos</dt><dd>' + (ds.length ? ds.map(function (d) { return esc(d.id) + ' <span class="pb-sub">· ' + DISP[d.estado][1].toLowerCase() + ', señal ' + senal(d.senal) + '</span>'; }).join('<br>') : 'Sin dispositivo') + '</dd></dl>' +
-        '<button type="button" class="pb-btn pb-btn--enlace" data-acc="pue-ver" data-id="' + p.n + '">Ver registros de la puerta</button></div>';
+      var ab = abiertasDe(p.n), no = c.boleta + c.medida;
+      tot.ent += c.entraron; tot.no += no; tot.ab += ab;
+      var equipos = ds.length ? ds.map(function (d) { return esc(d.id) + (d.estado === 'linea' ? '' : ' · ' + DISP[d.estado][1].toLowerCase()); }).join(' · ') + ' · señal ' + senal(ds[0].senal) : 'Sin dispositivo asignado';
+      return '<div class="pb-fila ev-aud-pfila' + (chip[0] === 'alerta' ? ' ev-aud-pfila--w' : '') + '">' +
+        '<span class="pbe-pu__id"><span class="pbe-pu__c">' + p.n + '</span><span class="pbe-pu__t"><b>Puerta ' + p.n + '</b><span>' + esc(nombreSector(A, p.sector)) + '</span></span></span>' +
+        '<b class="pb-num">' + fmt(c.entraron) + '</b>' +
+        '<span class="pb-num">' + fmt(no) + (c.medida ? '<span class="pb-sub"> · ' + c.medida + ' por medida</span>' : '') + '</span>' +
+        '<span class="' + (ab ? 'is-mal' : 'pb-sub') + '">' + (ab ? ab + (ab === 1 ? ' abierta' : ' abiertas') : 'Ninguna') + '</span>' +
+        '<span class="ev-aud-pequipo"><span class="pb-badge pb-badge--' + chip[0] + '">' + chip[1] + '</span><span class="pb-sub">' + equipos + '</span></span>' +
+        '<button type="button" class="pb-btn pb-btn--enlace" data-acc="pue-ver" data-id="' + p.n + '">Ver registros</button></div>';
     }).join('');
-    var top = '<div class="pb-aviso' + (malas ? ' pb-aviso--alerta' : '') + '" role="status">' + svg(I.vivo) + '<span>' + E.puertas.length + ' puertas abiertas desde las ' + X.hhmm(A.apertura) + ' · ' +
-      (malas ? malas + (malas === 1 ? ' necesita atención' : ' necesitan atención') : 'todas en línea') + ' · corte ' + X.hhmm(A.corte) + '. Solo lectura: la operación se sigue desde el PMU.</span></div>';
-    return '<div class="ev-aud pbe">' + top + '<div class="pbe-pgrid ev-aud-pgrid">' + tarjetas + '</div></div>';
+    var kpi = function (t, v, ayuda, mal) { return '<div class="pb-card pbe-card' + (mal ? ' is-mal' : '') + '"><span class="pbe-card__s' + (mal ? ' is-mal' : '') + '">' + t + '</span><span class="pbe-kpi' + (mal ? ' is-mal' : '') + '"><b>' + v + '</b></span><span class="pbe-ayuda' + (mal ? ' is-mal' : '') + '">' + ayuda + '</span></div>'; };
+    var top = '<div class="pb-aviso" role="status">' + svg(I.vivo) + '<span>' + E.puertas.length + ' puertas abiertas desde las ' + X.hhmm(A.apertura) + ' · corte ' + X.hhmm(A.corte) + '. Solo lectura: la operación se sigue desde el PMU.</span></div>';
+    var kpis = '<div class="pbe-kpis">' + kpi('Entraron', fmt(tot.ent), 'Entre todas las puertas') + kpi('No entraron', fmt(tot.no), 'Sin boleta válida o por medida') +
+      kpi('Alertas abiertas', fmt(tot.ab), tot.ab ? 'Se atienden desde el PMU' : 'Ninguna por atender', !!tot.ab) + kpi('Puertas con novedad', malas + ' de ' + E.puertas.length, malas ? 'Equipo sin conexión o paquete incompleto' : 'Todas en línea') + '</div>';
+    var tabla = '<section class="pb-tabla ev-aud-ptabla" aria-label="Puertas" style="--pb-cols:minmax(0,1.1fr) 110px minmax(0,1.2fr) 120px minmax(0,2fr) 130px">' +
+      '<div class="pb-cols"><span>Puerta</span><span>Entraron</span><span>No entraron</span><span>Alertas</span><span>Equipos</span><span></span></div>' + filas + '</section>';
+    return '<div class="ev-aud pbe">' + top + kpis + tabla + '</div>';
   }
 
   /* ---------- Registro de vistas ---------- */
