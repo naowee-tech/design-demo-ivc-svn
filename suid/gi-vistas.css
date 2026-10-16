@@ -232,6 +232,10 @@
 .gc-btn--q { min-height: 48px; font-size: 16px; }
 .gc-fh .gs-pick__btn { height: 48px; padding: 0 18px; font-size: 15px; }
 .gc-form .gc-reset, .gt-toolbar .gc-reset { width: 48px; height: 48px; border-radius: 8px; align-self: auto; }
+/* Consultar mantiene su ancho al decir «Consultando…» y el buscador cede espacio: el botón de reiniciar no baja de fila. */
+.gc-form .gc-field { flex-basis: 220px; }
+.gc-btn--q { min-width: 188px; }
+.gc-btn--q:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 .gc-try { left: 52px; right: 4px; }
 
 /* DC-107: lupa de 40 px a la izquierda y títulos alineados a la izquierda. */
@@ -264,45 +268,28 @@
 .gb-sum li { text-align: left; }
 
 /* Consulta ocupa todo el ancho y el relleno del resto de vistas: sin eje centrado que la separe del borde. */
-.gc-page { --gc-hueco: 16px; --gc-margen: 64px; --gc-flecha: 44px; }
+.gc-page { --gc-hueco: 12px; }
 
-/* Recientes en carrusel (DC-400): una línea con scroll-snap; 4, 3, 2 o 1 tarjetas según el ancho de la línea.
-   Las flechas viven en el margen de la línea; las tarjetas vecinas pasan bajo el degradado de cada borde (DC-416). */
-.gc-grid { --gc-n: 4; display: flex; gap: var(--gc-hueco); padding: 12px var(--gc-margen); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gc-margen); scrollbar-width: none; }
-.gc-grid::-webkit-scrollbar { display: none; }
-.gc-grid > .gc-persona { flex: 0 0 calc((100% - (var(--gc-n) - 1) * var(--gc-hueco)) / var(--gc-n)); scroll-snap-align: start; }
-@media (prefers-reduced-motion: no-preference) { .gc-grid { scroll-behavior: smooth; } }
-@container (max-width: 959px) { .gc-grid { --gc-n: 3; } }
-@container (max-width: 759px) { .gc-grid { --gc-n: 2; } }
-@container (max-width: 559px) { .gc-grid { --gc-n: 1; } }
-.gc-persona { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; cursor: pointer; }
+/* Recientes en grilla: 2 filas por 6 columnas (12 por página) con tarjetas compactas; 4, 3, 2 o 1 columnas según el ancho. */
+.gc-grid { --gc-n: 6; display: grid; grid-template-columns: repeat(var(--gc-n), minmax(0, 1fr)); gap: var(--gc-hueco); padding: 12px 0; }
+@container (max-width: 999px) { .gc-grid { --gc-n: 4; } }
+@container (max-width: 759px) { .gc-grid { --gc-n: 3; } }
+@container (max-width: 559px) { .gc-grid { --gc-n: 2; } }
+@container (max-width: 379px) { .gc-grid { --gc-n: 1; } }
+.gc-persona { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; cursor: pointer; }
 .gc-persona:hover { background: var(--accent-bg); }
 .gc-persona:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .gc-persona.is-selected, .gc-persona.is-selected:hover { background: var(--accent-bg-warm); border-color: var(--accent); }
-.gc-persona strong { display: flex; flex-direction: column; max-width: 100%; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--text-primary); }
+.gc-persona strong { display: flex; flex-direction: column; max-width: 100%; font-size: 14px; font-weight: 600; line-height: 1.25; color: var(--text-primary); }
 .gc-persona strong > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; }
-.gc-persona small { font-size: 12px; color: var(--text-secondary); }
-.gc-persona__add { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--text-secondary); }
+.gc-persona small { font-size: 11px; color: var(--text-secondary); }
+.gc-persona__add { margin-top: auto; padding-top: 4px; font-size: 11px; color: var(--text-secondary); }
 
-.gc-persona__foto { width: 100%; aspect-ratio: 4 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-soft); }
+.gc-persona__foto { width: 100%; aspect-ratio: 3 / 2; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-soft); }
 .gc-persona__foto .gb-img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
 .gc-car { position: relative; container-type: inline-size; }
 /* Recientes va sobre el fondo, sin tarjeta contenedora: las personas ya son tarjetas. */
 .gc-car.gt-card { background: transparent; border: 0; box-shadow: none; border-radius: 0; }
-.gc-car__nav { position: absolute; top: 50%; z-index: 2; width: var(--gc-flecha); height: var(--gc-flecha); padding: 0; display: inline-flex; align-items: center; justify-content: center; transform: translateY(-50%); border: 1px solid var(--border-dark); border-radius: 50%; background: #fff; color: var(--text-primary); box-shadow: var(--shadow-card); cursor: pointer; }
-.gc-car__nav[hidden] { display: none; }
-.gc-car__nav--ant { left: calc((var(--gc-margen) - var(--gc-flecha)) / 2); }
-.gc-car__nav--sig { right: calc((var(--gc-margen) - var(--gc-flecha)) / 2); }
-.gc-car__nav--sig svg { transform: scaleX(-1); }
-.gc-car__nav:hover:not(:disabled) { background: var(--bg-soft); }
-.gc-car__nav:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.gc-car__nav:disabled { color: var(--text-secondary); background: var(--bg-soft); box-shadow: none; cursor: not-allowed; }
-/* DC-416: degradados a blanco que funden las tarjetas en el borde donde el scroll las esconde (clases de carEstado). */
-.gc-car::before, .gc-car::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: 1; width: var(--gc-margen); border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .15s; }
-.gc-car::before { left: 0; background: linear-gradient(to right, var(--surface) 50%, transparent); }
-.gc-car::after { right: 0; background: linear-gradient(to left, var(--surface) 50%, transparent); }
-.gc-car.tiene-izq::before, .gc-car.tiene-der::after { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .gc-car::before, .gc-car::after { transition: none; } }
 
 /* DC-417: menos aire entre bloques. DC-429: el relleno de la página es el del resto de vistas (28/32/96). */
 @media (min-width: 701px) {

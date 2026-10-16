@@ -2,7 +2,7 @@
 (function (w, d) {
   'use strict';
   var GI = w.GI, U = GI.util, D = GI.derive, C = GI.cat, UI = w.GIUI, esc = SUID.esc;
-  var BASE = UI.BASE, PAGINA = 5, MAX_REC = 30;
+  var BASE = UI.BASE, PAGINA = 5, MAX_REC = 36, REC_PAG = 12;
   var st = { q: '', cq: '', abiertos: {}, page: 1, sel: '', f: { est: '', tipo: '', ciu: '' }, av: false, a: av0(), pa: av0() }; /* q: lo escrito; cq: lo consultado; abiertos: menores abiertos con motivo; sel: persona elegida */
   var MOTIVOS = ['Verificar una medida vigente antes de permitir el ingreso', 'Requerimiento de una autoridad', 'Trámite de un recurso o una solicitud de la persona', 'Auditoría interna'];
   var CASOS = [{ t: 'Ramírez', q: 'Ramírez' }, { t: '71.894.447', q: '71.894.447' }, { t: 'Menor', q: '1020200003' }];
@@ -107,6 +107,8 @@
       var cand = personas().filter(filtra), nom = porNombreAv(); /* nombres o apellidos = búsqueda por nombre: los menores no se listan */
       return { modo: 'avanzada', res: cand.filter(function (p) { return !nom || !p.menor; }).sort(porUrgencia), ocultos: nom ? cand.filter(function (p) { return p.menor; }).length : 0 };
     }
+    /* Solo filtros, sin texto: también es una consulta y responde con una lista. Los menores entran con nombre y documento reservados (como en Recientes), así Tipo = TI los trae. */
+    if (!t && (st.f.est || st.f.tipo || st.f.ciu)) return { modo: 'filtros', res: personas().filter(filtra).sort(porUrgencia), ocultos: 0 };
     if (!t) return { modo: 'vacio', res: [] };
     if (/[<>{}[\]\\|^~`$%*=]/.test(t)) return { modo: 'invalido', res: [] };
     var dig = digitos(t), soloNum = /^[\d.\s]+$/.test(t) || /^(cc|ce|ti|pa|ppt|pep|rumv)[\s:.-]*\d/i.test(t);
@@ -189,26 +191,24 @@
       '<nav data-pag></nav></section>';
   }
 
-  /* Recientes: hasta 30 personas por urgencia en una línea de carrusel con foto, sin paginador. */
+  /* Recientes: hasta 36 personas por urgencia en una grilla de 2 filas por 6 columnas, con foto y paginador. */
   function agregada(p) { return p.medidas.map(function (m) { return m.reg || ''; }).sort().pop(); }
-  var FLECHA = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>';
-  function flecha(dir) {
-    return '<button type="button" class="gc-car__nav gc-car__nav--' + (dir < 0 ? 'ant' : 'sig') + '" data-car="' + dir + '" aria-controls="gcRecG" aria-label="Ver personas ' + (dir < 0 ? 'anteriores' : 'siguientes') + '"' + (dir < 0 ? ' disabled' : '') + '>' + FLECHA + '</button>';
-  }
   function recientesHtml() {
     var todos = personas().filter(filtra).sort(porUrgencia).slice(0, MAX_REC);
     /* GIBio.repartir da una foto distinta a cada id y solo hay 15: con más no termina, así que va de a 15. */
-    [0, 15].forEach(function (i) { w.GIBio.repartir(todos.slice(i, i + 15).filter(function (p) { return !p.menor; }).map(function (p) { return p.numId; })); });
+    [0, 15, 30].forEach(function (i) { w.GIBio.repartir(todos.slice(i, i + 15).filter(function (p) { return !p.menor; }).map(function (p) { return p.numId; })); });
+    var pg = Math.min(Math.max(st.page, 1), Math.max(1, Math.ceil(todos.length / REC_PAG))), ini = (pg - 1) * REC_PAG;
+    st.page = pg; pgCfg = { k: 'rec', total: todos.length, page: pg, size: REC_PAG, label: 'Paginación de recientes' };
     return '<div class="gc-headrow">' + GI.tablaHead({ id: 'gcRec', titulo: 'Recientes', total: todos.length, fuera: true }) +
       '<a class="naowee-btn naowee-btn--mute gc-btn" href="' + BASE + '">Ver todos</a></div>' +
-      '<section class="gt-card gc-lista gc-car" role="region" aria-roledescription="carrusel" aria-labelledby="gcRecT">' +
-      (todos.length ? flecha(-1) + '<div class="gc-grid" id="gcRecG">' : '<p class="gc-count">Ninguna persona coincide con los filtros.</p>') +
-      todos.map(function (p, i) {
+      '<section class="gt-card gc-lista gc-car" aria-labelledby="gcRecT">' +
+      (todos.length ? '<div class="gc-grid" id="gcRecG">' : '<p class="gc-count">Ninguna persona coincide con los filtros.</p>') +
+      todos.slice(ini, ini + REC_PAG).map(function (p, i) {
         var r = p.res, ag = agregada(p);
         return '<article class="gc-persona" tabindex="' + (i ? -1 : 0) + '" data-id="' + esc(keyOf(p)) + '" data-k="sel"><div class="gc-persona__foto">' + w.GIBio.foto(p.numId, { menor: p.menor, sin: r.estado === 'En validación' || !p.menor && +String(p.numId).slice(-1) % 4 === 0 }) + '</div>' + estadoBadge(r.estado) +
           '<strong' + (cerrado(p) ? '' : ' title="' + esc(p.nombre) + '"') + '>' + lineas(p) + '</strong><small>' + docPersona(p) + '</small>' +
           '<span class="gc-persona__add">' + (ag ? 'Agregado el ' + U.fmt(ag) : 'Sin fecha de registro') + '</span></article>';
-      }).join('') + (todos.length ? '</div>' + flecha(1) : '') + '</section>';
+      }).join('') + (todos.length ? '</div><nav data-pag></nav>' : '') + '</section>';
   }
   var INFO = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg>';
 
@@ -290,9 +290,14 @@
       pick('gcFTipo', 'gcSTipo', 'Filtrar por tipo de documento', 'Tipo', 'tipo', opts(tipos, 'Todos'));
       pick('gcFCiu', 'gcSCiu', 'Filtrar por ciudad', 'Ciudad', 'ciu', opts(ciu, 'Todas'));
     }
-    d.getElementById('gcFReset').addEventListener('click', function () { pend = { est: '', tipo: '', ciu: '' }; st.f = Object.assign({}, pend); limpiarAv(); st.page = 1; filtros(); paint(false); });
+    /* Reiniciar también borra la búsqueda y cierra el expediente: se vuelve a Recientes, no solo a los filtros vacíos. */
+    d.getElementById('gcFReset').addEventListener('click', function () {
+      pend = { est: '', tipo: '', ciu: '' }; st.f = Object.assign({}, pend); limpiarAv();
+      detener(); clearTimeout(tp); if (GI.panel.abierto()) GI.panel.cerrar('api');
+      inp.value = ''; st.q = st.cq = ''; st.sel = ''; st.page = 1; filtros(); paint(false);
+    });
     function paint(enfoque) {
-      var b, html = '', det = null, x0 = pista() ? pista().scrollLeft : 0;
+      var b, html = '', det = null;
       pgCfg = null;
       try { b = buscar(st.cq); } catch (e) { b = { modo: 'error', res: [] }; }
       if (b.modo === 'vacio') html = recientesHtml();
@@ -301,6 +306,8 @@
       else if (b.modo === 'error') html = vacio('No pudimos completar la consulta', 'Hubo un problema al leer la información. Intenta de nuevo.', '<button type="button" class="naowee-btn naowee-btn--loud gc-btn" data-retry>Reintentar</button>', 'gc-empty--error');
       else if (b.modo === 'invalido') html = vacio('Hay caracteres que no se pueden buscar', 'Usa solo letras, números, puntos y guiones.', '', 'gc-empty--error');
       else if (b.modo === 'corto') html = vacio('Falta información para buscar', 'El documento debe ir completo (mínimo 6 dígitos) y el nombre, con al menos tres letras.');
+      else if (!b.res.length && b.modo === 'filtros') html = vacio('Ninguna persona coincide con los filtros', 'Cambia o quita algún filtro para ampliar los resultados.' +
+        (b.ocultos ? ' Hay ' + b.ocultos + (b.ocultos === 1 ? ' registro reservado' : ' registros reservados') + ' de menores: consúltalos por documento completo.' : ''));
       else if (!b.res.length && b.modo === 'nombre' && avAplica()) html = vacio('Ninguna persona coincide con los criterios', 'Quita o ajusta algún criterio, o revisa el nombre escrito.' +
         (b.ocultos ? ' Hay ' + b.ocultos + (b.ocultos === 1 ? ' registro reservado' : ' registros reservados') + ' de menores: consúltalos por documento completo.' : ''));
       else if (!b.res.length) html = vacio('Sin medidas registradas', (b.modo === 'doc' ? 'No hay medidas para ese documento.' : 'No hay coincidencias por nombre.') +
@@ -312,7 +319,7 @@
       if (b.modo === 'doc' && chipsDe().length) html = '<p class="gca-nota">La búsqueda por documento completo no aplica los filtros ni los criterios.</p>' + html;
       chips();
       if (st.sel) det = personas().filter(function (p) { return keyOf(p) === st.sel; })[0] || null;
-      out.innerHTML = html; alinear(x0);
+      out.innerHTML = html;
       if (pgCfg) { var c = pgCfg; c.onPage = function (p) { st.page = p; paint(false); var k = out.querySelector('.gt-pag [aria-current]'); if (k) k.focus(); }; ligaPag(); }
       if (det) { clearTimeout(tp); panelPersona(det); GI.panel.sincronizar(); }
       else { st.sel = ''; if (GI.panel.abierto()) GI.panel.cerrar('api'); }
@@ -322,38 +329,12 @@
     }
 
     filtros();
+    /* El estado de Consultar sigue a cualquier cambio del formulario, de los criterios o de los chips. */
+    ['input', 'change', 'click'].forEach(function (ev) { form.addEventListener(ev, pidoActualizar, true); d.getElementById('gcaChips').addEventListener(ev, pidoActualizar, true); });
     /* El paginador se vuelve a armar tras repintar o restaurar el HTML guardado (los eventos no sobreviven a innerHTML). */
     function ligaPag() { var nav = out.querySelector('[data-pag]'); if (nav && pgCfg) GI.pager(nav, pgCfg); }
 
-    /* Carrusel de Recientes: los eventos van delegados en `out` porque innerHTML descarta los de cada tarjeta. */
-    function pista() { return out.querySelector('.gc-grid'); }
-    function soltar(b, otro, g) { /* un botón con foco que se deshabilita lo pierde: el foco pasa antes al contrario */
-      if (d.activeElement !== b) return;
-      if (otro && !otro.disabled && !otro.hidden) otro.focus(); else { var c = g.querySelector('.gc-persona[tabindex="0"]'); if (c) c.focus(); }
-    }
-    function carEstado() {
-      var g = pista(), ant = out.querySelector('[data-car="-1"]'), sig = out.querySelector('[data-car="1"]');
-      if (!g || !ant || !sig) return;
-      var fin = g.scrollWidth - g.clientWidth, x = g.scrollLeft;
-      ant.hidden = sig.hidden = fin <= 1; /* si todo cabe no hay nada que recorrer */
-      if (x <= 1) soltar(ant, sig, g); else if (x >= fin - 1) soltar(sig, ant, g);
-      ant.disabled = x <= 1; sig.disabled = x >= fin - 1;
-      /* el degradado de cada borde solo aparece si hay tarjetas ocultas tras él. */
-      g.parentNode.classList.toggle('tiene-izq', fin > 1 && x > 1); g.parentNode.classList.toggle('tiene-der', fin > 1 && x < fin - 1);
-    }
-    /* Mueve la línea una «página» (las tarjetas que caben); el snap la deja alineada y reduced-motion la hace instantánea. */
-    out.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-car]'), g = pista(); if (!b || !g || b.disabled) return;
-      var cs = w.getComputedStyle(g), hueco = parseFloat(cs.columnGap) || 0, paso = g.querySelector('.gc-persona').getBoundingClientRect().width + hueco;
-      var n = Math.max(1, Math.round((g.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) + hueco) / paso));
-      g.scrollBy({ left: n * paso * +b.getAttribute('data-car') });
-    });
-    /* Devuelve la línea a donde estaba tras repintar o restaurar el HTML guardado; sin animación. */
-    function alinear(x) { var g = pista(); if (g && x) g.scrollTo({ left: x, behavior: 'instant' }); carEstado(); }
-    var rafCar = 0;
-    out.addEventListener('scroll', function (e) {
-      if (e.target.classList && e.target.classList.contains('gc-grid') && !rafCar) rafCar = w.requestAnimationFrame(function () { rafCar = 0; carEstado(); });
-    }, true);
+    /* Recientes: los eventos van delegados en `out` porque innerHTML descarta los de cada tarjeta. */
     /* Teclado: una sola tarjeta entra al orden de Tab; ← → Inicio y Fin mueven el foco entre tarjetas y la línea las sigue. */
     out.addEventListener('focusin', function (e) {
       var c = e.target.closest('.gc-persona'); if (!c || c.tabIndex === 0) return;
@@ -364,7 +345,6 @@
       var cs = [].slice.call(c.parentNode.children), i = cs.indexOf(c), j = k === 'Home' ? 0 : k === 'End' ? cs.length - 1 : Math.max(0, Math.min(cs.length - 1, i + (k === 'ArrowRight' ? 1 : -1)));
       e.preventDefault(); cs[j].focus();
     });
-    if (w.ResizeObserver) { var roCar = new w.ResizeObserver(function () { if (!out.isConnected) return roCar.disconnect(); carEstado(); }); roCar.observe(out); }
 
     /* Elegir una fila abre el panel derecho con su loader de 1 s; la lista y el buscador quedan debajo (DC-061). */
     GI.filasClicables(out, function (id, tr) {
@@ -374,20 +354,28 @@
     });
 
     /* La consulta tarda 1 s fijo: el loader ocupa el lugar de los resultados (tabla o ficha). Sin datos válidos responde al instante. */
-    var ESPERA = 1000, tm = 0, salvado = '', salvadoX = 0, prev = null;
+    var ESPERA = 1000, tm = 0, salvado = '', prev = null;
     /* Estado previo a la consulta: si se cancela al escribir, el HTML restaurado y el estado vuelven juntos. */
     function snap() { if (!tm) prev = { cq: st.cq, page: st.page, sel: st.sel }; }
     function ocupado(si) {
       form.setAttribute('aria-busy', String(si)); form.classList.toggle('is-busy', si);
       go.textContent = si ? 'Consultando…' : 'Consultar';
+      actualizaGo();
     }
+    /* Consultar se apaga si no hay nada que buscar: sin texto, sin criterios avanzados y sin filtros nuevos por aplicar. */
+    function hayAlgo() {
+      return !!inp.value.trim() || (st.av && activos(st.pa).length > 0) || JSON.stringify(pend) !== JSON.stringify(st.f);
+    }
+    function actualizaGo() { var no = !tm && !hayAlgo(); go.disabled = no; go.setAttribute('aria-disabled', String(no)); }
+    var rePinta = 0;
+    function pidoActualizar() { clearTimeout(rePinta); rePinta = setTimeout(actualizaGo, 0); }
     function detener() {
       if (!tm) return;
-      clearTimeout(tm); tm = 0; ocupado(false); out.removeAttribute('aria-busy'); out.innerHTML = salvado; ligaPag(); alinear(salvadoX);
+      clearTimeout(tm); tm = 0; ocupado(false); out.removeAttribute('aria-busy'); out.innerHTML = salvado; ligaPag();
     }
     function cargar(forma, fin) {
       clearTimeout(tm);
-      if (!tm) { salvado = out.innerHTML; salvadoX = pista() ? pista().scrollLeft : 0; }
+      if (!tm) { salvado = out.innerHTML; }
       ocupado(true); out.setAttribute('aria-busy', 'true');
       out.innerHTML = SUID.load.fragmento(forma);
       tm = setTimeout(function () {
@@ -402,7 +390,7 @@
       var b; try { b = buscar(q); } catch (e) { b = { modo: 'error', res: [] }; }
       if (b.modo === 'corto' || b.modo === 'invalido') { detener(); paint(enfoque); return; }
       if (out.contains(d.activeElement)) inp.focus({ preventScroll: true }); /* el reciente pulsado desaparece mientras se consulta */
-      cargar('resultados', function () { if (b.res.length === 1) st.sel = keyOf(b.res[0]); paint(enfoque); });
+      cargar('resultados', function () { paint(enfoque); }); /* siempre una lista: el expediente se abre al elegir una fila, aunque sea la única */
     }
 
     /* Tooltip de «Cómo buscar» (DC-298): mismo patrón del ⓘ de los insights; hover/foco lo muestran, el clic lo fija y Esc lo cierra. */
@@ -474,7 +462,7 @@
       if (!tlist.hidden && !e.target.closest('.gc-try')) ejemplos(false);
     });
 
-    d.getElementById('gcForm').addEventListener('submit', function (e) { e.preventDefault(); st.f = Object.assign({}, pend); st.a = st.av ? Object.assign({}, st.pa) : av0(); st.page = 1; ejemplos(false); consultar(inp.value, true); });
+    d.getElementById('gcForm').addEventListener('submit', function (e) { e.preventDefault(); if (!hayAlgo()) return; st.f = Object.assign({}, pend); st.a = st.av ? Object.assign({}, st.pa) : av0(); st.page = 1; ejemplos(false); consultar(inp.value, true); });
     /* Escribir no consulta: cancela la que corre y, con el campo vacío, vuelve a Recientes. */
     inp.addEventListener('input', function () {
       var pos = inp.selectionStart, antes = digitos(inp.value.slice(0, pos == null ? 0 : pos)).length, f = miles(inp.value);
@@ -555,6 +543,7 @@
     });
     pintaAv();
     paint(false);
+    actualizaGo();
   }
 
 })(window, document);
