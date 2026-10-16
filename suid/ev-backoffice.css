@@ -194,11 +194,8 @@
   .pb-partidos-cab span:last-child { display: none; }
 }
 
-/* Contraste de Eventos: bordes y separadores más marcados, y texto secundario más oscuro (se leían pálidos sobre blanco). */
-.ev-page .pb-card, .ev-page .pb-tabla { border-color: var(--naotech-app-color-300); box-shadow: 0 1px 3px color-mix(in srgb, var(--naotech-app-color-900) 8%, transparent); }
-.ev-page .pb-cols, .ev-page .ev-aud-cols { background: var(--naotech-app-color-100); border-color: var(--naotech-app-color-300); color: var(--naotech-app-color-800); }
-.ev-page .pb-fila, .ev-page .ev-aud-fila, .ev-page .ev-aud-consultas li { border-bottom-color: var(--naotech-app-color-200); }
-.ev-page .pb-sub, .ev-page .pbe-card__s, .ev-page .pbe-ayuda { color: var(--naotech-app-color-800); }
-.ev-page .pb-badge { border-color: var(--naotech-app-color-400); }
-.ev-page .pb-chip, .ev-page .pb-input, .ev-page .pb-btn { border-color: var(--naotech-app-color-400); }
-.ev-page .ev-aud-det__cab, .ev-page .ev-aud-det__pie, .ev-page .ev-aud-pie { border-color: var(--naotech-app-color-300); }
+/* Eventos con el mismo aire que las tablas de Gestión de infractores: sombra de tarjeta, encabezado teñido y filas alternas. */
+.ev-page .pb-card, .ev-page .pb-tabla { box-shadow: var(--shadow-card); }
+.ev-page .pb-cols, .ev-page .ev-aud-cols { background: var(--bg-soft); border-color: var(--border); }
+.ev-page .pb-fila:nth-child(even of .pb-fila), .ev-page .ev-aud-fila:nth-child(even of .ev-aud-fila) { background: #f7f8fc; }
+.ev-page .pb-fila, .ev-page .ev-aud-fila { border-bottom-color: var(--border); }
