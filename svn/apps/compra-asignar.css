@@ -1,0 +1,43 @@
+/* Titulares y Titular (prefijo pca-). Todo se apoya en la paleta --pc-* y los átomos pc-* de compra.css. */
+.pca-ctl { gap: 14px; }
+.pca-ctl__fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pca-ctl__fila b { font-size: 15px; }
+
+/* Interruptor «Yo también voy» */
+.pca-sw { flex: none; position: relative; width: 56px; height: 32px; padding: 0; border: 0; border-radius: 999px; background: var(--pc-line2); cursor: pointer; }
+.pca-sw[aria-checked="true"] { background: var(--pc-blue); }
+.pca-sw__p { position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .15s ease; }
+.pca-sw[aria-checked="true"] .pca-sw__p { transform: translateX(24px); }
+.pca-sw:focus-visible { outline: 3px solid var(--pc-blue); outline-offset: 2px; }
+.pca-sw:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Tarjeta de cada boleta */
+.pca-cupo { flex-shrink: 0; background: #fff; border: 1px solid var(--pc-line); border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; }
+.pca-cupo--denegado { border: 1.5px solid var(--pc-s-bad); }
+.pca-cupo__cab { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--pc-ink); color: #fff; }
+.pca-cupo__cab b { font-size: 14px; }
+.pca-cupo__cab > span:not(.pc-estado) { flex: 1; min-width: 0; font-size: 14px; overflow-wrap: anywhere; }
+.pca-cupo__cab .pc-estado { margin-left: auto; }
+.pca-cupo__cuerpo { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.pca-cupo__acc { display: flex; flex-direction: column; gap: 10px; }
+.pc-estado--no { background: var(--pc-s-bad-bg); color: var(--pc-s-bad); box-shadow: inset 0 0 0 1.5px var(--pc-s-bad); }
+
+.pca-nota { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 14px; line-height: 1.4; color: var(--pc-mute); }
+.pca-nota[hidden] { display: none; }
+.pca-nota svg { flex: none; margin-top: 1px; }
+
+/* Vista inmersiva de una boleta: sin cabecera de Graderío, botón fijo al fondo. */
+.pca-imm { background: var(--pc-bg); }
+.pca-imm__top { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 8px; background: #fff; border-bottom: 1px solid var(--pc-line); }
+.pca-imm__volver { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px 0 8px; border: 0; border-radius: 12px; background: transparent; color: var(--pc-ink); font: 700 15px 'Figtree', system-ui, sans-serif; cursor: pointer; }
+.pca-imm__volver:hover { background: var(--pc-bg); }
+.pca-imm__volver:focus-visible { outline: 3px solid var(--pc-blue); outline-offset: 2px; }
+.pca-imm__ctx { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin-left: auto; text-align: right; }
+.pca-imm__ctx span { font-size: 14px; font-weight: 700; color: var(--pc-mute); letter-spacing: .04em; }
+.pca-imm__ctx b { font-size: 15px; overflow-wrap: anywhere; }
+.pca-imm__main { padding: 28px 20px 16px; gap: 20px; }
+.pca-imm__h { margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; letter-spacing: -0.02em; }
+.pca-imm__h:focus { outline: none; }
+.pca-form { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) { .pca-sw__p { transition: none; } }
