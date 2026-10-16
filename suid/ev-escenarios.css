@@ -23,3 +23,11 @@
 .exs-chk--error { background: var(--naotech-color-red-900); }
 .ev-asist .gi-step small { display: block; font-size: 12px; font-weight: 400; }
 .ev-asist [data-acc='evp-publicar'].pb-btn { display: none; }
+
+/* Agregar escenario, paso 2: una tarjeta por sector con el tipo de puesto debajo del nombre. */
+.exs-sec-fila { display: grid; grid-template-columns: 40px minmax(0, 1fr) 112px; gap: var(--naotech-sizing-12); align-items: center; padding: var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-lg); background: var(--naotech-app-background); }
+.exs-sec-fila__t { display: flex; flex-direction: column; gap: var(--naotech-sizing-8); min-width: 0; }
+.exs-sec-fila .pb-segmento { align-self: flex-start; }
+.exs-sec-fila .pb-input { text-align: right; font-variant-numeric: tabular-nums; }
+.exs-sec-fila--res { grid-template-columns: 14px minmax(0, 1fr); }
+.exs-sec-fila--res .exs-sec-fila__t { gap: 2px; }

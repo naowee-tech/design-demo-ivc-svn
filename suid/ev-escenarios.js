@@ -21,6 +21,7 @@
 
   // Los escenarios que no son el Atanasio escalan sus sectores al aforo propio.
   function sectores(e) {
+    if (e.sectores) { return e.sectores; }
     var f = (Number(String(e.aforo).replace(/\D/g, '')) || 38000) / 38000;
     return ORDEN.map(function (id) { return { id: id, nombre: NOMBRE[id], tipo: TIPO[id], base: Math.round(BASE[id] * f / 100) * 100 }; });
   }
@@ -66,6 +67,7 @@
   }
 
   function lista(ctx) {
+    nu = null;
     var q = vs.q.trim().toLowerCase();
     var xs = ESC.filter(function (e) { return !q || (e.nombre + ' ' + e.ciudad).toLowerCase().indexOf(q) >= 0; });
     return volver(ctx, '#/control-acceso/eventos', 'Volver a Eventos') +
@@ -183,6 +185,93 @@
 
   function resumenTexto(e) { return e.restricciones.length ? dicho(e).toLowerCase() : 'sin restricciones vigentes'; }
 
+  /* ---------- Agregar escenario: asistente de 3 pasos ---------- */
+
+  var PASOS_N = [['lugar', 'Datos del lugar', 'Nombre, ciudad y aforo'], ['sectores', 'Sectores y puertas', 'Cómo se reparte el aforo'], ['revisar', 'Revisar y guardar', 'Lo que se va a registrar']];
+  var nu = null;
+  function nuevoEst() { return nu || (nu = { i: 0, max: 0, nombre: '', ciudad: '', aforo: '', manual: false, tipo: { norte: 'libre', occ: 'num', ori: 'num', sur: 'libre' }, af: { norte: '', occ: '', ori: '', sur: '' } }); }
+  function entero(v) { return Number(String(v == null ? '' : v).replace(/\D/g, '')) || 0; }
+  function suma(n) { return ORDEN.reduce(function (a, id) { return a + entero(n.af[id]); }, 0); }
+
+  // Mientras no se edite un sector a mano, el aforo total se reparte como en el Atanasio y Sur absorbe el resto.
+  function repartir(n) {
+    var t = entero(n.aforo), f = t / 38000, rest = t;
+    ORDEN.forEach(function (id, k) {
+      var v = k === ORDEN.length - 1 ? Math.max(0, rest) : Math.round(BASE[id] * f / 100) * 100;
+      n.af[id] = t ? String(v) : ''; rest -= v;
+    });
+  }
+
+  function faltas(n) {
+    var o = [];
+    if (n.i === 0) {
+      if (!n.nombre.trim()) { o.push('escriba el nombre del escenario'); }
+      else if (porNombre(n.nombre.trim())) { o.push('ya existe un escenario con ese nombre'); }
+      if (!n.ciudad.trim()) { o.push('escriba la ciudad'); }
+      if (!entero(n.aforo)) { o.push('escriba el aforo total'); }
+    }
+    if (n.i === 1 && suma(n) !== entero(n.aforo)) { o.push('los sectores suman ' + miles(suma(n)) + ' y el aforo es ' + miles(entero(n.aforo))); }
+    return o;
+  }
+
+  function sectoresNuevos(n) {
+    return ORDEN.map(function (id) { return { id: id, nombre: NOMBRE[id], tipo: n.tipo[id] === 'num' ? 'Numerado' : 'Aforo libre', base: entero(n.af[id]) }; });
+  }
+  function mapaNuevo(n) {
+    var sec = {}; ORDEN.forEach(function (id) { sec[id] = 'habilitado'; });
+    return w.BACKOFFICE.mapaSectores(sectoresNuevos(n), sec, {});
+  }
+
+  function cuerpoNuevo(n) {
+    var ver = faltas(n), aviso = ver.length ? '<div class="pb-aviso pb-aviso--alerta" role="status"><span>Para continuar: ' + esc(ver.join(' · ')) + '.</span></div>' : '';
+    if (n.i === 0) {
+      return '<p class="pb-sub" style="margin:0 0 16px">El escenario se registra una vez y cada evento lo hereda. Después puede marcar un sector como limitado o sancionado.</p>' +
+        '<div class="pb-esc-form"><label class="pb-campo">Nombre del escenario<input type="text" data-acc="ne-campo" data-k="nombre" value="' + esc(n.nombre) + '" placeholder="Estadio …"></label>' +
+        '<label class="pb-campo">Ciudad<input type="text" data-acc="ne-campo" data-k="ciudad" value="' + esc(n.ciudad) + '"></label>' +
+        '<label class="pb-campo pb-campo--num">Aforo total<input type="text" inputmode="numeric" autocomplete="off" data-acc="ne-campo" data-k="aforo" value="' + esc(n.aforo) + '"></label></div>' + aviso;
+    }
+    if (n.i === 1) {
+      var filas = ORDEN.map(function (id) {
+        var ops = [['num', 'Numerado'], ['libre', 'Aforo libre']].map(function (o) { return '<button type="button" class="pb-seg" aria-pressed="' + (n.tipo[id] === o[0]) + '" data-acc="ne-tipo" data-id="' + id + '.' + o[0] + '">' + o[1] + '</button>'; }).join('');
+        return '<div class="exs-sec-fila"><b class="pb-puerta-n">' + NOMBRE[id].charAt(0) + '</b><div class="exs-sec-fila__t"><span><b>' + NOMBRE[id] + '</b> <span class="pb-sub">Puertas ' + PUERTAS[id][0] + ' y ' + PUERTAS[id][1] + '</span></span>' +
+          '<div class="pb-segmento" role="group" aria-label="Tipo de puesto de ' + NOMBRE[id] + '">' + ops + '</div></div>' +
+          '<input type="text" inputmode="numeric" autocomplete="off" class="pb-input" aria-label="Aforo de ' + NOMBRE[id] + '" data-acc="ne-campo" data-k="af" data-id="' + id + '" value="' + esc(n.af[id]) + '"></div>';
+      }).join('');
+      var dif = entero(n.aforo) - suma(n);
+      return '<div class="pb-esc"><div class="pb-card pb-mapa exs-mapa"><div class="pb-card__cab" style="padding:0"><h2 class="pb-h2">Mapa del escenario</h2><span class="pb-sub" style="margin-left:auto;font-size:12px">Esquemático, sin escala</span></div>' + mapaNuevo(n) + '</div>' +
+        '<div class="pb-sec" style="margin-top:0">' + filas + '<div class="pb-aviso' + (dif ? ' pb-aviso--alerta' : '') + '" role="status"><span>Repartido ' + miles(suma(n)) + ' de ' + miles(entero(n.aforo)) + (dif ? ' · ' + (dif > 0 ? 'faltan ' + miles(dif) : 'sobran ' + miles(-dif)) : ' · completo') +
+        '. Cada sector lleva dos puertas.</span></div></div></div>';
+    }
+    var fila = function (t, d) { return '<div class="exs-sec-fila exs-sec-fila--res"><span class="exs-chk" aria-hidden="true"></span><span class="exs-sec-fila__t"><b>' + esc(t) + '</b><span class="pb-sub">' + esc(d) + '</span></span></div>'; };
+    return '<div class="pb-esc"><div class="pb-card pb-mapa exs-mapa">' + mapaNuevo(n) + '</div><div class="pb-sec" style="margin-top:0">' +
+      fila(n.nombre.trim(), n.ciudad.trim() + ' · aforo ' + miles(entero(n.aforo))) +
+      sectoresNuevos(n).map(function (s) { return fila(s.nombre, s.tipo + ' · ' + miles(s.base) + ' puestos · puertas ' + PUERTAS[s.id][0] + ' y ' + PUERTAS[s.id][1]); }).join('') +
+      '<div class="pb-aviso"><span>Se registra sin restricciones. Después puede marcar un sector como limitado o sancionado.</span></div></div></div>';
+  }
+
+  function nuevo(ctx) {
+    var n = nuevoEst();
+    return ctx.armar({ pref: 'ne-', pasos: PASOS_N, i: n.i, max: n.max, cuerpo: cuerpoNuevo(n), bloqueo: faltas(n).length > 0, volver: [LISTA, 'Volver a Escenarios'], titulo: n.nombre.trim() || 'Escenario nuevo',
+      aria: 'Pasos para agregar el escenario', sub: '<span class="pb-badge pb-badge--borrador">Sin guardar</span>' + (n.ciudad.trim() ? '<span>' + esc(n.ciudad.trim()) + '</span>' : ''),
+      cancelar: LISTA, hint: 'Se registra al guardar, en el último paso.', fin: { acc: 'ne-guardar', label: 'Guardar escenario', disabled: false } });
+  }
+
+  function clickNuevo(el, ctx) {
+    var n = nuevoEst(), ds = el.dataset, m = document.querySelector('.main-scroll');
+    if (ds.acc === 'ne-sig') { if (faltas(n).length) { return; } n.i = Math.min(2, n.i + 1); n.max = Math.max(n.max, n.i); }
+    else if (ds.acc === 'ne-atras') { n.i = Math.max(0, n.i - 1); }
+    else if (ds.acc === 'ne-paso') { if (+ds.id <= n.max && (+ds.id < n.i || !faltas(n).length)) { n.i = +ds.id; } }
+    else if (ds.acc === 'ne-tipo') { var p = ds.id.split('.'); n.tipo[p[0]] = p[1]; return; }
+    else if (ds.acc === 'ne-guardar') {
+      var base = n.nombre.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/^estadio\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'escenario', id = base, k = 2;
+      while (porId(id)) { id = base + '-' + k++; }
+      ESC.push({ id: id, nombre: n.nombre.trim(), ciudad: n.ciudad.trim(), aforo: miles(entero(n.aforo)), eventos: 0, restricciones: [], sectores: sectoresNuevos(n) });
+      ctx.toast('Escenario agregado', n.nombre.trim() + ' quedó en el catálogo, sin restricciones.');
+      nu = null; location.hash = LISTA + '/' + id; return false;
+    }
+    if (m) { m.scrollTop = 0; }
+  }
+
   /* ---------- Acciones ---------- */
 
   function poner(e, sector, estado) {
@@ -195,9 +284,10 @@
 
   function click(el, ctx, id) {
     var ds = el.dataset, e = porId(id);
+    if (ds.acc.indexOf('ne-') === 0) { return clickNuevo(el, ctx); }
     switch (ds.acc) {
       case 'ex-abrir': return false;
-      case 'ex-nuevo': ctx.toast('Agregar escenario', 'Se habilita cuando el catálogo se conecte al registro de escenarios.', 'informative'); return false;
+      case 'ex-nuevo': nu = null; location.hash = LISTA + '/nuevo'; return false;
       case 'ex-tab': vs.tab = ds.id; return;
       case 'ex-sector': vs.sector = ds.id; return;
       case 'ex-estado':
@@ -214,11 +304,17 @@
   function entrada(ev, id) {
     var el = ev.target, ds = el.dataset, e = porId(id);
     if (ds.s === 'exs') { vs.q = el.value; return true; }
+    if (ds.acc === 'ne-campo') {
+      var n = nuevoEst();
+      if (ds.k === 'af') { n.af[ds.id] = el.value; n.manual = true; }
+      else { n[ds.k] = el.value; if (ds.k === 'aforo' && !n.manual) { repartir(n); } }
+      return true;
+    }
     if (!e || ds.acc !== 'ex-campo') { return false; }
     var r = restr(e, ds.id);
     if (r) { r[ds.k] = ds.k === 'tope' ? Number(el.value) || 0 : el.value; }
     return false;
   }
 
-  w.EV_ESCENARIOS = { mapa: mapa, lista: lista, detalle: detalle, click: click, entrada: entrada, porId: porId, elegir: elegir, heredado: heredado, resumenTexto: resumenTexto };
+  w.EV_ESCENARIOS = { mapa: mapa, lista: lista, detalle: detalle, click: click, entrada: entrada, porId: porId, elegir: elegir, nuevo: nuevo, heredado: heredado, resumenTexto: resumenTexto };
 })(window);

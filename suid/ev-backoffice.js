@@ -92,6 +92,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     if (detalle) { route.crumbs.push({ label: evActual().nombre || 'Evento sin nombre' }); }
     if (modoEsc) { route.crumbs.push(escActual ? { label: 'Escenarios', href: LISTA + '/escenarios' } : { label: 'Escenarios' }); }
     if (escActual) { route.crumbs.push({ label: escActual.nombre }); }
+    if (modoEsc && escId === 'nuevo') { route.crumbs.splice(-1, 1, { label: 'Escenarios', href: LISTA + '/escenarios' }, { label: 'Nuevo escenario' }); }
     // Deep link: …/eventos?momento=pasados elige el filtro (lo usa la app Auditoría del SVN).
     var pedido = ((route.route || {}).query || {}).momento;
     if (!detalle && pedido) { evpEst().filtro = MOMENTOS.some(function (m) { return m[0] === pedido; }) ? pedido : null; }
@@ -237,6 +238,27 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
         '<div class="pb-aviso"><span>Al publicarlo, las comercializadoras homologadas lo ven y se generan las boletas. Configuración y cupos se pueden ajustar después.</span></div>';
     }
 
+    // Armazón común de los asistentes (crear evento, agregar escenario): barra de pasos, tarjeta del paso y barra inferior.
+    function armar(o) {
+      var n = o.pasos.length, p = o.pasos[o.i], last = o.i === n - 1, pct = Math.round(o.i / (n - 1) * 100);
+      var lista = o.pasos.map(function (x, k) {
+        var cls = k === o.i ? 'is-on' : k < o.i ? 'is-done' : k <= o.max ? '' : 'is-locked';
+        return '<a role="button" tabindex="' + (k > o.max ? -1 : 0) + '" class="gi-step ' + cls + '" data-acc="' + o.pref + 'paso" data-id="' + k + '"' + (k === o.i ? ' aria-current="step"' : '') + (k > o.max ? ' aria-disabled="true"' : '') + '><span>' + (k + 1) + '</span><div><b>' + x[1] + '</b><small class="pb-sub">' + x[2] + '</small></div>' +
+          '<svg class="gf-ck" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
+      }).join('');
+      var fin = last ? '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="' + o.fin.acc + '"' + (o.fin.disabled ? ' disabled' : '') + '>' + o.fin.label + '</button>'
+        : '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="' + o.pref + 'sig"' + (o.bloqueo ? ' disabled' : '') + '>Siguiente ' + ico('arrow-right') + '</button>';
+      return '<a class="gi-back" href="' + o.volver[0] + '">' + ico('arrow-left') + esc(o.volver[1]) + '</a>' +
+        '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(o.titulo) + '</h1><p class="page-subtitle pb-evsub">' + o.sub + '</p></div></header>' +
+        '<div class="gi-layout"><nav class="gi-steps" aria-label="' + esc(o.aria) + '"><div class="gf-total"><div class="gf-total__pct"><strong>Paso ' + (o.i + 1) + '</strong><span>de ' + n + '</span></div>' +
+        '<div class="gf-bar" role="progressbar" aria-label="Avance" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div><small>' + esc(p[1]) + '</small></div>' + lista + '</nav>' +
+        '<div class="gi-formcol"><section class="gi-sec"><header class="gi-sec__head"><span class="gi-sec__tag">' + (o.i + 1) + '</span><div class="gf-sec__txt"><p class="gf-kicker">Paso ' + (o.i + 1) + ' de ' + n + '</p><h2 tabindex="-1">' + esc(p[1]) + '</h2></div>' +
+        '<div class="gf-sec__st">' + (o.guardar || '') + '</div></header><div class="pb-app"><div class="pb-vista" data-sc="v-as" role="tabpanel" aria-label="' + esc(p[1]) + '">' + o.cuerpo + '</div></div></section></div></div>' +
+        '<div class="gi-bar"><div class="gi-bar__inner"><span class="gi-bar__hint">' + esc(o.hint) + '</span><div><a class="naowee-btn naowee-btn--mute" href="' + o.cancelar + '">Cancelar</a>' +
+        (o.i ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="' + o.pref + 'atras">' + ico('arrow-left') + ' Atrás</button>' : '') + fin + '</div></div></div>';
+    }
+    ctx.armar = armar;
+
     function asistente() {
       var e = evActual(), a = pasoDe(e), p = PASOS[a.i], last = a.i === PASOS.length - 1;
       st.vista = p[3] || 'evento';
@@ -245,24 +267,9 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       if (!sembrado && (p[0] === 'config' || p[0] === 'cupos')) { cuerpo = w.EV_ESCENARIOS.heredado(e, p[0] === 'config' ? 'Los sectores y las puertas parten del escenario. Aquí se ajustan los horarios, las sillas bloqueadas y el estado de cada sector para este evento.' : 'El reparto entre comercializadoras no puede pasar de lo que deja cada sector del escenario.'); }
       var acc = sembrado && v.def && v.def.accion; if (typeof acc === 'function') { acc = acc(ctx); }
       var guardar = acc && !last && a.i > 0 ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="' + esc(acc.acc) + '"' + (acc.disabled ? ' disabled' : '') + '>' + esc(acc.label) + '</button>' : '';
-      var pasos = PASOS.map(function (x, k) {
-        var cls = k === a.i ? 'is-on' : k < a.i ? 'is-done' : k <= a.max ? '' : 'is-locked';
-        return '<a role="button" tabindex="' + (k > a.max ? -1 : 0) + '" class="gi-step ' + cls + '" data-acc="as-paso" data-id="' + k + '"' + (k === a.i ? ' aria-current="step"' : '') + (k > a.max ? ' aria-disabled="true"' : '') + '><span>' + (k + 1) + '</span><div><b>' + x[1] + '</b><small class="pb-sub">' + x[2] + '</small></div>' +
-          '<svg class="gf-ck" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>';
-      }).join('');
-      var pct = Math.round(a.i / (PASOS.length - 1) * 100);
-      return '<a class="gi-back" href="' + LISTA + '">' + ico('arrow-left') + 'Volver a Eventos</a>' +
-        '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(e.nombre || 'Evento nuevo') + '</h1><p class="page-subtitle pb-evsub"><span class="pb-badge pb-badge--borrador">Borrador</span><span class="pb-num">' + esc(e.codigo) + '</span>' +
-        '<span>' + esc(e.escenario) + ', ' + esc(e.ciudad) + '</span><span>Aforo ' + esc(e.aforo) + '</span></p></div></header>' +
-        '<div class="gi-layout"><nav class="gi-steps" aria-label="Pasos para crear el evento"><div class="gf-total"><div class="gf-total__pct"><strong>Paso ' + (a.i + 1) + '</strong><span>de ' + PASOS.length + '</span></div>' +
-        '<div class="gf-bar" role="progressbar" aria-label="Avance" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div><small>' + esc(p[1]) + '</small></div>' + pasos + '</nav>' +
-        '<div class="gi-formcol"><section class="gi-sec"><header class="gi-sec__head"><span class="gi-sec__tag">' + (a.i + 1) + '</span><div class="gf-sec__txt"><p class="gf-kicker">Paso ' + (a.i + 1) + ' de ' + PASOS.length + '</p><h2 tabindex="-1">' + esc(p[1]) + '</h2></div>' +
-        '<div class="gf-sec__st">' + guardar + '</div></header><div class="pb-app"><div class="pb-vista" data-sc="v-as" role="tabpanel" aria-label="' + esc(p[1]) + '">' + cuerpo + '</div></div></section></div></div>' +
-        '<div class="gi-bar"><div class="gi-bar__inner"><span class="gi-bar__hint">Se guarda como borrador al avanzar.</span><div>' +
-        '<a class="naowee-btn naowee-btn--mute" href="' + LISTA + '">Cancelar</a>' +
-        (a.i ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="as-atras">' + ico('arrow-left') + ' Atrás</button>' : '') +
-        (last ? '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="evp-publicar"' + (faltaHora(e) ? ' disabled' : '') + '>Publicar evento</button>'
-          : '<button type="button" class="naowee-btn naowee-btn--loud" data-acc="as-sig">Siguiente ' + ico('arrow-right') + '</button>') + '</div></div></div>';
+      return armar({ pref: 'as-', pasos: PASOS, i: a.i, max: a.max, cuerpo: cuerpo, guardar: guardar, volver: [LISTA, 'Volver a Eventos'], titulo: e.nombre || 'Evento nuevo', aria: 'Pasos para crear el evento',
+        sub: '<span class="pb-badge pb-badge--borrador">Borrador</span><span class="pb-num">' + esc(e.codigo) + '</span><span>' + esc(e.escenario) + ', ' + esc(e.ciudad) + '</span><span>Aforo ' + esc(e.aforo) + '</span>',
+        cancelar: LISTA, hint: 'Se guarda como borrador al avanzar.', fin: { acc: 'evp-publicar', label: 'Publicar evento', disabled: faltaHora(e) } });
     }
 
     function asistenteClick(ds) {
@@ -283,6 +290,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     function contenido() {
       raiz.classList.remove('gi-form', 'ev-asist');
       if (detalle && !modoEsc && evActual().estado === 'borrador') { raiz.classList.add('gi-form', 'ev-asist'); return asistente(); }
+      if (modoEsc && escId === 'nuevo') { raiz.classList.add('gi-form', 'ev-asist'); return w.EV_ESCENARIOS.nuevo(ctx); }
       if (modoEsc) { return escId ? w.EV_ESCENARIOS.detalle(ctx, escId) : w.EV_ESCENARIOS.lista(ctx); }
       if (!detalle) { return lista(); }
       var v = activa(), html = '';
