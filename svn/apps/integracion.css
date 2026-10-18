@@ -217,5 +217,5 @@
 .ig-integ__nunca { display: flex; gap: var(--naotech-sizing-8); align-items: flex-start; color: var(--naotech-app-color-700); line-height: 1.45; --naotech-icon-dimension: var(--naotech-sizing-16); }
 .ig-integ__nunca nwt-icon { flex: none; margin-top: 2px; }
 .ig-barra .pp-alianza { gap: var(--naotech-sizing-8); }
-.ig-barra .pp-alianza__min { height: var(--naotech-sizing-28); }
+.ig-barra .pp-alianza__min { height: calc(var(--naotech-sizing-28) * 1.35); }
 .ig-barra .pp-alianza__sep:first-child { display: none; }

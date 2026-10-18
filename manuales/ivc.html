@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IVC, pantalla por pantalla · Manuales</title>
+  <link rel="stylesheet" href="../shared/fonts/google-sans.css">
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../svn/vendor/fonts.css">
+  <link rel="stylesheet" href="../svn/vendor/foundations.css">
+  <link rel="stylesheet" href="../svn/vendor/components.css">
+  <link rel="stylesheet" href="../svn/vendor/icons.css">
+  <link rel="stylesheet" href="../svn/toolbar.css">
+  <link rel="stylesheet" href="manuales.css">
+  <script src="../svn/vendor/nwt.js"></script>
+</head>
+<body class="mn">
+  <div id="barra" class="mn-barra"></div>
+  <div class="mn-layout">
+    <nav class="mn-nav" aria-label="Manuales"></nav>
+    <main class="mn-main" id="contenido">
+      <header class="mn-cab">
+        <p class="mn-eyebrow">Manual</p>
+        <h1>IVC, pantalla por pantalla</h1>
+        <p class="mn-lead">Cómo registrar, validar y consultar sanciones, y cómo seguir un evento.</p>
+      </header>
+
+      <!-- Entrar -->
+      <section class="mn-sec" id="entrar">
+        <h2>Entrar al IVC</h2>
+
+        <article class="mn-paso" id="ivc-entrar-login">
+          <h3>Iniciar sesión</h3>
+          <p class="mn-para">Escriba cualquier usuario y contraseña. No se validan.</p>
+          <figure class="mn-cap" data-cap="ivc-login"></figure>
+          <ol class="mn-marcas"><li>Toque «Iniciar sesión»</li></ol>
+          <a class="mn-ir" href="../index.html" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-entrar-menu">
+          <h3>El menú</h3>
+          <p class="mn-para">Use el menú de la izquierda. Las opciones en gris muestran «En construcción».</p>
+          <figure class="mn-cap" data-cap="ivc-menu"></figure>
+          <ol class="mn-marcas">
+            <li>Registrar y validar sanciones</li>
+            <li>Consultar a una persona</li>
+            <li>Reportes de las entidades</li>
+            <li>Eventos y escenarios</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-entrar-avatar">
+          <h3>Su avatar</h3>
+          <p class="mn-para">Toque sus iniciales, arriba a la derecha, para pasar al SVN o abrir los casos de prueba.</p>
+          <figure class="mn-cap" data-cap="acc-avatar"></figure>
+          <ol class="mn-marcas">
+            <li>Cédulas y estados de prueba</li>
+            <li>Ir al SVN</li>
+            <li>Estos manuales</li>
+          </ol>
+        </article>
+      </section>
+
+      <!-- Gestión de sanciones -->
+      <section class="mn-sec" id="gestion">
+        <h2>Gestión de sanciones</h2>
+
+        <article class="mn-paso" id="ivc-gestion-indicadores">
+          <h3>Indicadores</h3>
+          <p class="mn-para">Lo primero que ve: cuántas sanciones vencen, cuántas faltan por validar y cómo cambian mes a mes.</p>
+          <figure class="mn-cap" data-cap="ivc-gestion-ind"></figure>
+          <ol class="mn-marcas">
+            <li>Indicadores</li>
+            <li>Evolución mes a mes</li>
+            <li>Registrar una sanción nueva</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/infractores" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-gestion-registros">
+          <h3>Registros</h3>
+          <p class="mn-para">Toque «Registros de infractores» para ver todas las sanciones. Toque una fila para ver el resumen.</p>
+          <figure class="mn-cap" data-cap="ivc-gestion-reg"></figure>
+          <ol class="mn-marcas">
+            <li>Todas las sanciones</li>
+            <li>Toque una fila</li>
+          </ol>
+        </article>
+
+        <article class="mn-paso" id="ivc-gestion-resumen">
+          <h3>Resumen de una sanción</h3>
+          <p class="mn-para">El resumen se abre a la derecha, sin salir de la lista. Para ver todo, toque «Ver expediente».</p>
+          <figure class="mn-cap" data-cap="ivc-gestion-panel" data-foco="1"></figure>
+          <ol class="mn-marcas">
+            <li>Resumen</li>
+            <li>Abre el expediente completo</li>
+          </ol>
+        </article>
+
+        <article class="mn-paso" id="ivc-gestion-tramitar">
+          <h3>Expedientes por tramitar</h3>
+          <p class="mn-para">Aquí llegan los reportes de las entidades que esperan revisión.</p>
+          <figure class="mn-cap" data-cap="ivc-gestion-exp"></figure>
+          <ol class="mn-marcas"><li>Reportes pendientes</li></ol>
+        </article>
+      </section>
+
+      <!-- Registrar -->
+      <section class="mn-sec" id="registrar">
+        <h2 data-corto="Registrar">Registrar infractores</h2>
+        <p>Desde «Gestión de sanciones», toque «Registrar infractores».</p>
+
+        <article class="mn-paso" id="ivc-alta-comenzar">
+          <h3>Comenzar</h3>
+          <p class="mn-para">El formulario tiene cuatro bloques. El bloque C solo aparece si la persona es menor de edad.</p>
+          <figure class="mn-cap" data-cap="ivc-alta-inicio"></figure>
+          <ol class="mn-marcas"><li>Toque «Comenzar»</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/infractores/nuevo" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-alta-cedula">
+          <h3>Pegar una cédula de prueba</h3>
+          <p class="mn-para">Escriba 1090000001 en el número de identificación. El formulario se llena solo; revise los datos.</p>
+          <figure class="mn-cap" data-cap="ivc-alta-autollena" data-foco="1"></figure>
+          <ol class="mn-marcas">
+            <li>Pegue la cédula</li>
+            <li>Se llena solo</li>
+            <li>Avance por bloques</li>
+          </ol>
+          <p class="mn-nota">Las cédulas de prueba están en <a href="cedulas.html">Cédulas de prueba</a>.</p>
+        </article>
+
+        <article class="mn-paso" id="ivc-alta-guardar">
+          <h3>Guardar</h3>
+          <p class="mn-para">Toque «Siguiente» hasta el último bloque y luego «Guardar registro». La sanción queda como «Recibido».</p>
+          <figure class="mn-cap" data-cap="ivc-alta-guardar"></figure>
+          <ol class="mn-marcas"><li>Toque «Guardar registro»</li></ol>
+          <p class="mn-nota">Una sanción «Recibido» todavía no bloquea a nadie. Hay que validarla.</p>
+        </article>
+      </section>
+
+      <!-- Carga masiva -->
+      <section class="mn-sec" id="carga">
+        <h2>Carga masiva</h2>
+
+        <article class="mn-paso" id="ivc-carga-plantilla">
+          <h3>Registrar muchas sanciones a la vez</h3>
+          <p class="mn-para">En «Registrar infractores», toque «Carga masiva». Descargue la plantilla, llénela y toque «Ya la tengo» para subirla.</p>
+          <figure class="mn-cap" data-cap="ivc-carga"></figure>
+          <ol class="mn-marcas">
+            <li>Descargue la plantilla</li>
+            <li>Continúe con el archivo</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/infractores/carga-masiva" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+      </section>
+
+      <!-- Expediente -->
+      <section class="mn-sec" id="expediente">
+        <h2>Expediente y validación</h2>
+
+        <article class="mn-paso" id="ivc-exp-abrir">
+          <h3>El expediente</h3>
+          <p class="mn-para">Ábralo con «Ver expediente». Si la sanción está «Recibido», arriba aparecen las acciones para revisarla.</p>
+          <figure class="mn-cap" data-cap="ivc-expediente"></figure>
+          <ol class="mn-marcas">
+            <li>Aprobar la sanción</li>
+            <li>Devolver para corregir</li>
+          </ol>
+          <p class="mn-para">«Editar» abre el mismo formulario del registro.</p>
+        </article>
+
+        <article class="mn-paso" id="ivc-exp-validar">
+          <h3>Validar</h3>
+          <p class="mn-para">Toque «Validar registro» y luego «Confirmar». Desde ese momento la persona no puede comprar ni entrar a un estadio.</p>
+          <figure class="mn-cap" data-cap="ivc-validar" data-foco="1"></figure>
+          <ol class="mn-marcas"><li>Toque «Confirmar»</li></ol>
+        </article>
+      </section>
+
+      <!-- Búsqueda avanzada -->
+      <section class="mn-sec" id="busqueda">
+        <h2>Búsqueda avanzada</h2>
+
+        <article class="mn-paso" id="ivc-busq-documento">
+          <h3>Buscar a una persona</h3>
+          <p class="mn-para">Escriba el documento completo o al menos tres letras del nombre y toque «Consultar».</p>
+          <figure class="mn-cap" data-cap="ivc-busqueda"></figure>
+          <ol class="mn-marcas">
+            <li>Documento o nombre</li>
+            <li>Toque «Consultar»</li>
+            <li>Estado y vigencia</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/consulta" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-busq-menor">
+          <h3>Menores de edad</h3>
+          <p class="mn-para">Si la persona es menor de edad, el resultado oculta su nombre y parte del documento. Pruebe con 1090000007.</p>
+          <figure class="mn-cap" data-cap="ivc-busqueda-menor"></figure>
+          <ol class="mn-marcas"><li>Datos protegidos</li></ol>
+        </article>
+
+        <article class="mn-paso" id="ivc-busq-avanzada">
+          <h3>Más filtros</h3>
+          <p class="mn-para">Active «Búsqueda avanzada» para filtrar por edad, motivo, entidad o fechas de vencimiento.</p>
+          <figure class="mn-cap" data-cap="ivc-busqueda-av"></figure>
+          <ol class="mn-marcas"><li>Active los filtros</li></ol>
+        </article>
+      </section>
+
+      <!-- Solicitudes -->
+      <section class="mn-sec" id="solicitudes">
+        <h2>Solicitudes</h2>
+
+        <article class="mn-paso" id="ivc-sol-ver">
+          <h3>Reportes de las entidades</h3>
+          <p class="mn-para">Clubes e inspecciones reportan incidentes aquí. Toque una fila para ver el reporte a la derecha.</p>
+          <figure class="mn-cap" data-cap="ivc-sol-lista"></figure>
+          <ol class="mn-marcas">
+            <li>Reportes recibidos</li>
+            <li>Detalle del reporte</li>
+          </ol>
+          <p class="mn-nota">Un reporte no bloquea a nadie. Solo una sanción validada bloquea.</p>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/solicitudes" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-sol-tramitar">
+          <h3>Tramitar un reporte</h3>
+          <p class="mn-para">Toque «Marcar como recibida», luego «Pasar a trámite» y «Crear medida». Se abre «Registrar infractores».</p>
+          <figure class="mn-cap" data-cap="ivc-sol-interna"></figure>
+          <ol class="mn-marcas"><li>Toque «Marcar como recibida»</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/solicitudes/R-2026-0482" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+      </section>
+
+      <!-- Eventos -->
+      <section class="mn-sec" id="eventos">
+        <h2>Eventos</h2>
+
+        <article class="mn-paso" id="ivc-ev-lista">
+          <h3>Lista de eventos</h3>
+          <p class="mn-para">Filtre por momento: en vivo, próximos o pasados. Toque una tarjeta para abrir el evento.</p>
+          <figure class="mn-cap" data-cap="ivc-eventos"></figure>
+          <ol class="mn-marcas">
+            <li>Filtre por momento</li>
+            <li>Cree un evento nuevo</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-ev-publicado">
+          <h3>Evento publicado</h3>
+          <p class="mn-para">Ya tiene boletas, pero las puertas aún no abren. «Resumen» muestra las cifras y la hora de apertura.</p>
+          <figure class="mn-cap" data-cap="ivc-publicado"></figure>
+          <ol class="mn-marcas"><li>Pestañas del evento</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/e3" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-ev-pasado">
+          <h3>Evento pasado</h3>
+          <p class="mn-para">Solo se puede consultar. Muestra cuántos entraron, cuántos no y por qué.</p>
+          <figure class="mn-cap" data-cap="ivc-pasado"></figure>
+          <ol class="mn-marcas"><li>Resumen, registros y boletería</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/e5" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+      </section>
+
+      <!-- Evento en borrador -->
+      <section class="mn-sec" id="borrador">
+        <h2>Evento en borrador</h2>
+        <p>Toque «Crear evento» o abra «América vs. Once Caldas» en la lista.</p>
+
+        <article class="mn-paso" id="ivc-borrador-pasos">
+          <h3>Completar los pasos</h3>
+          <p class="mn-para">Elija el escenario y toque «Siguiente». Cada avance se guarda solo.</p>
+          <figure class="mn-cap" data-cap="ivc-borrador"></figure>
+          <ol class="mn-marcas">
+            <li>Los cinco pasos</li>
+            <li>Toque «Siguiente»</li>
+          </ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/e4" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-borrador-publicar">
+          <h3>Revisar y publicar</h3>
+          <p class="mn-para">El último paso resume lo que falta. Si todo está completo, toque «Publicar evento».</p>
+          <figure class="mn-cap" data-cap="ivc-borrador-revisar"></figure>
+          <ol class="mn-marcas"><li>Toque «Publicar evento»</li></ol>
+        </article>
+      </section>
+
+      <!-- Evento en vivo -->
+      <section class="mn-sec" id="en-vivo">
+        <h2>Evento en vivo</h2>
+        <p>Abra «Nacional vs. Medellín» en la lista de eventos.</p>
+
+        <article class="mn-paso" id="ivc-vivo-resumen">
+          <h3>Resumen</h3>
+          <p class="mn-para">Cifras del ingreso mientras el partido ocurre.</p>
+          <figure class="mn-cap" data-cap="ivc-vivo-resumen"></figure>
+          <ol class="mn-marcas"><li>Resumen del evento</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/e1" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="ivc-vivo-puertas">
+          <h3>Puertas</h3>
+          <p class="mn-para">Cuántos entraron y cuántos no por cada puerta. Las alertas se atienden desde el Monitor PMU del SVN.</p>
+          <figure class="mn-cap" data-cap="ivc-vivo-puertas"></figure>
+          <ol class="mn-marcas">
+            <li>Toque «Puertas»</li>
+            <li>Detalle por puerta</li>
+          </ol>
+        </article>
+
+        <article class="mn-paso" id="ivc-vivo-registros">
+          <h3>Registros</h3>
+          <p class="mn-para">Cada venta, ingreso y alerta del evento. Escriba una cédula en «Documento» para ver solo a esa persona.</p>
+          <figure class="mn-cap" data-cap="ivc-auditoria"></figure>
+          <ol class="mn-marcas"><li>Toque «Registros»</li></ol>
+          <p class="mn-nota">Estos registros no se pueden editar ni borrar.</p>
+        </article>
+      </section>
+
+      <!-- Escenarios -->
+      <section class="mn-sec" id="escenarios">
+        <h2>Escenarios</h2>
+
+        <article class="mn-paso" id="ivc-escenarios">
+          <h3>Restringir un sector</h3>
+          <p class="mn-para">En «Eventos», toque «Escenarios» y abra un estadio. Cada sector puede quedar habilitado, limitado o sancionado.</p>
+          <figure class="mn-cap" data-cap="ivc-escenarios"></figure>
+          <ol class="mn-marcas">
+            <li>Toque «Escenarios»</li>
+            <li>Agregue un estadio</li>
+          </ol>
+          <figure class="mn-cap" data-cap="ivc-escenario"></figure>
+          <ol class="mn-marcas">
+            <li>Sector sancionado: no abre</li>
+            <li>Sector limitado: aforo reducido</li>
+          </ol>
+          <p class="mn-para">Los eventos de ese estadio heredan los cambios.</p>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/escenarios/atanasio" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+      </section>
+
+      <p class="mn-pie">Prototipo de demostración · datos ficticios.</p>
+    </main>
+  </div>
+  <script src="capturas.data.js"></script>
+  <script src="../svn/marca.js"></script>
+  <script src="../svn/toolbar.js"></script>
+  <script src="manuales.js"></script>
+</body>
+</html>

@@ -212,30 +212,32 @@
     }).join('');
     var now = '<rect class="gt-now" x="' + f1(pl + (n - 1) * step + 2) + '" y="' + (pt - 16) + '" width="' + f1(step - 4) + '" height="' + (base - pt + 16) + '" rx="6"/>' +
       '<text class="gt-nowtxt" x="' + f1(Math.min(X(n - 1), W - 22)) + '" y="' + (pt - 6) + '" text-anchor="middle">en curso</text>';
-    /* Catmull-Rom cardinal a Béziers (extremos duplicados, pendientes suavizadas .25/.5/.25): pasa por los puntos, sin esquinas. */
+    /* Hermite cúbico monótono (Fritsch-Carlson): pasa por cada dato y no sobrepasa picos ni valles, sin ondas inventadas. */
     function spline(k) {
-      var P = S.map(function (m, i) { return [X(i), Y(m[k])]; }), M = P.map(function (p, i) { var a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)]; return (b[1] - a[1]) / ((b[0] - a[0]) || 1); });
-      function sua(A) { return A.map(function (m, i) { return .25 * A[Math.max(0, i - 1)] + .5 * m + .25 * A[Math.min(A.length - 1, i + 1)]; }); }
-      return { P: P, T: sua(M) };
+      var P = S.map(function (m, i) { return [X(i), Y(m[k])]; }), N = P.length, dx = [], dy = [], m = [], i;
+      for (i = 0; i < N - 1; i++) { dx[i] = P[i + 1][0] - P[i][0]; dy[i] = (P[i + 1][1] - P[i][1]) / dx[i]; }
+      m[0] = dy[0]; m[N - 1] = dy[N - 2];
+      for (i = 1; i < N - 1; i++) m[i] = dy[i - 1] * dy[i] <= 0 ? 0 : (dy[i - 1] + dy[i]) / 2;
+      for (i = 0; i < N - 1; i++) {
+        if (!dy[i]) { m[i] = m[i + 1] = 0; continue; }
+        var a = m[i] / dy[i], b = m[i + 1] / dy[i], h = a * a + b * b;
+        if (h > 9) { var t = 3 / Math.sqrt(h); m[i] = t * a * dy[i]; m[i + 1] = t * b * dy[i]; }
+      }
+      return { P: P, T: m, dx: dx };
     }
-    /* Las ordenadas de control se acotan a la escala 0–100 para que la curva nunca salga del eje. */
     function curva(sp) {
-      var P = sp.P, k = step * .42, lo = Y(top), hi = Y(0);
-      function cl(v) { return f1(Math.max(lo, Math.min(hi, v))); }
-      var d0 = 'M' + f1(P[0][0]) + ',' + f1(P[0][1]);
-      for (var i = 0; i < P.length - 1; i++) d0 += ' C' + f1(P[i][0] + k) + ',' + cl(P[i][1] + sp.T[i] * k) + ' ' + f1(P[i + 1][0] - k) + ',' + cl(P[i + 1][1] - sp.T[i + 1] * k) + ' ' + f1(P[i + 1][0]) + ',' + f1(P[i + 1][1]);
+      var P = sp.P, d0 = 'M' + f1(P[0][0]) + ',' + f1(P[0][1]);
+      for (var i = 0; i < P.length - 1; i++) { var k = sp.dx[i] / 3; d0 += ' C' + f1(P[i][0] + k) + ',' + f1(P[i][1] + sp.T[i] * k) + ' ' + f1(P[i + 1][0] - k) + ',' + f1(P[i + 1][1] - sp.T[i + 1] * k) + ' ' + f1(P[i + 1][0]) + ',' + f1(P[i + 1][1]); }
       return d0;
     }
     function dl(i) { return anim ? ' style="--d:' + Math.round(200 + 700 * i / Math.max(1, n - 1)) + 'ms"' : ''; }
     /* Degradado en coordenadas del plot: intenso en los picos y casi nulo abajo, donde rojo y verde se cruzan y se ensuciarían. */
-    /* Marcador fijo solo en picos, valles y el mes en curso; el resto aparece al pasar por el mes. */
-    function clave(k, i) { var v = S[i][k]; if (i === n - 1) return true; if (!i) return false; var a = S[i - 1][k], b = S[i + 1][k]; return (v > a && v >= b) || (v < a && v <= b); }
     var capas = SER.map(function (s) {
       var sp = spline(s[1]), dd = curva(sp), c = 'gt-s-' + s[0];
       return {
         area: '<path class="gt-area gt-ser-' + s[0] + '" fill="url(#' + u + s[0] + ')" d="' + dd + ' L' + f1(sp.P[n - 1][0]) + ',' + base + ' L' + f1(sp.P[0][0]) + ',' + base + ' Z"/>',
         line: '<path class="gt-line gt-draw gt-ser-' + s[0] + ' ' + c + '" pathLength="1" d="' + dd + '"/>',
-        mk: S.map(function (m, i) { return clave(s[1], i) ? mk(s[3], f1(X(i)), f1(Y(m[s[1]])), 3.5, 'gt-mk gt-ser-' + s[0] + ' ' + c, ' data-i="' + i + '"' + dl(i)) : ''; }).join(''),
+        mk: S.map(function (m, i) { return mk(s[3], f1(X(i)), f1(Y(m[s[1]])), n > 8 ? 2.8 : 3.4, 'gt-mk gt-ser-' + s[0] + ' ' + c, ' data-i="' + i + '"' + dl(i)); }).join(''),
         hv: '<g class="gt-hv gt-hv-' + s[0] + ' gt-ser-' + s[0] + '"><circle class="gt-halo" r="9"/>' + mk(s[3], 0, 0, 4, 'gt-mk ' + c) + '</g>',
         gr: '<linearGradient id="' + u + s[0] + '" gradientUnits="userSpaceOnUse" x1="0" y1="' + pt + '" x2="0" y2="' + base + '"><stop class="gt-gs-' + s[0] + '" offset="0" stop-opacity=".3"/><stop class="gt-gs-' + s[0] + '" offset=".45" stop-opacity=".08"/><stop class="gt-gs-' + s[0] + '" offset=".9" stop-opacity="0"/></linearGradient>'
       };
@@ -410,7 +412,7 @@
           '<td>' + esc(r.numActo) + '<small>Ejecutoria ' + U.fmt(r.fechaEjecutoria) + '</small></td>' +
           '<td>' + U.fmt(D.finVigencia(r)) + ((res === 'Activa' || res === 'Cumplida') && dias != null ? '<small>' + GI.fmtDias(dias) + '</small>' : '') + '</td>' +
           '<td>' + badgeReg(r.estadoRegistro) + '</td><td>' + badgeRes(res) + '</td>' +
-          '<td class="gt-actions"><button type="button" class="gt-ico" data-abrir aria-label="Ver en panel lateral: ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '" title="Ver en panel lateral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button> <a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="#/control-acceso/infractores/' + encodeURIComponent(r.id) + '" aria-label="Ver expediente completo de ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '">Completo</a></td></tr>';
+          '<td class="gt-actions"><button type="button" class="gt-ico" data-abrir aria-label="Ver en panel lateral: ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '" title="Ver en panel lateral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button> <a class="naowee-btn naowee-btn--quiet naowee-btn--small" href="#/control-acceso/infractores/' + encodeURIComponent(r.id) + '" aria-label="Ver expediente completo de ' + esc(D.nombreCompleto(r)) + ', ' + r.id + '">Expediente</a></td></tr>';
       }).join('') : '<tr><td colspan="8" class="gt-empty">Ningún registro coincide con los filtros.</td></tr>';
       /* Si el registro abierto salió del resultado al filtrar, el panel se cierra; si no, su fila sigue marcada. */
       var abierto = GI.panel.id();
@@ -481,7 +483,13 @@
     var aVal = d.getElementById('aVal'), aSub = d.getElementById('aSub'), aEdit = d.getElementById('aEdit');
     /* Toda operación se confirma a nombre de quien la hace (DC-019); Validar y Devolver lo llevan en su propio modal. */
     function aNombre(accion) {
-      return '<p class="gi-p">Vas a ' + accion + ' el registro <strong>' + r.id + '</strong>. Esta operación quedará registrada a nombre de <strong>' + esc(SUID.user.name) + '</strong>. Confirma que quieres realizar esta operación.</p>';
+      var u = SUID.user, ahora = new Date();
+      var fecha = ahora.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · ' + ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false });
+      /* DC-098: quien opera se ve con avatar, nombre y cargo; el cargo no existe en SUID.user. */
+      return '<p class="gi-p">Vas a ' + accion + ' el registro <strong>' + r.id + '</strong>. La operación queda firmada y registrada. Confirma que quieres realizarla.</p>' +
+        '<div class="gi-firma"><span class="gi-firma__av" aria-hidden="true">' + esc(u.initials) + '</span>' +
+        '<div class="gi-firma__id"><strong>' + esc(u.name) + '</strong><span>Profesional del IVC · Mindeporte</span></div>' +
+        '<div class="gi-firma__sello"><span class="gi-firma__trazo">' + esc(u.name) + '</span><span class="gi-firma__fecha">Firma electrónica · ' + fecha + '</span></div></div>';
     }
     if (aEdit) aEdit.addEventListener('click', function (e) {
       e.preventDefault();

@@ -88,7 +88,7 @@
 .gf-bar { height: 10px; box-sizing: border-box; border: 1px solid var(--border-strong); border-radius: 999px; background: #eceef7; overflow: hidden; }
 .gf-bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
 .gf-bar.is-full > i { background: var(--green); }
-.gi-step { display: grid; grid-template-columns: 24px minmax(0, 1fr) 58px; grid-template-rows: auto auto; align-items: center; column-gap: 8px; padding-inline: 8px; row-gap: 6px; min-height: 44px; }
+.gi-step { display: grid; grid-template-columns: 24px minmax(0, 1fr) 58px; grid-template-rows: auto auto; align-items: center; column-gap: 22px; padding-inline: 8px; row-gap: 2px; min-height: 44px; }
 .gi-step > div, .gf-srow { display: contents; }
 .gf-srow[hidden] { display: none; }
 .gi-step > span { grid-row: 1 / 3; align-self: center; }
@@ -105,7 +105,7 @@
 .gi-step.is-on { box-shadow: inset 3px 0 0 var(--accent); }
 /* DC-020: columnas compartidas por todos los pasos (letra | título+barra | chip | check) */
 @media (min-width: 1001px) {
-  .gi-steps { display: grid; grid-template-columns: 24px minmax(0, 1fr) 58px; column-gap: 8px; row-gap: 6px; align-content: start; }
+  .gi-steps { display: grid; grid-template-columns: 24px minmax(0, 1fr) 58px; column-gap: 22px; row-gap: 6px; align-content: start; }
   .gf-total { grid-column: 1 / -1; }
   .gi-step { grid-column: 1 / -1; grid-template-columns: subgrid; }
 }
@@ -212,3 +212,22 @@
 .gf-origen__adj { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; max-width: 100%; }
 .gf-origen__adj li { padding: 4px 10px; border: 1px solid var(--blue-border); border-radius: var(--radius-full); background: #fff; font-size: 13px; overflow-wrap: anywhere; }
 .gf-origen__sin { font-size: 13px; color: var(--text-secondary); }
+
+/* DC-079: la letra separada del título y la barra (el padding del paso se come 8px de la separación) */
+.gi-step b { line-height: 1.2; }
+/* DC-078: quién es la persona de la cédula */
+.gf-idinfo { margin-top: 6px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; line-height: 1.4; color: var(--text-primary); }
+.gf-idinfo[hidden] { display: none; }
+.gf-idinfo--neg { border-color: var(--red); background: #fdecea; color: #8a1a10; }
+.gf-idinfo--warn { border-color: #e0b03a; background: #fff6df; color: #6b4a00; }
+.gf-idinfo--info { border-color: var(--border-strong); background: #f3f4fb; }
+.gf-idinfo a { color: inherit; font-weight: 600; }
+/* DC-080: pegar / borrar dentro del campo (suid/gi-clip.js) */
+.gi-clipw { position: relative; display: block; width: 100%; }
+.gi-clipw > input { width: 100%; padding-right: 38px; box-sizing: border-box; }
+.gi-clip { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.gi-clip:hover, .gi-clip:focus-visible { background: var(--surface-alt, #eceef7); color: var(--text-primary); }
+.gi-clip.is-clear { color: var(--text-primary); }
+/* DC-103: con sanción vigente el resto del formulario queda inerte */
+.gf-lock .gi-sec:not(#sec-start) .gi-grid12 > :not(:has([data-p="i.numId"], [name="i.tipoId"])) { opacity: .5; pointer-events: none; }
+.gf-lock .gf-idinfo--neg { border-width: 2px; }

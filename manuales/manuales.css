@@ -1,0 +1,149 @@
+/* Manuales de la demo IVC + SVN. Solo tema claro: la demo y tokens.css no tienen oscuro. */
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--mn-barra) + 24px); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* foundations.css fija body en absolute/100%: se deshace para que la página scrollee y la barra pegue. */
+body.mn { position: static; width: auto; height: auto; background: var(--bg-soft); overflow-x: hidden; }
+
+/* ── Barra superior ─────────────────────────────── */
+/* zoom 16/14 (tokens.css fija la raíz en 14px y el toolbar es rem) va en el hijo: con zoom en el sticky no se pega. */
+.mn-barra { position: sticky; top: 0; z-index: var(--z-header); }
+.mn-barra > div { zoom: 1.142857; }
+:root { --mn-barra: 88px; }
+
+/* ── Distribución ───────────────────────────────── */
+.mn-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: var(--space-8); max-width: 1256px; margin: 0 auto; padding: 0 var(--space-6); }
+.mn-main { min-width: 0; max-width: 960px; padding: var(--space-8) 0 var(--space-16); }
+
+/* ── Navegación lateral ─────────────────────────── */
+.mn-nav { position: sticky; top: var(--mn-barra); align-self: start; max-height: calc(100vh - var(--mn-barra)); overflow-y: auto; padding: var(--space-8) 0; }
+.mn-nav ul { list-style: none; margin: 0; padding: 0; }
+.mn-nav__pag { display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); color: var(--text-primary); font-weight: 500; }
+.mn-nav__pag:hover { background: var(--surface); text-decoration: none; }
+.mn-nav__pag[aria-current="page"] { background: var(--accent-bg); color: var(--accent); }
+.mn-nav__secs { margin: var(--space-1) 0 var(--space-3) var(--space-3) !important; border-left: 1px solid var(--border-dark); }
+.mn-nav__secs a { display: block; padding: 4px var(--space-3); margin-left: -1px; border-left: 2px solid transparent; color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.4; }
+.mn-nav__secs a:hover { color: var(--text-primary); text-decoration: none; }
+.mn-nav__secs a.is-on { border-left-color: var(--naranja); color: var(--text-primary); font-weight: 500; }
+
+/* Por debajo de 900 px el menú pasa a una barra de arriba que se desplaza de lado. */
+@media (max-width: 900px) {
+  html { scroll-padding-top: calc(var(--mn-barra) + 64px); }
+  .mn-layout { display: block; padding: 0; }
+  .mn-nav { position: sticky; top: var(--mn-barra); z-index: calc(var(--z-header) - 1); max-height: none; padding: 0; background: var(--surface); border-bottom: 1px solid var(--border); overflow: hidden; }
+  .mn-nav > ul { display: flex; gap: var(--space-1); overflow-x: auto; padding: var(--space-2) var(--space-4); scrollbar-width: none; }
+  .mn-nav > ul::-webkit-scrollbar { display: none; }
+  .mn-nav > ul > li { flex: none; }
+  .mn-nav__pag { padding: 6px var(--space-3); white-space: nowrap; }
+  .mn-nav__secs { display: none; }
+  .mn-main { padding: var(--space-6) var(--space-4) var(--space-12); }
+}
+
+/* ── Cabecera de página y secciones ─────────────── */
+.mn-eyebrow { margin: 0 0 var(--space-1); color: var(--accent); font-size: var(--text-sm); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.mn-cab h1 { margin: 0 0 var(--space-2); color: var(--azul); font-size: clamp(26px, 4vw, var(--text-3xl)); line-height: 1.15; }
+.mn-lead { margin: 0 0 var(--space-8); max-width: 680px; color: var(--text-secondary); font-size: var(--text-md); }
+.mn-sec { margin: 0 0 var(--space-12); }
+.mn-sec > h2 { display: flex; align-items: baseline; gap: var(--space-3); margin: 0 0 var(--space-2); color: var(--azul); font-size: var(--text-xl); line-height: 1.25; }
+.mn-sec > h2 .mn-num { flex: none; transform: translateY(-2px); }
+.mn-sec > p { max-width: 680px; margin: 0 0 var(--space-4); color: var(--text-secondary); }
+.mn-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--azul); color: var(--text-inverse);
+  font-size: var(--text-sm); font-weight: 700;
+}
+
+/* ── Paso: tarjeta con texto, captura, marcas y enlace ── */
+.mn-paso { margin: 0 0 var(--space-6); padding: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+.mn-paso > h3 { margin: 0 0 var(--space-1); color: var(--text-primary); font-size: var(--text-lg); line-height: 1.3; }
+.mn-para { margin: 0 0 var(--space-4); max-width: 680px; color: var(--text-secondary); }
+.mn-paso > .mn-cap + .mn-cap { margin-top: var(--space-4); }
+@media (max-width: 600px) { .mn-paso { padding: var(--space-4); } }
+
+/* ── Captura con marcas (todo en %: escala sola) ── */
+.mn-cap { position: relative; margin: 0; overflow: hidden; background: var(--bg-soft); border: 1px solid var(--border-dark); border-radius: var(--radius-md); }
+.mn-cap img { display: block; width: 100%; height: auto; }
+.mn-cap--hueco { display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; color: var(--text-muted); font: 500 var(--text-sm)/1.3 ui-monospace, Menlo, monospace; background: repeating-linear-gradient(135deg, var(--bg-soft) 0 12px, var(--surface-alt) 12px 24px); }
+.mn-marca { position: absolute; border: 2px solid var(--naranja); border-radius: var(--radius-md); pointer-events: none; transition: box-shadow var(--duration-normal) var(--ease-out); }
+.mn-marca::before {
+  content: attr(data-n); position: absolute; top: 0; left: 0; transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  width: clamp(20px, 2.6vw, 26px); height: clamp(20px, 2.6vw, 26px); border-radius: 50%;
+  background: var(--naranja); color: var(--text-inverse); font-size: clamp(11px, 1.3vw, 13px); font-weight: 700;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+/* Pegada al borde de la captura el número se cortaría: se mete dentro del marco. */
+.mn-marca--dentro::before { transform: translate(4px, 4px); }
+.mn-marca--foco { box-shadow: 0 0 0 100vmax rgb(20 22 28 / .45); }
+.mn-marca.is-on { box-shadow: 0 0 0 4px rgb(255 117 0 / .35); }
+.mn-marca--foco.is-on { box-shadow: 0 0 0 4px rgb(255 117 0 / .35), 0 0 0 100vmax rgb(20 22 28 / .45); }
+/* Flecha opcional: una línea y su punta, hacia donde apunta la marca. */
+.mn-marca[data-flecha]::after { content: ""; position: absolute; width: 28px; height: 2px; background: var(--naranja); }
+.mn-marca[data-flecha="der"]::after { right: -32px; top: 50%; }
+.mn-marca[data-flecha="izq"]::after { left: -32px; top: 50%; }
+.mn-marca[data-flecha="arr"]::after { top: -32px; left: 50%; width: 2px; height: 28px; }
+.mn-marca[data-flecha="aba"]::after { bottom: -32px; left: 50%; width: 2px; height: 28px; }
+
+/* Leyenda numerada: el número de cada <li> es el de la marca. */
+.mn-marcas { list-style: none; counter-reset: mn; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: var(--space-3) 0 0; padding: 0; }
+.mn-marcas li { counter-increment: mn; display: flex; align-items: center; gap: var(--space-2); color: var(--text-primary); font-size: var(--text-base); cursor: default; }
+.mn-marcas li::before {
+  content: counter(mn); flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; background: var(--naranja); color: var(--text-inverse); font-size: var(--text-xs); font-weight: 700;
+}
+
+.mn-ir { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-4); color: var(--accent); font-weight: 500; }
+.mn-ir::after { content: "→"; transition: transform var(--duration-fast) var(--ease-out); }
+.mn-ir:hover::after { transform: translateX(3px); }
+
+/* ── Recorrido: lista numerada de pasos cortos ── */
+.mn-recorrido { list-style: none; counter-reset: rc; margin: 0; padding: 0; }
+.mn-recorrido > li { counter-increment: rc; position: relative; padding: 0 0 var(--space-5) 44px; }
+.mn-recorrido > li::before {
+  content: counter(rc); position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--azul); color: var(--text-inverse); font-size: var(--text-sm); font-weight: 700;
+}
+.mn-recorrido > li:not(:last-child)::after { content: ""; position: absolute; left: 13px; top: 32px; bottom: 4px; width: 2px; background: var(--border-dark); }
+.mn-recorrido b { display: block; color: var(--text-primary); }
+.mn-recorrido p { margin: 2px 0 0; color: var(--text-secondary); }
+.mn-recorrido .mn-ir { margin-top: var(--space-1); }
+
+/* ── Tarjetas de índice y avisos ── */
+.mn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); }
+.mn-tarjeta { display: block; padding: var(--space-5); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); color: var(--text-primary); transition: border-color var(--duration-fast); }
+.mn-tarjeta:hover { border-color: var(--naranja); text-decoration: none; }
+.mn-tarjeta b { display: block; margin-bottom: var(--space-1); color: var(--azul); font-size: var(--text-md); }
+.mn-tarjeta span { color: var(--text-secondary); font-size: var(--text-sm); }
+.mn-nota { max-width: 680px; margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4); border-left: 3px solid var(--naranja); border-radius: 0 var(--radius-md) var(--radius-md) 0; background: var(--accent-bg); color: var(--text-primary); }
+.mn-tecla { display: inline-block; padding: 0 6px; border: 1px solid var(--border-dark); border-bottom-width: 2px; border-radius: var(--radius-sm); background: var(--surface); font-size: var(--text-sm); white-space: nowrap; }
+
+/* ── Tablas (cédulas y casos) ── */
+.mn-tabla-w { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+.mn-tabla { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+.mn-tabla th { position: sticky; top: 0; padding: var(--space-3) var(--space-4); background: var(--surface-alt); border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: var(--text-sm); font-weight: 500; text-align: left; white-space: nowrap; }
+.mn-tabla td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); vertical-align: top; }
+.mn-tabla tr:last-child td { border-bottom: 0; }
+.mn-tabla small { display: block; color: var(--text-secondary); font-size: var(--text-sm); }
+.mn-tabla td[data-th="Documento"] { white-space: nowrap; }
+.mn-doc { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+.mn-copiar { margin-left: var(--space-1); padding: 1px 8px; border: 1px solid var(--border-dark); border-radius: var(--radius-full); background: var(--surface); color: var(--text-secondary); font-size: var(--text-xs); cursor: pointer; }
+.mn-copiar:hover, .mn-copiar:focus-visible { border-color: var(--naranja); color: var(--accent); }
+.mn-copiar[data-ok] { border-color: var(--green-border); background: var(--green-bg); color: var(--green); }
+.mn-chip { display: inline-block; padding: 2px 10px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; }
+.mn-chip--rojo { background: var(--red-bg); color: var(--red); }
+.mn-chip--ambar { background: var(--orange-bg); color: var(--accent); }
+.mn-chip--verde { background: var(--green-bg); color: var(--green); }
+.mn-chip--gris { background: var(--bg-soft); color: var(--text-secondary); }
+
+/* En celular la tabla se apila: cada fila es una tarjeta, sin scroll lateral. */
+@media (max-width: 600px) {
+  .mn-tabla-w { overflow: visible; background: none; border: 0; box-shadow: none; }
+  .mn-tabla thead { display: none; }
+  .mn-tabla, .mn-tabla tbody, .mn-tabla tr, .mn-tabla td { display: block; }
+  .mn-tabla tr { margin-bottom: var(--space-3); padding: var(--space-2) 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+  .mn-tabla td { padding: var(--space-1) var(--space-4); border: 0; }
+  .mn-tabla td[data-th]::before { content: attr(data-th); display: block; color: var(--text-muted); font-size: var(--text-xs); }
+}
+
+.mn-pie { margin-top: var(--space-12); padding-top: var(--space-4); border-top: 1px solid var(--border); color: var(--text-muted); font-size: var(--text-sm); }

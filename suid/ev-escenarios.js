@@ -180,10 +180,43 @@
   }
 
   // Pasos 3 y 4 de un evento sin configuración sembrada: lo que hereda del escenario, sin mandar al usuario a otro evento.
-  function heredado(ev, texto) {
-    var sel = porNombre(ev.escenario) || ESC[0];
-    return '<p class="pb-sub" style="margin:0 0 16px">' + esc(texto) + '</p><div class="pb-sec" style="margin-top:0">' + filas(sel) + '</div>' +
-      '<div class="pb-aviso">' + '<span>Maqueta: el detalle de esta etapa solo está cargado para Nacional vs. Medellín (EV-2026-0412).</span></div>';
+  /* Lo que el evento habilita del escenario: sector (tribuna y puertas) y su cupo, hasta lo que deja el escenario. */
+  function lugar(ev, sel, s) {
+    var h = ev.hered || (ev.hered = {}), r = restr(sel, s.id), mal = !!r && r.estado === 'sancionado', tope = r && r.estado === 'limitado' ? Math.min(r.tope, s.base) : s.base;
+    if (!h[s.id]) { h[s.id] = { on: !mal, cupo: mal ? 0 : tope }; }
+    return { h: h[s.id], mal: mal, tope: mal ? 0 : tope, r: r };
+  }
+  function habilitar(ev, id) {
+    var sel = porNombre(ev.escenario) || ESC[0], s = sectores(sel).filter(function (x) { return x.id === id; })[0], l = s && lugar(ev, sel, s);
+    if (l && !l.mal) { l.h.on = !l.h.on; if (l.h.on && !l.h.cupo) { l.h.cupo = l.tope; } }
+  }
+  function cupo(ev, id, v) {
+    var sel = porNombre(ev.escenario) || ESC[0], s = sectores(sel).filter(function (x) { return x.id === id; })[0], l = s && lugar(ev, sel, s);
+    if (l && l.h.on) { l.h.cupo = Math.min(l.tope, entero(v)); }
+  }
+  /* Resumen de lo elegido en Configuración y Cupos, para el último paso del asistente. */
+  function resumenEvento(ev) {
+    var sel = porNombre(ev.escenario) || ESC[0], ss = sectores(sel), on = [], cupos = [], total = 0;
+    ss.forEach(function (s) { var l = lugar(ev, sel, s); if (l.h.on) { on.push(s.nombre); cupos.push(s.nombre + ' ' + miles(l.h.cupo)); total += l.h.cupo; } });
+    return { n: ss.length, on: on, cupos: cupos, total: total, miles: miles };
+  }
+  function heredado(ev, texto, paso) {
+    var sel = porNombre(ev.escenario) || ESC[0], total = 0;
+    var filasEv = sectores(sel).map(function (s) {
+      var l = lugar(ev, sel, s), est = l.mal ? 'sancionado' : l.r ? 'limitado' : 'habilitado', ctl;
+      if (paso === 'cupos') {
+        total += l.h.on ? l.h.cupo : 0;
+        ctl = l.h.on ? '<label class="pb-campo pb-campo--num exs-cupo">Cupo<input type="text" inputmode="numeric" autocomplete="off" data-s="hered" data-k="cupo" data-id="' + s.id + '" value="' + miles(l.h.cupo) + '" aria-label="Cupo de ' + esc(s.nombre) + '"></label>'
+          : '<span class="pb-sub">No habilitado en Configuración</span>';
+      } else {
+        ctl = '<button type="button" role="switch" class="pbe-sw pbe-sw--sm" aria-checked="' + l.h.on + '" data-acc="as-hab" data-id="' + s.id + '"' + (l.mal ? ' disabled' : '') + '><span class="pbe-sw__t2">' + (l.mal ? 'No se puede habilitar' : 'Habilitar tribuna y puertas') + '</span><span class="pbe-sw__pista"><span class="pbe-sw__bola"></span></span></button>';
+      }
+      return '<div class="pb-puerta exs-hered"><b class="pb-puerta-n' + (l.mal ? ' exs-pn--mal' : '') + '">' + esc(s.nombre.charAt(0)) + '</b><span>' + esc(s.nombre) + '<span class="pb-sub">' + esc(consecuencia(l.r, s)) +
+        (paso === 'cupos' && !l.mal ? ' · disponible ' + miles(l.tope) : '') + '</span></span><span>' + badge(est, est === 'habilitado' ? 'Habilitado' : est === 'limitado' ? 'Limitado' : 'Sancionado') + '</span><span class="exs-hered__ctl">' + ctl + '</span></div>';
+    }).join('');
+    return '<p class="pb-sub" style="margin:0 0 16px">' + esc(texto) + '</p><div class="pb-sec" style="margin-top:0">' + filasEv + '</div>' +
+      (paso === 'cupos' ? '<p class="pb-sub exs-hered__tot">Total de cupos del evento: <b>' + miles(total) + '</b></p>' : '') +
+      '<div class="pb-aviso">' + '<span>Maqueta: el detalle fino de esta etapa solo está cargado para Nacional vs. Medellín (EV-2026-0412).</span></div>';
   }
 
   function elegir(ctx, ev) {
@@ -265,8 +298,8 @@
     var ver = faltas(n), aviso = ver.length ? '<div class="pb-aviso pb-aviso--alerta" role="status"><span>Pendiente en este paso: ' + esc(ver.join(' · ')) + '. Toque «Siguiente» y se completa con datos de ejemplo.</span></div>' : '';
     if (n.i === 0) {
       return '<p class="pb-sub" style="margin:0 0 16px">El escenario se registra una vez y cada evento lo hereda. Después puede marcar un sector como limitado o sancionado.</p>' +
-        '<div class="pb-esc-form"><label class="pb-campo">Nombre del escenario<input type="text" data-acc="ne-campo" data-k="nombre" value="' + esc(n.nombre) + '" placeholder="Estadio …"></label>' +
-        '<label class="pb-campo">Ciudad<input type="text" data-acc="ne-campo" data-k="ciudad" value="' + esc(n.ciudad) + '"></label>' +
+        '<div class="pb-esc-form"><label class="pb-campo">Nombre del escenario' + GIClip.wrap('<input type="text" data-acc="ne-campo" data-k="nombre" value="' + esc(n.nombre) + '" placeholder="Estadio …">', n.nombre) + '</label>' +
+        '<label class="pb-campo">Ciudad' + GIClip.wrap('<input type="text" data-acc="ne-campo" data-k="ciudad" value="' + esc(n.ciudad) + '">', n.ciudad) + '</label>' +
         '<label class="pb-campo pb-campo--num">Aforo total<input type="text" inputmode="numeric" autocomplete="off" data-acc="ne-campo" data-k="aforo" value="' + esc(n.aforo) + '"></label></div>' + aviso;
     }
     if (n.i === 1) {
@@ -386,5 +419,5 @@
     return false;
   }
 
-  w.EV_ESCENARIOS = { mapa: mapa, lista: lista, detalle: detalle, click: click, entrada: entrada, porId: porId, elegir: elegir, nuevo: nuevo, heredado: heredado, resumenTexto: resumenTexto };
+  w.EV_ESCENARIOS = { mapa: mapa, lista: lista, detalle: detalle, click: click, entrada: entrada, porId: porId, elegir: elegir, nuevo: nuevo, heredado: heredado, resumenEvento: resumenEvento, habilitar: habilitar, cupo: cupo, resumenTexto: resumenTexto };
 })(window);

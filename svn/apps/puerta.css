@@ -8,10 +8,6 @@
   background: var(--naotech-app-color-100);
   color: var(--naotech-app-font-color);
 }
-.pp-toolbar { flex: none; }
-/* Columna: el logo de Naowee arriba y, debajo, el título y el subtítulo (DC-074). */
-.pp-toolbar__marca { display: flex; flex-direction: column; align-items: flex-start; gap: var(--naotech-sizing-6); }
-.pp-toolbar__marca nwt-logo-naowee { --naotech-logo-width: 7rem; }
 .pp-demo__cuerpo { flex: 1; min-height: 0; display: grid; grid-template-columns: 340px 1fr; }
 
 /* ---------- Panel de controles del demo (fuera del producto) ---------- */
@@ -37,7 +33,6 @@
 .pp-panel__pie { font-size: var(--naotech-sizing-12); line-height: var(--naotech-sizing-16); }
 .pp-panel .nwt-icon-label { --naotech-icon-dimension: var(--naotech-sizing-14); }
 .pp-panel__card [slot='header'] { font-size: var(--naotech-sizing-16); }
-.pp-panel__fila { display: flex; align-items: center; justify-content: space-between; gap: var(--naotech-sizing-12); padding: 0; }
 .pp-panel__pie { color: var(--naotech-app-color-700); }
 .pp-caso__punto { width: 12px; height: 12px; border-radius: var(--naotech-radius-circle); flex: none; background: var(--pp-punto); }
 .pp-caso__punto--verde, .pp-caso--verde { --pp-punto: var(--naotech-color-green-600); }
@@ -140,7 +135,7 @@
 /* Celular: Mindeporte + IVC a la izquierda, más compactos para dejar sitio al chip y al menú (DC-320). */
 .pp-marca__izq { display: flex; align-items: center; gap: var(--naotech-sizing-8); min-width: 0; }
 .pp-marca .pp-alianza { gap: var(--naotech-sizing-8); }
-.pp-marca .pp-alianza__min { height: var(--naotech-sizing-28); }
+.pp-marca .pp-alianza__min { height: calc(var(--naotech-sizing-28) * 1.35); }
 
 /* Pie de la consola: es un monitor en el torniquete. */
 .pp-soporte { display: flex; flex-direction: column; align-items: center; }
@@ -176,10 +171,11 @@
 .pp-vs { color: var(--naotech-app-color-500); }
 .pp-hora { padding-left: var(--naotech-sizing-8); border-left: 1px solid var(--naotech-app-color-300); }
 /* Celular: puerta y "En línea" en la primera fila, el partido completo debajo. */
-.pp-equipo--celular .pp-barra { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: var(--naotech-sizing-12); row-gap: var(--naotech-sizing-6); }
+.pp-equipo--celular .pp-barra { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; column-gap: var(--naotech-sizing-12); row-gap: var(--naotech-sizing-6); }
 .pp-equipo--celular .pp-barra__lugar { display: contents; }
-.pp-equipo--celular .pp-barra__puerta { grid-column: 1; grid-row: 1; }
-.pp-equipo--celular .pp-barra__partido { grid-column: 1 / -1; grid-row: 2; }
+.pp-equipo--celular .pp-barra__puerta { grid-column: 2; grid-row: 1; text-align: center; }
+.pp-equipo--celular .pp-barra > .pp-conexion { grid-column: 3; grid-row: 1; justify-self: end; }
+.pp-equipo--celular .pp-barra__partido { grid-column: 1 / -1; grid-row: 2; justify-content: center; align-items: center; text-align: center; }
 .pp-escudo { height: 18px; width: auto; flex: none; }
 .pp-equipo--tablet .pp-barra, .pp-equipo--consola .pp-barra { justify-content: flex-start; gap: var(--naotech-sizing-20); }
 .pp-equipo--tablet .pp-barra__marca, .pp-equipo--consola .pp-barra__marca { display: flex; align-items: center; gap: var(--naotech-sizing-12); flex: none; }
@@ -505,7 +501,7 @@
 .pp-teclas { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--naotech-sizing-8); }
 .pp-tecla { height: 56px; border: 1px solid var(--naotech-app-color-200); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); color: var(--naotech-app-font-color); font-size: var(--naotech-sizing-24); font-weight: 500; cursor: pointer; }
 .pp-tecla[data-tecla='ok'] { height: var(--pp-boton-alto); font-size: var(--naotech-sizing-20); }
-.pp-tecla:active { background: var(--naotech-app-color-200); }
+.pp-tecla:active, .pp-tecla--on { background: var(--naotech-app-color-200); }
 .pp-tecla:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ---------- Vista de seguridad ---------- */
@@ -678,10 +674,6 @@
 .pp-faltan { display: inline-flex; align-items: center; gap: var(--naotech-sizing-4); padding: 0 var(--naotech-sizing-8); border-radius: var(--naotech-radius-pill); background: var(--naotech-primary-color-100); color: var(--naotech-primary-color-800); font-weight: 600; }
 .pp-faltan b { font-variant-numeric: tabular-nums; font-weight: 800; }
 
-/* Toolbar: logo a la izquierda, título y subtítulo centrados, acción a la derecha (DC-084). */
-.pp-toolbar { position: relative; }
-.pp-toolbar__titulo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; }
-.pp-toolbar__titulo .nwt-title__content { align-items: center; }
 /* Cuenta al partido junto a la puerta: en celular a la derecha de la primera fila; en tablet y consola, pegada a la puerta (DC-083). */
 .pp-barra__fila { display: flex; align-items: center; gap: var(--naotech-sizing-12); }
 .pp-equipo--celular .pp-barra__fila { display: contents; }
@@ -748,6 +740,8 @@
 /* DC-058: el tag se ajusta al texto y, si es largo, parte en dos líneas en vez de salirse de la tarjeta. */
 .pp-r__nota-linea { min-width: 0; overflow-wrap: anywhere; text-wrap: balance; }
 .pp-r__nota--fuerte { justify-content: center; text-align: center; }
+/* DC-101: el texto de la nota fuerte va justificado a la izquierda. */
+.pp-r__nota--fuerte .pp-r__nota-linea { text-align: left; }
 
 /* Cada título de sección o de señal lleva su ícono a la izquierda (DC-100). */
 .pp-seccion__h, .pp-senal__l { display: flex; align-items: center; gap: var(--naotech-sizing-8); }
@@ -821,6 +815,27 @@
 .pp-t__panel { display: flex; flex-direction: column; min-height: 0; background: var(--naotech-app-background); border-left: 1px solid var(--naotech-app-color-200); }
 .pp-t__panel-cab { display: flex; flex-direction: column; gap: var(--naotech-sizing-12); padding: var(--naotech-sizing-16) var(--naotech-sizing-20); border-bottom: 1px solid var(--naotech-app-color-200); }
 .pp-t__panel-cab .pp-t__h { justify-content: space-between; }
+.pp-t__panel-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--naotech-sizing-8); }
+.pp-t__panel-acc { display: flex; align-items: center; gap: var(--naotech-sizing-8); flex: none; }
+.pp-t__expandir { height: var(--naotech-sizing-32); padding: 0 var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-md); background: var(--naotech-app-background); color: var(--naotech-app-color-900); font-size: var(--naotech-sizing-14); font-weight: 700; white-space: nowrap; cursor: pointer; }
+/* Punto azul de actividad en vivo, también colapsado (DC-130); sin parpadeo si el usuario lo pide. */
+.pp-t__vivo-punto { width: var(--naotech-sizing-10); height: var(--naotech-sizing-10); border-radius: var(--naotech-radius-circle); background: var(--naotech-color-blue-700); }
+@media (prefers-reduced-motion: no-preference) { .pp-t__vivo-punto { animation: pp-t-parpadeo 1.2s ease-in-out infinite; } }
+@keyframes pp-t-parpadeo { 50% { opacity: 0.2; } }
+/* Desplegable del filtro: un solo chip con el filtro activo (DC-123). */
+.pp-t__sel { position: relative; }
+.pp-t__chip { display: flex; align-items: center; justify-content: space-between; gap: var(--naotech-sizing-8); width: 100%; height: var(--naotech-sizing-40); padding: 0 var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-md); background: var(--naotech-app-background); color: var(--naotech-app-color-900); font-size: var(--naotech-sizing-14); font-weight: 700; cursor: pointer; }
+.pp-t__chip svg { flex: none; transition: transform 0.2s; }
+.pp-t__chip[aria-expanded="true"] svg { transform: rotate(180deg); }
+.pp-t__menu { top: calc(100% + 4px); left: 0; right: 0; width: auto; }
+.pp-t__opcion { width: 100%; border: 0; background: none; text-align: left; font: inherit; font-size: var(--naotech-sizing-14); color: var(--naotech-app-color-900); cursor: pointer; }
+/* Expandido: el panel ocupa la vista, el segmentador y las tarjetas pasan a grilla (DC-124). */
+.pp-t--expandido, .pp-equipo--consola .pp-t--expandido { grid-template-columns: minmax(0, 1fr); }
+.pp-t--expandido .pp-t__main { display: none; }
+.pp-t--expandido .pp-t__panel { border-left: 0; }
+.pp-t--expandido .pp-t__lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); align-items: stretch; align-content: start; }
+.pp-t--expandido .pp-t__lista > .pp-t__sub, .pp-t--expandido .pp-t__lista > .pp-t__vacio, .pp-t--expandido .pp-t__lista > .pp-t__mas { grid-column: 1 / -1; }
+.pp-t__mas { justify-self: center; }
 .pp-t__sonando { margin: 0; display: flex; align-items: center; gap: var(--naotech-sizing-8); padding: var(--naotech-sizing-8) var(--naotech-sizing-12); border-radius: var(--naotech-radius-md); background: var(--naotech-color-red-050); color: var(--naotech-color-red-900); font-size: var(--naotech-sizing-14); font-weight: 700; }
 .pp-t__filtros { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: var(--naotech-sizing-4); padding: var(--naotech-sizing-4); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); }
 .pp-t__filtro { flex: 1 0 auto; padding: 0 var(--naotech-sizing-8); height: 36px; border: 0; border-radius: var(--naotech-radius-sm); background: transparent; color: var(--naotech-app-color-700); font-size: var(--naotech-sizing-14); font-weight: 700; cursor: pointer; white-space: nowrap; }
@@ -1074,19 +1089,20 @@
 /* DC-169: con la capa abierta la franja cuelga del equipo (escalar() fija --capa-top), no del fondo. */
 .pp-escena--capa .pp-c { top: var(--capa-top); bottom: auto; }
 
-/* DC-067: casos del panel como acordeón de un grupo abierto; en escritorio la card llena el alto libre y scrollea por dentro. */
+/* DC-134: grupos con la métrica de los de Compra (pc-grupo*); título +1pt (DC-132).
+   DC-067: casos del panel como acordeón de un grupo abierto; en escritorio la card llena el alto libre y scrollea por dentro. */
 .pp-casos { gap: 0; }
 .pp-grupo + .pp-grupo { border-top: 1px solid var(--naotech-app-color-200); }
-.pp-grupo__cab { display: flex; align-items: center; gap: var(--naotech-sizing-8); width: 100%; min-height: 36px; padding: 0 var(--naotech-sizing-8); border: 0; background: transparent; color: var(--naotech-app-color-800); font: inherit; font-size: var(--naotech-sizing-14); font-weight: 700; text-align: left; cursor: pointer; border-radius: var(--naotech-radius-md); }
+.pp-grupo__cab { display: flex; align-items: center; gap: var(--naotech-sizing-8); width: 100%; min-height: 44px; padding: 0 var(--naotech-sizing-12); border: 0; background: transparent; color: var(--naotech-app-color-800); font: inherit; font-size: calc(var(--naotech-sizing-14) + 1.33px); font-weight: 700; text-align: left; cursor: pointer; border-radius: var(--naotech-radius-md); }
 .pp-grupo__cab:hover { background: var(--naotech-app-color-100); }
 .pp-grupo__cab:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: -2px; }
 .pp-grupo__t { flex: 1; }
 .pp-grupo__n { font-size: var(--naotech-sizing-12); color: var(--naotech-app-color-700); }
 .pp-grupo__cab svg { transition: transform 200ms ease; flex: none; }
 .pp-grupo--abierto .pp-grupo__cab svg { transform: rotate(180deg); }
-.pp-grupo__lista { display: flex; flex-direction: column; padding-bottom: var(--naotech-sizing-4); }
+.pp-grupo__lista { display: flex; flex-direction: column; padding-bottom: var(--naotech-sizing-8); }
 .pp-grupo__lista[hidden] { display: none; }
-.pp-grupo__lista > nwt-detail-item { justify-content: space-between; padding: var(--naotech-sizing-4) var(--naotech-sizing-8); border-radius: var(--naotech-radius-md); }
+.pp-grupo__lista > nwt-detail-item { justify-content: space-between; padding: var(--naotech-sizing-8) var(--naotech-sizing-12); border-radius: var(--naotech-radius-md); }
 .pp-grupo__lista > nwt-detail-item + nwt-detail-item { border-top: 1px solid var(--naotech-app-color-200); border-top-left-radius: 0; border-top-right-radius: 0; }
 .pp-grupo__lista > nwt-detail-item:hover, .pp-panel .pp-grupo__lista > nwt-detail-item.pp-caso--activo { background: var(--naotech-app-color-100); }
 @media (min-width: 901px) {
@@ -1112,10 +1128,6 @@
   .pp-panel nwt-detail-item { min-height: 44px; }
   .pp-panel__lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
   .pp-escenario { flex: none; height: max(600px, calc(100svh - 168px)); }
-  .pp-toolbar__marca nwt-logo-naowee { --naotech-logo-width: 5.5rem; }
-}
-@media (max-width: 560px) {
-  .pp-toolbar__titulo { display: none; }
 }
 
 /* DC-348: el lockup Mindeporte + IVC ocupa el lugar grande del splash; Naowee va pequeño a 32 px del borde inferior. */
@@ -1140,15 +1152,6 @@
 
 .pp-camara__tag--apagado { opacity: .6; }
 
-/* DC-062: campo de documento que se escribe solo antes del resultado de «Entra solo con cédula». */
-.pp-r--teclear { --pp-fondo: var(--naotech-app-background); --pp-tinta: var(--naotech-app-font-color); }
-.pp-teclear__campo { display: flex; align-items: center; gap: var(--naotech-sizing-12); width: min(100%, 320px); box-sizing: border-box; height: 64px; padding: 0 var(--naotech-sizing-20); border: 2px solid var(--naotech-primary-color-600); border-radius: var(--naotech-radius-md); background: var(--naotech-app-color-100); }
-.pp-teclear__tipo { padding: var(--naotech-sizing-4) var(--naotech-sizing-12); border-radius: var(--naotech-radius-pill); background: var(--naotech-primary-color-600); color: var(--naotech-color-white-alpha-100); font-size: var(--naotech-sizing-14); font-weight: 700; }
-.pp-teclear__num { font-size: var(--naotech-sizing-28); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
-.pp-teclear__cursor { width: 2px; height: 32px; margin-left: calc(var(--naotech-sizing-4) * -1); background: var(--naotech-primary-color-600); animation: pp-cursor 900ms steps(1) infinite; }
-@keyframes pp-cursor { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .pp-teclear__cursor { animation: none; } }
-
 /* ---------- Huella (módulo): lectura transitoria, tag, hojas y panel ---------- */
 .pp-camara__punto--falla { background: var(--naotech-color-red-700); }
 .pp-r--huella { --pp-fondo: var(--naotech-color-red-800); }
@@ -1170,9 +1173,7 @@
 .pp-hoja__btn:focus-visible { outline: 3px solid var(--naotech-primary-color-600); outline-offset: 2px; }
 .pp-hoja__campo { width: 100%; box-sizing: border-box; height: 48px; padding: 0 var(--naotech-sizing-12); border: 1px solid var(--naotech-app-color-300); border-radius: var(--naotech-radius-md); background: var(--naotech-app-background); color: var(--naotech-app-font-color); font: inherit; font-size: var(--naotech-sizing-16); }
 .pp-hoja__campo:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: 1px; }
-.pp-panel__rotulo { margin: 0 0 var(--naotech-sizing-8); font-weight: 600; color: var(--naotech-app-color-800); }
 .pp-panel__ayuda { margin: var(--naotech-sizing-8) 0 0; font-size: var(--naotech-sizing-12); line-height: var(--naotech-sizing-16); color: var(--naotech-app-color-700); }
-.pp-panel__lab { display: inline-flex; align-items: center; gap: var(--naotech-sizing-8); font-size: var(--naotech-sizing-14); line-height: var(--naotech-sizing-20); }
 .pp-t__lector { margin-left: var(--naotech-sizing-8); padding: 2px var(--naotech-sizing-8); border-radius: var(--naotech-radius-pill); background: var(--naotech-color-yellow-100, #fdf3d0); color: var(--naotech-app-color-900); font-size: var(--naotech-sizing-12); font-weight: 600; white-space: nowrap; }
 
 /* Chips de la cámara en una fila (Torniquete + Lector); si no caben, bajan sin tapar los botones. */
@@ -1181,3 +1182,34 @@
 /* DC-058: el tag de la foto no llega a los bordes; margen lateral con tokens y la línea se ajusta. */
 .pp-r__nota { box-sizing: border-box; margin-inline: var(--naotech-sizing-16); max-width: calc(100% - 2 * var(--naotech-sizing-16)); text-wrap: balance; overflow-wrap: anywhere; }
 .pp-equipo .pp-r--cols .pp-r__nota { margin-inline: 0; max-width: 100%; }
+
+/* DC-129: tarjetas homogéneas de la vista expandida, una línea por dato, con cronómetro y tag que parpadea. */
+.pp-t__alerta--compacta { min-width: 0; }
+.pp-t__alerta--compacta .pp-t__linea { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-t__alerta--compacta .pp-t__alerta-top { justify-content: space-between; }
+.pp-t__cron { display: inline-flex; align-items: baseline; font-variant-numeric: tabular-nums; color: var(--t-tinta); line-height: 1; }
+.pp-t__cron-m { font-size: var(--naotech-sizing-32); font-weight: 800; letter-spacing: -0.02em; }
+.pp-t__cron-s { font-size: var(--naotech-sizing-18); font-weight: 600; color: var(--t-sub); }
+.pp-t__alerta--compacta.pp-t__alerta--cerrada .pp-t__cron { opacity: 0.75; }
+@media (prefers-reduced-motion: no-preference) {
+  .pp-t__alerta--nueva .pp-t__estado, .pp-t__alerta--atencion .pp-t__estado { animation: pp-t-parpadeo 1.2s ease-in-out infinite; }
+}
+
+/* DC-131: en la vista expandida el título «Alertas» pasa a 3x; el resto sale y vuelve con fade y desplazamiento. */
+.pp-t--expandido .pp-t__panel-cab .pp-t__h { font-size: calc(var(--naotech-sizing-16) * 3); }
+@media (prefers-reduced-motion: no-preference) {
+  .pp-t__panel-cab .pp-t__h { transition: font-size 320ms ease; }
+  .pp-t__main { transition: opacity 320ms ease, transform 320ms ease; }
+  .pp-t--saliendo:not(.pp-t--expandido) .pp-t__panel-cab .pp-t__h { font-size: calc(var(--naotech-sizing-16) * 3); }
+  .pp-t--saliendo.pp-t--expandido .pp-t__panel-cab .pp-t__h { font-size: var(--naotech-sizing-16); }
+  .pp-t--saliendo:not(.pp-t--expandido) .pp-t__main { opacity: 0; transform: translateX(calc(var(--naotech-sizing-24) * -1)); }
+  .pp-t--saliendo.pp-t--expandido .pp-t__lista { opacity: 0; transition: opacity 320ms ease; }
+  .pp-t--vuelve .pp-t__main { animation: pp-t-entra 320ms ease both; }
+  @keyframes pp-t-entra { from { opacity: 0; transform: translateX(calc(var(--naotech-sizing-24) * -1)); } to { opacity: 1; transform: none; } }
+}
+
+/* Explicador «Este caso» del panel; misma estructura que el de Compra. */
+.pp-caso-info { display: flex; flex-direction: column; gap: var(--naotech-sizing-8); font-size: var(--naotech-sizing-14); line-height: var(--naotech-sizing-20); color: var(--naotech-app-color-800); }
+.pp-caso-info p { margin: 0; }
+.pp-caso-info__t { font-weight: 700; color: var(--naotech-app-color-900); }
+.pp-caso-info__n { color: var(--naotech-app-color-700); }

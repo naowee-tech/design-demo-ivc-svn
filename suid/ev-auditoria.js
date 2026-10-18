@@ -26,7 +26,23 @@
 
   function aud(ctx) {
     var e = ctx.ev(), V = B.boletas ? B.boletas(ctx) : null;
-    return X.de(e, V ? V.con : Math.round(X.entero(e.aforo) * 0.93));
+    enganchar(ctx, e);
+    return X.conBus(X.de(e, V ? V.con : Math.round(X.entero(e.aforo) * 0.93)), e);
+  }
+  // Repinta cuando una app del SVN deja algo en el bus; se suelta sola al salir de la vista.
+  var sub = null;
+  function firmaBus(e) { var l = w.DemoBus ? w.DemoBus.leer(function (x) { return x.evento === e.codigo || x.evento === e.id; }) : []; return l.length + '|' + (l.length ? l[l.length - 1].ts : 0); }
+  function enganchar(ctx, e) {
+    if (!w.DemoBus) { return; }
+    if (sub && sub.raiz === ctx.raiz) { sub.firma = firmaBus(e); sub.ev = e; return; }
+    if (sub) { sub.off(); }
+    sub = { raiz: ctx.raiz, ev: e, firma: firmaBus(e) };
+    sub.off = w.DemoBus.suscribir(function () {
+      if (!ctx.raiz.isConnected) { sub.off(); sub = null; return; }
+      if (['resumen', 'puertas', 'registros'].indexOf(ctx.st.vista) < 0) { return; }
+      var f = firmaBus(sub.ev);
+      if (f !== sub.firma) { sub.firma = f; ctx.repintar(); }
+    });
   }
   // Filtros y selección por evento: los de un evento no se cuelan en otro.
   function est(ctx, A) {

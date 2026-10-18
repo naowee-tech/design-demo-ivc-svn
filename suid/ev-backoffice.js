@@ -238,12 +238,17 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       var cf = st.cfg, cu = st.cupos, r = w.EV_ESCENARIOS.mapa(e.escenario), nr = Object.keys(r).length;
       var fila = function (t, d, tag, tipo) { return '<div class="pb-puerta"><span class="exs-chk exs-chk--' + tipo + '" aria-hidden="true"></span><span><b>' + esc(t) + '</b><span class="pb-sub">' + esc(d) + '</span></span>' +
         '<span><span class="pb-badge pb-badge--' + tipo + '">' + tag + '</span></span></div>'; };
+      var x = w.EV_ESCENARIOS.resumenEvento(e), sembrado = e.id === 'e1';
+      var partidos = e.partidos.map(function (p) { return (p.local || 'Local') + ' vs. ' + (p.visita || 'Visitante') + ' · ' + (p.hora || 'sin hora'); }).join(' | ');
+      var cfgTxt = sembrado ? 'Sectores, puertas y horarios del evento' : x.on.length + ' de ' + x.n + ' sectores habilitados' + (x.on.length ? ': ' + x.on.join(', ') : '');
+      var cupTxt = sembrado ? 'Reparto entre comercializadoras homologadas' : x.on.length ? 'Total ' + x.miles(x.total) + ' · ' + x.cupos.join(' · ') : 'Sin sectores habilitados';
+      var cfgTag = sembrado ? (cf && cf.sucio ? ['Sin guardar', 'alerta'] : ['Lista', 'ok']) : x.on.length ? ['Lista', 'ok'] : ['Sin sectores', 'error'];
+      var cupTag = sembrado ? (cu && cu.guardado ? ['Repartidos', 'ok'] : ['Sin repartir', 'alerta']) : x.total > 0 ? ['Con cupos', 'ok'] : ['Sin cupos', 'alerta'];
       return '<div class="pb-sec">' +
-        fila('Escenario', e.escenario + ', ' + e.ciudad, nr ? nr + (nr === 1 ? ' restricción' : ' restricciones') : 'Sin restricciones', nr ? 'alerta' : 'ok') +
-        fila('Evento y partidos', e.partidos.length + (e.partidos.length === 1 ? ' partido' : ' partidos') + ' el ' + fecha(e.fecha), faltaHora(e) ? 'Falta la hora' : 'Completo', faltaHora(e) ? 'error' : 'ok') +
-        fila('Configuración', 'Sectores, puertas y horarios del evento', cf && cf.sucio ? 'Sin guardar' : 'Lista', cf && cf.sucio ? 'alerta' : 'ok') +
-        fila('Cupos', 'Reparto entre comercializadoras homologadas', cu && cu.guardado ? 'Repartidos' : 'Sin repartir', cu && cu.guardado ? 'ok' : 'alerta') + '</div>' +
-        '<div class="pb-aviso"><span>Al publicarlo, las comercializadoras homologadas lo ven y se generan las boletas. Configuración y cupos se pueden ajustar después.</span></div>';
+        fila('Escenario', e.escenario + ', ' + e.ciudad + ' · aforo ' + e.aforo, nr ? nr + (nr === 1 ? ' restricción' : ' restricciones') : 'Sin restricciones', nr ? 'alerta' : 'ok') +
+        fila('Evento y partidos', (e.nombre || 'Evento nuevo') + ' · ' + fecha(e.fecha) + ' · ' + partidos, faltaHora(e) ? 'Falta la hora' : 'Completo', faltaHora(e) ? 'error' : 'ok') +
+        fila('Configuración', cfgTxt, cfgTag[0], cfgTag[1]) +
+        fila('Cupos', cupTxt, cupTag[0], cupTag[1]) + '</div>';
     }
 
     // Armazón común de los asistentes (crear evento, agregar escenario): barra de pasos, tarjeta del paso y barra inferior.
@@ -272,7 +277,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       st.vista = p[3] || 'evento';
       var v = activa(), sembrado = e.id === 'e1', cuerpo = a.i === 0 ? w.EV_ESCENARIOS.elegir(ctx, e) : last ? revisar(e) : (v.def ? v.def.render(ctx) : preparacion(v));
       // Configuración y Cupos solo traen datos para el evento sembrado; con otro se muestra lo heredado del escenario.
-      if (!sembrado && (p[0] === 'config' || p[0] === 'cupos')) { cuerpo = w.EV_ESCENARIOS.heredado(e, p[0] === 'config' ? 'Los sectores y las puertas parten del escenario. Aquí se ajustan los horarios, las sillas bloqueadas y el estado de cada sector para este evento.' : 'El reparto entre comercializadoras no puede pasar de lo que deja cada sector del escenario.'); }
+      if (!sembrado && (p[0] === 'config' || p[0] === 'cupos')) { cuerpo = w.EV_ESCENARIOS.heredado(e, p[0] === 'config' ? 'Los sectores y las puertas parten del escenario. Aquí se ajustan los horarios, las sillas bloqueadas y el estado de cada sector para este evento.' : 'El reparto entre comercializadoras no puede pasar de lo que deja cada sector del escenario.', p[0]); }
       var acc = sembrado && v.def && v.def.accion; if (typeof acc === 'function') { acc = acc(ctx); }
       var guardar = acc && !last && a.i > 0 ? '<button type="button" class="naowee-btn naowee-btn--mute" data-acc="' + esc(acc.acc) + '"' + (acc.disabled ? ' disabled' : '') + '>' + esc(acc.label) + '</button>' : '';
       return armar({ pref: 'as-', pasos: PASOS, i: a.i, max: a.max, cuerpo: cuerpo, guardar: guardar, volver: [LISTA, 'Volver a Eventos'], titulo: e.nombre || 'Evento nuevo', aria: 'Pasos para crear el evento',
@@ -285,6 +290,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
       if (ds.acc === 'as-sig') { a.i = Math.min(PASOS.length - 1, a.i + 1); a.max = Math.max(a.max, a.i); }
       else if (ds.acc === 'as-atras') { a.i = Math.max(0, a.i - 1); }
       else if (ds.acc === 'as-paso') { if (+ds.id <= a.max) { a.i = +ds.id; } }
+      else if (ds.acc === 'as-hab') { w.EV_ESCENARIOS.habilitar(e, ds.id); pintar(); return; }
       else if (ds.acc === 'as-esc') {
         var x = w.EV_ESCENARIOS.porId(ds.id);
         e.escenario = x.nombre; e.ciudad = x.ciudad; e.aforo = x.aforo;
@@ -401,6 +407,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     function onInput(ev) {
       var el = ev.target, texto = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && TEXTO.test(el.type));
       if (modoEsc && texto) { if (w.EV_ESCENARIOS.entrada(ev, escId)) { pintar(); } return; }
+      if (texto && el.dataset.s === 'hered') { w.EV_ESCENARIOS.cupo(evActual(), el.dataset.id, el.value); pintar(); return; }
       if (texto && el.dataset.s === 'lst') { evpEst().q = el.value; pintar(); return; }
       if (texto) { delegar(ev, 'onInput'); }
     }
@@ -490,7 +497,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
 
     var vacio = !sec[sel].nombre.trim();
     var form = '<div class="pb-esc-form">' +
-      '<label class="pb-campo">Nombre del sector<input type="text" data-s="esc" data-k="nombre" value="' + esc(sec[sel].nombre) + '"' + (vacio ? ' aria-invalid="true" aria-describedby="esc-err"' : '') + '></label>' +
+      '<label class="pb-campo">Nombre del sector' + GIClip.wrap('<input type="text" data-s="esc" data-k="nombre" value="' + esc(sec[sel].nombre) + '"' + (vacio ? ' aria-invalid="true" aria-describedby="esc-err"' : '') + '>', sec[sel].nombre) + '</label>' +
       '<div class="pb-campo"><span id="esc-tipo-l">Tipo de puesto</span><div class="pb-segmento" role="group" aria-labelledby="esc-tipo-l">' +
         '<button type="button" class="pb-seg" aria-pressed="' + num + '" data-acc="esc-tipo" data-id="num">Numerado</button>' +
         '<button type="button" class="pb-seg" aria-pressed="' + !num + '" data-acc="esc-tipo" data-id="libre">Aforo libre</button></div></div>' +
@@ -588,7 +595,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
     var datos = '<section class="pb-sec"><h3 class="pb-h3">Datos del evento</h3><div class="pb-form2">' +
       '<label class="pb-campo">Tipo de evento<select data-s="evp" data-k="tipo"' + dis + '>' + TIPOS.map(function (t) { return '<option value="' + t[0] + '"' + (t[0] === tipoDe(e) ? ' selected' : '') + '>' + t[1] + '</option>'; }).join('') + '</select></label>' +
       '<label class="pb-campo">Competencia<select data-s="evp" data-k="competencia"' + dis + '>' + opts(B.competencias, e.competencia) + '</select></label>' +
-      '<label class="pb-campo">Nombre del evento<input type="text" data-s="evp" data-k="nombre" value="' + esc(e.nombre) + '"' + dis + '></label>' +
+      '<label class="pb-campo">Nombre del evento' + GIClip.wrap('<input type="text" data-s="evp" data-k="nombre" value="' + esc(e.nombre) + '"' + dis + '>', e.nombre) + '</label>' +
       '<label class="pb-campo">Escenario<select data-s="evp" data-k="escenario"' + dis + '>' + opts(B.escenarios.map(function (x) { return x.nombre; }), e.escenario) + '</select></label>' +
       '<div class="pb-form2__par"><label class="pb-campo">Fecha<input type="date" data-s="evp" data-k="fecha" value="' + esc(e.fecha) + '"' + dis + '></label>' +
       '<label class="pb-campo">Apertura de puertas<input type="time" data-s="evp" data-k="apertura" value="' + esc(e.apertura) + '"' + dis + '></label></div></div>' +

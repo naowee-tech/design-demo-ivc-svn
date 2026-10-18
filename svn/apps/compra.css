@@ -238,7 +238,7 @@
 /* Rótulo de cada grupo de casos en el panel (momento del flujo en que ocurren). */
 /* Casos del panel como acordeón: un encabezado por tipo, con las filas de la lista compartida dentro. */
 .pc-grupo + .pc-grupo { border-top: 1px solid var(--naotech-app-color-200); }
-.pc-grupo__cab { display: flex; align-items: center; gap: var(--naotech-sizing-8); width: 100%; min-height: 44px; padding: 0 var(--naotech-sizing-12); border: 0; background: transparent; color: var(--naotech-app-color-800); font: inherit; font-size: var(--naotech-sizing-14); font-weight: 700; text-align: left; cursor: pointer; border-radius: var(--naotech-radius-md); }
+.pc-grupo__cab { display: flex; align-items: center; gap: var(--naotech-sizing-8); width: 100%; min-height: 44px; padding: 0 var(--naotech-sizing-12); border: 0; background: transparent; color: var(--naotech-app-color-800); font: inherit; font-size: calc(var(--naotech-sizing-14) + 1.33px); font-weight: 700; text-align: left; cursor: pointer; border-radius: var(--naotech-radius-md); }
 .pc-grupo__cab:hover { background: var(--naotech-app-color-100); }
 .pc-grupo__cab:focus-visible { outline: 2px solid var(--naotech-primary-color-600); outline-offset: -2px; }
 .pc-grupo__t { flex: 1; }
@@ -254,6 +254,7 @@
 .pp-panel .pc-grupo__lista > nwt-detail-item .pp-caso__punto { margin: 0 0 0 auto; flex: none; }
 .pc-grupo__lista > nwt-detail-item:hover { background: var(--naotech-app-color-100); }
 
+/* DC-133: el body del SDK mide 100% + 1px de borde por lado; en la card de info el scroll le cortaba el borde inferior. */
 /* DC-059: en escritorio la card Casos llena el alto del panel y su lista scrollea por dentro; el panel no. */
 @media (min-width: 901px) {
   .pp-panel:has(#pc-casos) { overflow: hidden; }
@@ -261,5 +262,6 @@
   .pp-panel:has(#pc-casos) > .pp-panel__card:first-of-type .nwt-card__body { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
   .pp-panel:has(#pc-casos) .nwt-card__content:has(#pc-casos) { flex: 1 1 auto; min-height: 0; flex-direction: column; overflow: hidden; }
   .pp-panel:has(#pc-casos) #pc-casos { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-  .pp-panel:has(#pc-casos) > .pp-panel__card:nth-of-type(2) { flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 60%; }
+  .pp-panel:has(#pc-casos) > .pp-panel__card:nth-of-type(2) .nwt-card__body { height: auto; }
+  .pp-panel:has(#pc-casos) > .pp-panel__card:nth-of-type(2) { flex: 0 0 auto; min-height: 0; overflow-y: auto; max-height: 60%; }
 }

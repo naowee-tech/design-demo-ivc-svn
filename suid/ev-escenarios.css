@@ -21,7 +21,9 @@
 .exs-chk { width: 10px; height: 10px; border-radius: 50%; background: var(--naotech-color-green-700); }
 .exs-chk--alerta { background: var(--naotech-color-yellow-900); }
 .exs-chk--error { background: var(--naotech-color-red-900); }
-.ev-asist .gi-step small { display: block; font-size: 12px; font-weight: 400; }
+/* DC-081: el subtítulo ocupa el ancho del título y queda pegado a él; DC-082/083/084: estado y acciones del borrador viven en el asistente */
+.ev-asist .gi-step small { display: block; grid-column: 2 / 4; grid-row: 2; font-size: 12px; font-weight: 400; line-height: 1.3; }
+.ev-asist .pb-evp__cab, .ev-asist .pb-evp__pie { display: none; }
 .ev-asist [data-acc='evp-publicar'].pb-btn { display: none; }
 
 /* Agregar escenario, paso 2: una tarjeta por sector con el tipo de puesto debajo del nombre. */
@@ -50,3 +52,9 @@
 .exs-doc:hover { transform: none; box-shadow: none; border-color: var(--border); }
 .exs-doc.is-uploaded:hover { border-color: var(--green-border); }
 .exs-doc .pb-btn { flex: none; }
+
+/* DC-085/086: sector habilitable y cupo por sector en los pasos Configuración y Cupos del asistente */
+.exs-hered { grid-template-columns: 32px minmax(0, 1fr) 110px minmax(180px, 240px); }
+.exs-hered__ctl { display: flex; justify-content: flex-end; }
+.exs-hered .exs-cupo { width: 140px; }
+.exs-hered__tot { margin: 12px 0 0; text-align: right; }

@@ -6,6 +6,8 @@ window.NAOWEE = {
 };
 /* Mindeporte + IVC como en el portal de ivc-base; lo usan las barras con marca Naowee a la izquierda. */
 window.NAOWEE.entidades = '<span class="pp-alianza"><span class="pp-alianza__sep" aria-hidden="true"></span><img class="pp-alianza__min" src="assets/ministerio.svg" alt="Ministerio del Deporte"><span class="pp-alianza__sep" aria-hidden="true"></span><span class="pp-alianza__ivc" title="Inspección, Vigilancia y Control">IVC</span></span>';
+/* Mindeporte + SVN para las barras de las pantallas del SVN (mismo lockup, chip distinto). */
+window.NAOWEE.deporteSvn = window.NAOWEE.entidades.replace('title="Inspección, Vigilancia y Control">IVC', 'title="Sistema de Validación Nacional">SVN');
 /* Lockup Mindeporte + IVC en blanco (img con filtro: file:// no deja usar máscaras). `alto` en px, por defecto 40. */
 window.NAOWEE.mindeporteBlanco = function (alto) {
   alto = alto || 40;

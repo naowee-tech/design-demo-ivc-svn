@@ -11,7 +11,7 @@ window.EV_AUDIT = (function (w) {
     { id: 'consulta', label: 'Consulta de perfil' },
     { id: 'venta', label: 'Venta' }
   ];
-  var ORIGENES = ['Lectura en puerta', 'Vista de seguridad', 'Comercializadora A', 'Comercializadora B', 'Taquilla oficial'];
+  var ORIGENES = ['Lectura en puerta', 'Vista de seguridad', 'Comercializadora A', 'Comercializadora B', 'Taquilla oficial', 'Portal de la persona', 'Consola de soporte', 'API de integración'];
   var OPERADOR = { 1: 'Op. A. Rueda', 2: 'Op. J. Ríos', 3: 'Op. P. Gil', 4: 'Op. L. Mejía', 5: 'Op. S. León', 6: 'Op. D. Salazar', 7: 'Op. C. Mora', 8: 'Op. M. Cano' };
   var AGENTE = { 1: 'Pt. A. Duarte', 2: 'Pt. M. Castaño', 3: 'Pt. S. Ramírez', 4: 'Pt. J. Herrera', 5: 'Pt. J. Herrera', 6: 'Pt. F. Ospina', 7: 'Pt. H. Londoño', 8: 'Sub. C. Pérez' };
   var PMU = 'Pt. R. Gómez';
@@ -176,8 +176,49 @@ window.EV_AUDIT = (function (w) {
     };
   }
 
+  // Tipo de documento de cada persona: el de los casos del SVN y el azar son CC; el bus trae el real en su clave.
+  function tipoDe(A, k) { return (A.tipos && A.tipos[k]) || 'CC'; }
+  function enmascarado(A, k) {
+    var n = A.personas[k] || '', t = tipoDe(A, k), D = w.DemoCasos;
+    if (D && D.privacidad) { return D.privacidad({ tipoId: t, numId: n }, 'auditoria').docVisible; }
+    return t + ' •••• ' + n.slice(-4);
+  }
+
+  // Suma lo que las apps del SVN dejaron en el bus. No toca el PRNG: trabaja sobre una copia del registro memorizado.
+  var cacheBus = {};
+  function conBus(A, e) {
+    var B = w.DemoBus;
+    if (!A || !B || !e) { return A; }
+    var evs = B.leer(function (x) { return x.evento === e.codigo || x.evento === e.id; });
+    if (!evs.length) { return A; }
+    var firma = e.id + '|' + A.filas.length + '|' + evs.length + '|' + evs[evs.length - 1].ts;
+    if (cacheBus[firma]) { return cacheBus[firma]; }
+    var personas = A.personas.slice(), tipos = (A.tipos || A.personas.map(function () { return 'CC'; })).slice(), filas = A.filas.slice(), corte = A.corte;
+    var pre = String(A.fecha).slice(5).replace('-', ''), nuevas = [];
+    evs.forEach(function (x, i) {
+      var p = String(x.clave || '').split('|'), t = p[0] || 'CC', n = p[1] || '', k = -1, m = min(x.horaEscena);
+      for (var j = 0; j < personas.length; j++) { if (personas[j] === n && tipos[j] === t) { k = j; break; } }
+      if (k < 0) { personas.push(n); tipos.push(t); k = personas.length - 1; }
+      if (m == null) { m = corte; }
+      if (A.vivo && m > corte) { corte = m; }
+      nuevas.push({ m: m, t: x.tipo, p: +x.puerta || 0, k: k, d: x.detalle, q: x.quien, o: +x.origen || 0, id: 'B-' + pre + '-' + ('000000' + (i + 1)).slice(-6), ts: x.ts });
+    });
+    // Más recientes primero; ante la misma hora, lo del bus va antes que lo generado.
+    nuevas.sort(function (a, b) { return b.m - a.m || b.ts - a.ts; });
+    nuevas.forEach(function (f) {
+      var i = 0; while (i < filas.length && filas[i].m > f.m) { i++; }
+      filas.splice(i, 0, f);
+    });
+    var cuenta = {}; TIPOS.forEach(function (t) { cuenta[t.id] = 0; });
+    filas.forEach(function (f) { if (cuenta[f.t] != null) { cuenta[f.t]++; } });
+    var R = { evento: A.evento, filas: filas, personas: personas, tipos: tipos, cuenta: cuenta, vivo: A.vivo, apertura: A.apertura, pitazo: A.pitazo, corte: corte, fecha: A.fecha,
+      entraron: cuenta.verde + cuenta.amarillo, caso: A.caso, secDe: A.secDe, sectores: A.sectores };
+    cacheBus = {}; cacheBus[firma] = R;
+    return R;
+  }
+
   return {
-    TIPOS: TIPOS, ORIGENES: ORIGENES, hhmm: hhmm, entero: entero,
+    TIPOS: TIPOS, ORIGENES: ORIGENES, hhmm: hhmm, entero: entero, conBus: conBus,
     // Registros del evento (memorizados); con: boletas con titular según Boletería.
     de: function (e, con) {
       var k = e.id + '|' + e.estado + '|' + con;
@@ -185,7 +226,7 @@ window.EV_AUDIT = (function (w) {
     },
     // Fecha legible de un registro: los minutos negativos son días antes del evento.
     fechaDe: function (A, m) { var dd = Math.floor(m / 1440); return dia(A.fecha, dd) + ' · ' + hhmm(m); },
-    doc: function (A, k) { var n = A.personas[k] || ''; return 'CC •••• ' + n.slice(-4); },
-    docCompleto: function (A, k) { var n = A.personas[k] || ''; return 'CC ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    doc: function (A, k) { return enmascarado(A, k); },
+    docCompleto: function (A, k) { var n = A.personas[k] || ''; return tipoDe(A, k) + ' ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   };
 })(window);

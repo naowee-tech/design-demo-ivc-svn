@@ -1,0 +1,23 @@
+/* Toolbar único de las presentaciones (SVN y Fase 0): marca a la izquierda, título centrado, acción a la derecha. */
+
+/* Lockup Mindeporte + chip (IVC o SVN); lo usan también otras barras del SVN. */
+.pp-alianza { flex: none; display: inline-flex; align-items: center; gap: var(--naotech-sizing-12); }
+.pp-alianza__sep { width: 1px; height: var(--naotech-sizing-24); background: var(--naotech-app-color-300); }
+.pp-alianza__min { display: block; height: calc(var(--naotech-sizing-40) * 1.35); width: auto; }
+.pp-alianza__ivc { display: inline-flex; align-items: center; height: var(--naotech-sizing-28); padding: 0 var(--naotech-sizing-10); border-radius: var(--naotech-radius-md); background: var(--naotech-primary-color-050); color: var(--naotech-primary-color-800); font-size: var(--naotech-sizing-14); font-weight: 800; letter-spacing: .03em; }
+
+/* line-height normal: fase0 hereda 1.5 de tokens.css y el título saldría más alto. */
+.pp-toolbar { position: relative; flex: none; line-height: normal; }
+.pp-toolbar__marca { display: flex; flex-direction: row; align-items: center; gap: var(--naotech-sizing-8); }
+.pp-toolbar .pp-alianza { gap: var(--naotech-sizing-8); }
+/* 1.35 sobre 1.35 (DC-139): ~51px; cabe en los 88px del toolbar sin tocar su alto. */
+.pp-toolbar .pp-alianza__min { height: calc(var(--naotech-sizing-28) * 1.35 * 1.35); }
+.pp-toolbar .pp-alianza__sep:first-child { display: none; }
+.pp-toolbar__titulo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; }
+.pp-toolbar__titulo .nwt-title__content { align-items: center; }
+/* Subtítulo al tamaño de las migas de Control de acceso (DC-106). */
+.pp-toolbar__titulo .nwt-title__description { font-size: 1rem; font-weight: 700; line-height: 1.2; color: var(--naotech-app-color-900); }
+/* Acción sin icono; al pasar el cursor se pinta de primary (DC-107). */
+.pp-toolbar nwt-button[slot="actions"]:hover { --naotech-button-color: var(--naotech-primary-color-600); color: var(--naotech-primary-color-600); }
+/* Con poco ancho el título centrado chocaría con la marca y la acción. */
+@media (max-width: 860px) { .pp-toolbar__titulo { display: none; } }

@@ -101,6 +101,8 @@ window.PANTALLAS.gate = function (raiz, ctx) {
       '<div class="sv-gate__pie sv-revela" style="--sv-retraso:520ms">' +
         '<span class="nwt-smalltext-font-semibold">' + esc(D.entidad.nombre) + ' · ' + esc(D.entidad.sistema) + '</span>' +
         '<span class="nwt-smalltext-font-regular">Prototipo de demostración · datos ficticios · sesión ficticia</span>' +
+        '<span class="sv-gate__accesos"><button type="button" class="sv-gate__demo nwt-smalltext-font-regular" data-demo-panel title="Ctrl/⌘ + Shift + L">Panel de casos de prueba</button>' +
+        '<a class="sv-gate__demo nwt-smalltext-font-regular" href="../manuales/index.html">Manuales</a></span>' +
       '</div>' +
     '</div>';
 
@@ -177,6 +179,7 @@ window.PANTALLAS.gate = function (raiz, ctx) {
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('[data-rol],[data-app]')) { ev.preventDefault(); elegir(ev); }
   }
   raiz.addEventListener('click', elegir);
+  raiz.addEventListener('click', function (e) { if (e.target.closest('[data-demo-panel]') && window.DemoCasos) { window.DemoCasos.abrir(); } });
   raiz.addEventListener('keydown', tecla);
   return function () { raiz.removeEventListener('click', elegir); raiz.removeEventListener('keydown', tecla); window.removeEventListener('pageshow', alVolver); };
 };

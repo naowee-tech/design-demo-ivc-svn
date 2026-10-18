@@ -2,6 +2,7 @@
 window.PANTALLAS = window.PANTALLAS || {};
 
 (function () {
+  var U = window.SVN_UTIL, REL = U.rel;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function ico(n) { return '<nwt-icon value="' + n + '"></nwt-icon>'; }
   function digitos(s) { return String(s).replace(/\D/g, ''); }
@@ -31,10 +32,10 @@ window.PANTALLAS = window.PANTALLAS || {};
   var NOMBRES = ['Camilo Andrés Vélez Soto', 'Laura Marcela Ocampo Ríos', 'Sebastián Henao Gil', 'Daniela Cardona Mejía', 'Esteban Tobón Arias', 'Mariana Zapata Cano', 'Felipe Restrepo Toro', 'Valeria Monsalve Pino', 'Santiago Duque Marín', 'Juliana Barrientos Soto'];
   // Eventos del club en su estadio; `corto` coincide con el de la bandeja del IVC.
   var EVENTOS = [
-    { corto: 'Nacional vs. Medellín · 28 sep', largo: 'Nacional vs. Medellín · 28 sep 2026 · Estadio Atanasio Girardot', fecha: '28 sep 2026', estado: 'finalizado', asist: '34.870', avisos: 41, rojos: 4, bloq: 12, autoridad: 'Inspección municipal 14 de Medellín' },
-    { corto: 'Nacional vs. Junior · 20 sep', largo: 'Nacional vs. Junior · 20 sep 2026 · Estadio Atanasio Girardot', fecha: '20 sep 2026', estado: 'finalizado', asist: '31.204', avisos: 27, rojos: 2, bloq: 7, autoridad: 'Inspección municipal 14 de Medellín' },
-    { corto: 'Nacional vs. Pereira · 10 ago', largo: 'Nacional vs. Pereira · 10 ago 2026 · Estadio Atanasio Girardot', fecha: '10 ago 2026', estado: 'finalizado', asist: '28.915', avisos: 19, rojos: 3, bloq: 5, autoridad: 'Inspección municipal 14 de Medellín' },
-    { corto: 'Nacional vs. Once Caldas · 4 oct', largo: 'Nacional vs. Once Caldas · 4 oct 2026 · Estadio Atanasio Girardot', fecha: '4 oct 2026', estado: 'proximo', asist: '22.480', asistEtq: 'ingresos emitidos', avisos: null, rojos: null, bloq: 3, autoridad: 'Inspección municipal 14 de Medellín' }
+    { corto: 'Nacional vs. Medellín · ' + REL(-1).corto, largo: 'Nacional vs. Medellín · ' + REL(-1).largo + ' · Estadio Atanasio Girardot', fecha: REL(-1).largo, estado: 'finalizado', asist: '34.870', avisos: 41, rojos: 4, bloq: 12, autoridad: 'Inspección municipal 14 de Medellín' },
+    { corto: 'Nacional vs. Junior · ' + REL(-9).corto, largo: 'Nacional vs. Junior · ' + REL(-9).largo + ' · Estadio Atanasio Girardot', fecha: REL(-9).largo, estado: 'finalizado', asist: '31.204', avisos: 27, rojos: 2, bloq: 7, autoridad: 'Inspección municipal 14 de Medellín' },
+    { corto: 'Nacional vs. Pereira · ' + REL(-50).corto, largo: 'Nacional vs. Pereira · ' + REL(-50).largo + ' · Estadio Atanasio Girardot', fecha: REL(-50).largo, estado: 'finalizado', asist: '28.915', avisos: 19, rojos: 3, bloq: 5, autoridad: 'Inspección municipal 14 de Medellín' },
+    { corto: 'Nacional vs. Once Caldas · ' + REL(5).corto, largo: 'Nacional vs. Once Caldas · ' + REL(5).largo + ' · Estadio Atanasio Girardot', fecha: REL(5).largo, estado: 'proximo', asist: '22.480', asistEtq: 'ingresos emitidos', avisos: null, rojos: null, bloq: 3, autoridad: 'Inspección municipal 14 de Medellín' }
   ];
 
   // Hub de la comercializadora. Graderío es la del demo (integracion.js); «hoy» del módulo es 29 sep.
@@ -46,28 +47,28 @@ window.PANTALLAS = window.PANTALLAS || {};
     /* ---------- Datos de la demo (en memoria) ---------- */
 
     var C = [
-      { id: 'grader', nombre: 'Graderío', estado: 'homologada', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · 12 ago 2026', llave: 'emitida', llaveFecha: '12 ago 2026',
-        historial: [{ f: '3 ago 2026', t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: '12 ago 2026', t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }, { f: '12 ago 2026', t: 'Llave emitida', q: 'Natalia Rojas Cuesta' }] },
-      { id: 'tupalco', nombre: 'TuPalco', estado: 'homologada', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · 20 ago 2026', llave: 'sin', llaveFecha: '',
-        historial: [{ f: '9 ago 2026', t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: '20 ago 2026', t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }] },
+      { id: 'grader', nombre: 'Graderío', estado: 'homologada', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · ' + REL(-48).largo, llave: 'emitida', llaveFecha: REL(-48).largo,
+        historial: [{ f: REL(-57).largo, t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: REL(-48).largo, t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }, { f: REL(-48).largo, t: 'Llave emitida', q: 'Natalia Rojas Cuesta' }] },
+      { id: 'tupalco', nombre: 'TuPalco', estado: 'homologada', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · ' + REL(-40).largo, llave: 'sin', llaveFecha: '',
+        historial: [{ f: REL(-51).largo, t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: REL(-40).largo, t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }] },
       { id: 'boletea', nombre: 'Boletea', estado: 'enpruebas', pruebas: [1, 1, 1, 0], aprobo: '', llave: 'sin', llaveFecha: '',
-        historial: [{ f: '15 sep 2026', t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: '25 sep 2026', t: 'Corrida de pruebas: 3 de 4 casos', q: 'Portal de integración' }] },
+        historial: [{ f: REL(-14).largo, t: 'Inició pruebas', q: 'Natalia Rojas Cuesta' }, { f: REL(-4).largo, t: 'Corrida de pruebas: 3 de 4 casos', q: 'Portal de integración' }] },
       { id: 'entradaya', nombre: 'EntradaYa', estado: 'pendiente', pruebas: [0, 0, 0, 0], aprobo: '', llave: 'sin', llaveFecha: '',
-        historial: [{ f: '22 sep 2026', t: 'Solicitó la homologación', q: 'EntradaYa' }] },
-      { id: 'andina', nombre: 'Ticketera Andina', estado: 'suspendida', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · 14 feb 2026', llave: 'emitida', llaveFecha: '14 feb 2026', motivo: 'Incumplió el tiempo de respuesta en tres eventos',
-        historial: [{ f: '14 feb 2026', t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }, { f: '21 sep 2026', t: 'Suspendida · incumplió el tiempo de respuesta en tres eventos', q: 'Natalia Rojas Cuesta' }] }
+        historial: [{ f: REL(-7).largo, t: 'Solicitó la homologación', q: 'EntradaYa' }] },
+      { id: 'andina', nombre: 'Ticketera Andina', estado: 'suspendida', pruebas: [1, 1, 1, 1], aprobo: 'Natalia Rojas Cuesta · ' + REL(-227).largo, llave: 'emitida', llaveFecha: REL(-227).largo, motivo: 'Incumplió el tiempo de respuesta en tres eventos',
+        historial: [{ f: REL(-227).largo, t: 'Homologada: 4 de 4 casos aprobados', q: 'Natalia Rojas Cuesta' }, { f: REL(-8).largo, t: 'Suspendida · incumplió el tiempo de respuesta en tres eventos', q: 'Natalia Rojas Cuesta' }] }
     ];
     var R = [
       { id: 'g1', sem: '2026-II', club: CLUB, estadio: 'Estadio Atanasio Girardot', c: null, estado: 'pendiente', envio: '', aprobo: '' },
-      { id: 'g2', sem: '2026-II', club: 'Independiente Medellín', estadio: 'Estadio Atanasio Girardot', c: 'tupalco', estado: 'aprobado', envio: '4 sep', aprobo: 'Natalia Rojas Cuesta · 8 sep 2026' },
+      { id: 'g2', sem: '2026-II', club: 'Independiente Medellín', estadio: 'Estadio Atanasio Girardot', c: 'tupalco', estado: 'aprobado', envio: REL(-25).corto, aprobo: 'Natalia Rojas Cuesta · ' + REL(-21).largo },
       { id: 'g3', sem: '2026-II', club: 'Millonarios', estadio: 'Estadio El Campín', c: null, estado: 'pendiente', envio: '', aprobo: '', atrasado: 14 },
-      { id: 'g4', sem: '2026-II', club: 'Junior', estadio: 'Estadio Metropolitano', c: 'grader', estado: 'revision', envio: '12 sep', aprobo: '' },
-      { id: 'g5', sem: '2026-II', club: 'Junior', estadio: 'Estadio Metropolitano', c: 'boletea', estado: 'revision', envio: '12 sep', aprobo: '' },
-      { id: 'g6', sem: '2026-II', club: 'Santa Fe', estadio: 'Estadio El Campín', c: 'andina', estado: 'revision', envio: '10 sep', aprobo: '' },
-      { id: 'g7', sem: '2026-II', club: 'América de Cali', estadio: 'Estadio Pascual Guerrero', c: 'entradaya', estado: 'revision', envio: '16 sep', aprobo: '' },
-      { id: 'h1', sem: '2026-I', club: CLUB, estadio: 'Estadio Atanasio Girardot', c: 'grader', estado: 'aprobado', envio: '6 feb', aprobo: 'Natalia Rojas Cuesta · 14 feb 2026' },
-      { id: 'h2', sem: '2026-I', club: 'Independiente Medellín', estadio: 'Estadio Atanasio Girardot', c: 'andina', estado: 'aprobado', envio: '8 feb', aprobo: 'Natalia Rojas Cuesta · 14 feb 2026' },
-      { id: 'h3', sem: '2026-I', club: 'Millonarios', estadio: 'Estadio El Campín', c: 'grader', estado: 'aprobado', envio: '9 feb', aprobo: 'Natalia Rojas Cuesta · 14 feb 2026' }
+      { id: 'g4', sem: '2026-II', club: 'Junior', estadio: 'Estadio Metropolitano', c: 'grader', estado: 'revision', envio: REL(-17).corto, aprobo: '' },
+      { id: 'g5', sem: '2026-II', club: 'Junior', estadio: 'Estadio Metropolitano', c: 'boletea', estado: 'revision', envio: REL(-17).corto, aprobo: '' },
+      { id: 'g6', sem: '2026-II', club: 'Santa Fe', estadio: 'Estadio El Campín', c: 'andina', estado: 'revision', envio: REL(-19).corto, aprobo: '' },
+      { id: 'g7', sem: '2026-II', club: 'América de Cali', estadio: 'Estadio Pascual Guerrero', c: 'entradaya', estado: 'revision', envio: REL(-13).corto, aprobo: '' },
+      { id: 'h1', sem: '2026-I', club: CLUB, estadio: 'Estadio Atanasio Girardot', c: 'grader', estado: 'aprobado', envio: REL(-235).corto, aprobo: 'Natalia Rojas Cuesta · ' + REL(-227).largo },
+      { id: 'h2', sem: '2026-I', club: 'Independiente Medellín', estadio: 'Estadio Atanasio Girardot', c: 'andina', estado: 'aprobado', envio: REL(-233).corto, aprobo: 'Natalia Rojas Cuesta · ' + REL(-227).largo },
+      { id: 'h3', sem: '2026-I', club: 'Millonarios', estadio: 'Estadio El Campín', c: 'grader', estado: 'aprobado', envio: REL(-232).corto, aprobo: 'Natalia Rojas Cuesta · ' + REL(-227).largo }
     ];
     var RP = D.ivc.reportes.filter(function (r) { return r.entidad === CLUB; }).map(function (r) {
       return { id: r.id, estado: r.estado, nombre: r.nombre, doc: r.doc, corto: r.corto, hechos: r.hechos, autoridad: r.autoridad, conductas: r.conductas, evid: r.evid || {}, descripcion: r.descripcion, motivoArchivo: r.motivoArchivo || '', fecha: r.fecha,
@@ -84,26 +85,26 @@ window.PANTALLAS = window.PANTALLAS || {};
     var KEY_B = ['vigente', 'usado', 'vigente', 'vigente', 'vigente', 'anulado', 'congelado'];
     var EST_B = { activa: 'vigente', usada: 'usado', poractivar: 'vigente', sintitular: 'vigente', perdida: 'vigente', anulada: 'anulado', congelada: 'congelado', sinvender: 'sinvender' };
     var EV_CO = [
-      { id: 'EV-2026-0412', corto: 'Nacional vs. Medellín', fecha: '28 sep 2026', estado: 'finalizado', plazo: '28 sep 2026, 19:00', cupo: { norte: 5000, occ: 6000, ori: 7000 },
+      { id: 'EV-2026-0412', corto: 'Nacional vs. Medellín', fecha: REL(-1).largo, estado: 'finalizado', plazo: REL(-1).largo + ', 19:00', cupo: { norte: 5000, occ: 6000, ori: 7000 },
         base: { norte: [0, 4710, 0, 0, 120, 8, 3], occ: [0, 5402, 0, 0, 147, 11, 2], ori: [0, 6305, 0, 0, 143, 9, 4] }, nv: [37, 12, 5, 9] },
-      { id: 'EV-2026-0431', corto: 'Nacional vs. Once Caldas', fecha: '4 oct 2026', estado: 'proximo', plazo: '4 oct 2026, 16:00', cupo: { norte: 4000, occ: 5000, ori: 6500, sur: 3000 },
+      { id: 'EV-2026-0431', corto: 'Nacional vs. Once Caldas', fecha: REL(5).largo, estado: 'proximo', plazo: REL(5).largo + ', 16:00', cupo: { norte: 4000, occ: 5000, ori: 6500, sur: 3000 },
         base: { norte: [2398, 0, 284, 8, 0, 4, 1], occ: [3242, 0, 402, 11, 0, 6, 2], ori: [4046, 0, 511, 14, 0, 5, 3], sur: [1461, 0, 188, 5, 0, 2, 0] }, nv: [21, 4, 2, 6] },
-      { id: 'EV-2026-0447', corto: 'Nacional vs. Tolima', fecha: '18 oct 2026', estado: 'proximo', plazo: '18 oct 2026, 13:00', cupo: { norte: 3000, occ: 3500, ori: 4500 },
+      { id: 'EV-2026-0447', corto: 'Nacional vs. Tolima', fecha: REL(19).largo, estado: 'proximo', plazo: REL(19).largo + ', 13:00', cupo: { norte: 3000, occ: 3500, ori: 4500 },
         base: { norte: [668, 0, 140, 4, 0, 0, 0], occ: [976, 0, 210, 6, 0, 1, 0], ori: [1266, 0, 265, 8, 0, 0, 0] }, nv: [6, 1, 0, 2] }
     ];
     // Muestra de derechos de ingreso: [evento, sector, estado, titular, fecha de venta]. Titular ya enmascarado.
     var B = [
-      [0, 'norte', 'usada', 'Laura O. · CC ••••7712', '19 sep 2026'], [0, 'occ', 'usada', 'Esteban T. · CC ••••0938', '21 sep 2026'], [0, 'ori', 'usada', 'Mariana Z. · CC ••••5521', '22 sep 2026'],
-      [0, 'ori', 'perdida', '', '24 sep 2026'], [0, 'occ', 'perdida', '', '25 sep 2026'],
+      [0, 'norte', 'usada', 'Laura O. · CC ••••7712', REL(-10).largo], [0, 'occ', 'usada', 'Esteban T. · CC ••••0938', REL(-8).largo], [0, 'ori', 'usada', 'Mariana Z. · CC ••••5521', REL(-7).largo],
+      [0, 'ori', 'perdida', '', REL(-5).largo], [0, 'occ', 'perdida', '', REL(-4).largo],
       [1, 'occ', 'sinvender', '', ''], [1, 'sur', 'sinvender', '', ''],
-      [1, 'ori', 'sintitular', '', '27 sep 2026'],
-      [1, 'ori', 'poractivar', 'Camilo V. · CC ••••2884', '28 sep 2026'], [1, 'ori', 'poractivar', 'Daniela C. · CC ••••4310', '28 sep 2026'], [1, 'occ', 'poractivar', 'Felipe R. · CC ••••6672', '29 sep 2026'],
-      [1, 'occ', 'poractivar', 'Valeria M. · TI ••••9406', '29 sep 2026'], [1, 'norte', 'poractivar', 'Santiago D. · CC ••••1180', '29 sep 2026'], [1, 'sur', 'poractivar', 'Juliana B. · CE ••••2279', '29 sep 2026'],
-      [1, 'ori', 'activa', 'Sebastián H. · CC ••••8812', '25 sep 2026'], [1, 'occ', 'activa', 'Andrés R. · CC ••••2117', '26 sep 2026'], [1, 'norte', 'activa', 'Mateo G. · CC ••••5518', '26 sep 2026'], [1, 'occ', 'activa', 'Laura O. · CC ••••7712', '27 sep 2026'],
-      [1, 'norte', 'anulada', 'Felipe O. · CC ••••5208', '23 sep 2026'], [1, 'ori', 'congelada', 'Daniel O. · CC ••••7731', '24 sep 2026'],
-      [2, 'ori', 'sinvender', '', ''], [2, 'norte', 'sinvender', '', ''], [2, 'occ', 'sintitular', '', '29 sep 2026'],
-      [2, 'ori', 'poractivar', 'Camilo A. · CC ••••9030', '29 sep 2026'], [2, 'occ', 'poractivar', 'Mariana Z. · CC ••••5521', '29 sep 2026'], [2, 'norte', 'poractivar', 'Esteban T. · CC ••••0938', '29 sep 2026'],
-      [2, 'ori', 'activa', 'Juliana B. · CC ••••3305', '28 sep 2026'], [2, 'occ', 'activa', 'Santiago M. · CC ••••4905', '28 sep 2026']
+      [1, 'ori', 'sintitular', '', REL(-2).largo],
+      [1, 'ori', 'poractivar', 'Camilo V. · CC ••••2884', REL(-1).largo], [1, 'ori', 'poractivar', 'Daniela C. · CC ••••4310', REL(-1).largo], [1, 'occ', 'poractivar', 'Felipe R. · CC ••••6672', REL(0).largo],
+      [1, 'occ', 'poractivar', 'Valeria M. · TI ••••9406', REL(0).largo], [1, 'norte', 'poractivar', 'Santiago D. · CC ••••1180', REL(0).largo], [1, 'sur', 'poractivar', 'Juliana B. · CE ••••2279', REL(0).largo],
+      [1, 'ori', 'activa', 'Sebastián H. · CC ••••8812', REL(-4).largo], [1, 'occ', 'activa', 'Andrés R. · CC ••••2117', REL(-3).largo], [1, 'norte', 'activa', 'Mateo G. · CC ••••5518', REL(-3).largo], [1, 'occ', 'activa', 'Laura O. · CC ••••7712', REL(-2).largo],
+      [1, 'norte', 'anulada', 'Felipe O. · CC ••••5208', REL(-6).largo], [1, 'ori', 'congelada', 'Daniel O. · CC ••••7731', REL(-5).largo],
+      [2, 'ori', 'sinvender', '', ''], [2, 'norte', 'sinvender', '', ''], [2, 'occ', 'sintitular', '', REL(0).largo],
+      [2, 'ori', 'poractivar', 'Camilo A. · CC ••••9030', REL(0).largo], [2, 'occ', 'poractivar', 'Mariana Z. · CC ••••5521', REL(0).largo], [2, 'norte', 'poractivar', 'Esteban T. · CC ••••0938', REL(0).largo],
+      [2, 'ori', 'activa', 'Juliana B. · CC ••••3305', REL(-1).largo], [2, 'occ', 'activa', 'Santiago M. · CC ••••4905', REL(-1).largo]
     ].map(function (x, i) {
       var ev = EV_CO[x[0]], n = 18000 + i * 137;
       return { id: 'GR-' + ev.id.slice(-4) + '-' + x[1].toUpperCase() + '-' + String(n).slice(-5), ev: ev.id, sec: x[1], estado: EST_B[x[2]], tit: x[3], venta: x[4] };
@@ -111,16 +112,16 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     // Reportes que Graderío envía a Mindeporte; los revisa Mindeporte.
     var RC = [
-      { id: 'RC-2026-0107', tipo: 'ventas', titulo: 'Reporte de ventas · Nacional vs. Medellín', periodo: 'EV-2026-0412', fecha: '29 sep 2026', estado: 'observaciones', nota: '',
+      { id: 'RC-2026-0107', tipo: 'ventas', titulo: 'Reporte de ventas · Nacional vs. Medellín', periodo: 'EV-2026-0412', fecha: REL(0).largo, estado: 'observaciones', nota: '',
         cifras: null,
         obs: 'Los ingresos sin usar de Oriental no cuadran con el corte del organizador (143 frente a 140). Revisa y reenvía con una nota.',
-        historial: [{ f: '29 sep 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '29 sep 2026', t: 'Devuelto con observaciones', q: 'Mindeporte' }] },
-      { id: 'RC-2026-0098', tipo: 'incidente', titulo: 'Reventa no autorizada · Nacional vs. Medellín', evento: 'EV-2026-0412', cat: 'Reventa no autorizada', comprobante: 'GR-0412-ORI-18274', fecha: '26 sep 2026', estado: 'revision',
+        historial: [{ f: REL(0).largo, t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: REL(0).largo, t: 'Devuelto con observaciones', q: 'Mindeporte' }] },
+      { id: 'RC-2026-0098', tipo: 'incidente', titulo: 'Reventa no autorizada · Nacional vs. Medellín', evento: 'EV-2026-0412', cat: 'Reventa no autorizada', comprobante: 'GR-0412-ORI-18274', fecha: REL(-3).largo, estado: 'revision',
         descripcion: 'Detectamos comprobantes de compra de Oriental ofrecidos en redes sociales al triple del precio, dos días antes del partido. Ningún cambio de titular pasó por el SVN.',
-        historial: [{ f: '26 sep 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '27 sep 2026', t: 'Mindeporte empezó la revisión', q: 'Mindeporte' }] },
-      { id: 'RC-2026-0061', tipo: 'ventas', titulo: 'Reporte semestral 2026-I', periodo: '2026-I', fecha: '3 jul 2026', estado: 'aceptado', nota: '',
+        historial: [{ f: REL(-3).largo, t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: REL(-2).largo, t: 'Mindeporte empezó la revisión', q: 'Mindeporte' }] },
+      { id: 'RC-2026-0061', tipo: 'ventas', titulo: 'Reporte semestral 2026-I', periodo: '2026-I', fecha: REL(-88).largo, estado: 'aceptado', nota: '',
         cifras: [['Cupo de ingresos asignado', 96000], ['Vendidos', 81240], ['Sin vender', 14760], ['Vigentes y usados', 80115], ['Anulados o congelados', 1125], ['Ventas no realizadas', 388]],
-        historial: [{ f: '3 jul 2026', t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: '9 jul 2026', t: 'Aceptado', q: 'Mindeporte' }] }
+        historial: [{ f: REL(-88).largo, t: 'Enviado a Mindeporte', q: 'Graderío' }, { f: REL(-82).largo, t: 'Aceptado', q: 'Mindeporte' }] }
     ];
 
     RC[0].cifras = cifrasDe('EV-2026-0412');
@@ -294,9 +295,9 @@ window.PANTALLAS = window.PANTALLAS || {};
     function consultarAni(x) {
       var d = digitos(x.numero);
       if (d.length < 5) { return { ok: false, msg: 'Escribe el número completo del documento.' }; }
-      // Casos de prueba (shared/demo-casos.js): la cédula de la demo devuelve a su persona.
-      var caso = window.DemoCasos && window.DemoCasos.buscar(x.tipo, x.numero);
-      if (caso) { return caso.menor ? { ok: true, menor: true, nombre: caso.nombre, iniciales: caso.nombre.split(' ').map(function (w) { return w.charAt(0); }).join('. ') + '.' } : { ok: true, nombre: caso.nombre }; }
+      // El resolver del IVC identifica a cualquier documento de la demo o de GI; el menor sale solo con iniciales.
+      var r = U.res(x.tipo, x.numero, 'entidad');
+      if (r) { return r.esMenor ? { ok: true, menor: true, nombre: (r.persona.nombres + ' ' + r.persona.apellidos).trim(), iniciales: r.nombreVisible } : { ok: true, nombre: r.nombreVisible }; }
       if (/0000$/.test(d)) { return { ok: false, msg: 'El ANI no encontró este documento. Revisa el número o el tipo.' }; }
       var nombre = NOMBRES[+d.slice(-1)];
       if (x.tipo === 'TI') { return { ok: true, menor: true, nombre: nombre, iniciales: nombre.split(' ').map(function (w) { return w.charAt(0); }).join('. ') + '.' }; }
@@ -531,11 +532,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     /* ---------- Panel del demo ---------- */
 
     function toolbar() {
-      return '<nwt-toolbar class="pp-toolbar">' +
-        '' +
-        '<nwt-title class="pp-toolbar__titulo">Entidades y comercializadoras<span slot="subtitle">Club o entidad · Comercializadora</span></nwt-title>' +
-        '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
-      '</nwt-toolbar>';
+      return window.SVN_TOOLBAR({ marca: window.NAOWEE.entidades, titulo: 'Entidades y comercializadoras', subtitulo: 'Club o entidad · Comercializadora', acciones: [{ texto: 'Cambiar de perfil', acc: 'salir' }] });
     }
     function tarjeta(titulo, cuerpo) { return '<nwt-card class="pp-panel__card" nwt-size="small"><span slot="header" class="nwt-body-font-bold">' + esc(titulo) + '</span>' + cuerpo + '</nwt-card>'; }    function guion() {
       var club = [
@@ -636,12 +633,12 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     /* ---------- Acciones ---------- */
 
-    function hoyTxt() { return '29 sep 2026'; }
+    function hoyTxt() { return REL(0).largo; }
     function ir(v) { st.vista = v; st.toast = null; scr = {}; pintar(); }
 
     function enviarReporteSemestral() {
       var f = miFila(), c = comerc(st.club.comerc);
-      f.c = c.id; f.estado = 'revision'; f.envio = '29 sep';
+      f.c = c.id; f.estado = 'revision'; f.envio = REL(0).corto;
       mostrarToast('Reporte enviado', 'Mindeporte lo revisará con ' + c.nombre + '.', 'positive', 'positive');
     }
 
@@ -652,8 +649,8 @@ window.PANTALLAS = window.PANTALLAS || {};
       C97.forEach(function (c) { if (x.conductas['97-' + c[0]]) { conductas.push(c[1] + ' (art. 97, ' + c[0] + ')'); } });
       C98.forEach(function (c) { if (x.conductas['98-' + c[0]]) { conductas.push(c[1] + ' (art. 98, ' + c[0] + ')'); } });
       var r = { id: window.DemoCasos ? window.DemoCasos.siguienteId() : 'R-2026-04' + n, estado: 'enviado', nombre: a.menor ? a.iniciales : a.nombre, doc: a.menor ? x.tipo + ' ••••' + digitos(x.numero).slice(-4) : x.tipo + ' ' + x.numero, corto: ev.corto, hechos: ev.fecha, autoridad: ev.autoridad,
-        conductas: conductas, evid: { fot: x.evid.filter(function (e) { return !e.v; }).length, vid: x.evid.some(function (e) { return e.v; }) }, descripcion: x.descripcion.trim(), motivoArchivo: '', fecha: '29 sep · 10:14',
-        historial: [{ f: '29 sep 2026', t: 'Enviado por tu entidad', q: 'Tu entidad' }] };
+        conductas: conductas, evid: { fot: x.evid.filter(function (e) { return !e.v; }).length, vid: x.evid.some(function (e) { return e.v; }) }, descripcion: x.descripcion.trim(), motivoArchivo: '', fecha: REL(0).corto + ' · 10:14',
+        historial: [{ f: REL(0).largo, t: 'Enviado por tu entidad', q: 'Tu entidad' }] };
       RP.unshift(r);
       // Llega a Solicitudes del IVC (suid/gi-solicitudes.js lo lee de shared/demo-casos.js).
       if (window.DemoCasos) {

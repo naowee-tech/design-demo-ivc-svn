@@ -581,7 +581,7 @@
     }
     var V = boletas(ctx), L = listo(ctx.st), vencido = e.estado !== 'publicado', cerrado = e.estado === 'cerrado';
     // En vivo y cerrado, las validadas son los ingresos del registro de auditoría: una sola cifra en todo el detalle.
-    var A = (e.estado === 'curso' || cerrado) && window.EV_AUDIT ? window.EV_AUDIT.de(e, V.con) : null;
+    var A = (e.estado === 'curso' || cerrado) && window.EV_AUDIT ? window.EV_AUDIT.conBus(window.EV_AUDIT.de(e, V.con), e) : null;
     var val = A ? A.entraron : 0;
     var valAyuda = e.estado === 'curso' ? 'Puertas abiertas desde las ' + e.apertura : cerrado ? 'Evento cerrado' : (e.id === 'e1' && L.abierto ? 'Puertas abiertas a las ' + L.abiertoA : 'Las puertas abren a las ' + e.apertura);
     var kpi = function (t, n, ayuda, extra) { return '<div class="pb-card pbe-card"><span class="pbe-card__s">' + t + '</span><span class="pbe-kpi"><b>' + fmt(n) + '</b></span><span class="pbe-ayuda">' + ayuda + '</span>' + (extra || '') + '</div>'; };

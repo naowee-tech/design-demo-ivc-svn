@@ -128,6 +128,10 @@
           '<button class="suid-avatar" type="button" aria-haspopup="menu" aria-expanded="false"><span class="suid-avatar__ring">' + SUID.user.initials + '</span>' + I.chevD + '</button>' +
           '<div class="suid-user__menu" role="menu" hidden>' +
             '<a role="menuitem" href="../svn/index.html">Ir a SVN · Platform</a>' +
+            '<hr class="suid-user__sep" role="separator">' +
+            '<a role="menuitem" href="#" data-demo-panel>Panel de casos de prueba</a>' +
+            '<a role="menuitem" href="../manuales/index.html">Manuales</a>' +
+            '<hr class="suid-user__sep" role="separator">' +
             '<a role="menuitem" href="../index.html">Cerrar sesión</a>' +
           '</div>' +
         '</div>' +
@@ -141,6 +145,7 @@
     if (b) { b.setAttribute('aria-expanded', 'false'); }
   }
   d.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-demo-panel]')) { e.preventDefault(); if (w.DemoCasos) { w.DemoCasos.abrir(); } }
     var b = e.target.closest && e.target.closest('.suid-avatar');
     var abierto = b && !d.querySelector('.suid-user__menu').hidden;
     cierraMenuUsuario();

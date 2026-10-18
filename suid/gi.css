@@ -303,3 +303,12 @@ span.gt-trend--eq { color: var(--text-secondary); background: var(--bg-soft); }
   .gi-insight:nth-child(odd), .gi-insight:nth-child(even) { padding-left: 0; padding-right: 0; border-right: 0; }
   .gi-insight:nth-child(n+2) { border-top: 1px solid var(--border); }
 }
+
+/* DC-098: bloque del firmante en los modales de operación. */
+.gi-firma { display: grid; grid-template-columns: 44px 1fr; gap: 4px 12px; align-items: center; padding: 12px 14px; margin: 0 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-subtle, #f7f8fb); }
+.gi-firma__av { width: 44px; height: 44px; border-radius: 50%; background: var(--blue-bg); color: var(--accent); font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; }
+.gi-firma__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14px; }
+.gi-firma__id span { font-size: 13px; color: var(--text-secondary); }
+.gi-firma__sello { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px; margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.gi-firma__trazo { font-family: 'Segoe Script', 'Snell Roundhand', 'Brush Script MT', cursive; font-style: italic; font-size: 22px; line-height: 1.2; color: var(--text-primary); }
+.gi-firma__fecha { font-size: 12px; color: var(--text-secondary); }

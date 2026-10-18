@@ -58,11 +58,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     function tag(tipo) { return '<span class="pa-tag pa-tag--' + tipo + '">' + esc(TIPO[tipo].tag) + '</span>'; }
 
     function toolbar() {
-      return '<nwt-toolbar class="pp-toolbar">' +
-        '' +
-        '<nwt-title class="pp-toolbar__titulo">Auditoría<span slot="subtitle">' + esc(ROTULO[rolId]) + ' · ' + esc(E.partido) + '</span></nwt-title>' +
-        '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
-      '</nwt-toolbar>';
+      return window.SVN_TOOLBAR({ marca: window.NAOWEE.entidades, titulo: 'Auditoría', subtitulo: ROTULO[rolId] + ' · ' + E.partido, acciones: [{ texto: 'Cambiar de perfil', acc: 'salir' }] });
     }
 
     function tarjeta(titulo, cuerpo) {

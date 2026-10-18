@@ -2,13 +2,10 @@
 window.PANTALLAS = window.PANTALLAS || {};
 
 (function () {
-  var MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  var DIA = 86400000;
+  var U = window.SVN_UTIL, R = U.rel;
   var DOCS = ['CC', 'TI', 'CE', 'PA', 'PPT', 'PEP', 'RUMV'];
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function tiempo(iso) { var p = iso.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
-  function fmt(ms) { var d = new Date(ms); return d.getUTCDate() + ' ' + MES[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
   function digitos(s) { return String(s || '').replace(/\D/g, ''); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
 
@@ -26,38 +23,51 @@ window.PANTALLAS = window.PANTALLAS || {};
   };
   function ico(n, t) { return '<svg width="' + (t || 22) + '" height="' + (t || 22) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[n] + '</svg>'; }
 
-  /* ---------- Datos ficticios: cada persona ve solo lo suyo ---------- */
+  /* ---------- Cada persona ve solo lo suyo: el estado sale del resolver del IVC; aquí solo ingresos y vínculos de las personas fijas ---------- */
 
-  var PERS = {
-    '1036482117': { tipo: 'CC', num: '1.036.482.117', nombre: 'Andrés Felipe Restrepo Gil', medidas: [],
-      ingresos: [
-        { id: 'b1', evento: 'Nacional vs. Medellín', fecha: '28 sep 2026 · 19:00', lugar: 'Estadio Atanasio Girardot', sitio: 'Oriental Baja', doc: 'CC •••• 2117', estado: 'usado', nota: 'Entraste el 28 sep por la Puerta 4' },
-        { id: 'b2', evento: 'América vs. Once Caldas', fecha: '3 oct 2026 · 16:00', lugar: 'Estadio Olímpico Pascual Guerrero', sitio: 'Occidental', doc: 'CC •••• 2117', estado: 'vigente', nota: 'Entras con tu documento' },
-        { id: 'b3', evento: 'Real Cartagena vs. Unión Magdalena', fecha: '3 oct 2026 · 18:30', lugar: 'Estadio Jaime Morón', sitio: 'Oriental', doc: 'CC •••• 2117', estado: 'vigente', nota: 'Te lo asignó Santiago M. · CC •••• 4905' },
-        { id: 'b4', evento: 'Millonarios vs. América', fecha: '29 sep 2026 · 20:00', lugar: 'Estadio El Campín', sitio: 'Norte', doc: 'CC •••• 4905', estado: 'transferido', nota: 'Cambiaste el titular a Santiago M. el 27 sep' }
-      ],
-      vinculos: [{ id: 'v1', nombre: 'Graderío', desde: '12 ago 2026', dato: 'Documento y resultado de la validación' }, { id: 'v2', nombre: 'Taquilla oficial · Atanasio Girardot', desde: '2 mar 2026', dato: 'Documento y resultado de la validación' }] },
-    '71894447': { tipo: 'CC', num: '71.894.447', nombre: 'Julián Andrés Posada', persona: 'p1', medidas: [], ingresos: [],
-      vinculos: [{ id: 'v1', nombre: 'Graderío', desde: '9 sep 2026', dato: 'Documento y resultado de la validación' }] },
-    '4518227': { tipo: 'CE', num: '4.518.227', nombre: 'Daniela Restrepo Gil', persona: 'p6', ingresos: [], vinculos: [] },
-    '1152708339': { tipo: 'CC', num: '1.152.708.339', nombre: 'Mariana Cárdenas Ríos', persona: 'p0', ingresos: [
-      { id: 'b1', evento: 'Millonarios vs. América', fecha: '29 sep 2026 · 20:00', lugar: 'Estadio El Campín', sitio: 'Occidental', doc: 'CC •••• 8339', estado: 'vigente', nota: 'Entras con tu documento' }], vinculos: [{ id: 'v1', nombre: 'Graderío', desde: '21 sep 2026', dato: 'Documento y resultado de la validación' }] },
-    '43512876': { tipo: 'CC', num: '43.512.876', nombre: 'Gloria Patricia Hoyos Marín', persona: 'p0', ingresos: [], vinculos: [] },
-    // El menor no entra solo: lo consulta su representante legal.
-    '1021774331': { tipo: 'TI', num: '1.021.774.331', nombre: 'Samuel David Rendón Hoyos', persona: 'p3', menor: true, rep: '43512876', ingresos: [],
-      vinculos: [{ id: 'v1', nombre: 'Graderío', desde: '14 sep 2026', dato: 'Documento del menor y resultado de la validación', porRep: true }] }
-  };
+  var VINC = 'Documento y resultado de la validación';
+  // Personas del SVN sin registro en el IVC: sus ingresos son del guion, con fechas relativas a hoy.
+  function fija(k) {
+    var f = {
+      'CC|1036482117': { ingresos: [
+        { id: 'b1', evento: 'Nacional vs. Medellín', fecha: R(0).largo + ' · 19:00', lugar: 'Estadio Atanasio Girardot', sitio: 'Oriental Baja', doc: 'CC •••• 2117', estado: 'usado', nota: 'Entraste hoy por la Puerta 4' },
+        { id: 'b2', evento: 'América vs. Once Caldas', fecha: R(5).largo + ' · 16:00', lugar: 'Estadio Olímpico Pascual Guerrero', sitio: 'Occidental', doc: 'CC •••• 2117', estado: 'vigente', nota: 'Entras con tu documento' },
+        { id: 'b3', evento: 'Real Cartagena vs. Unión Magdalena', fecha: R(5).largo + ' · 18:30', lugar: 'Estadio Jaime Morón', sitio: 'Oriental', doc: 'CC •••• 2117', estado: 'vigente', nota: 'Te lo asignó Santiago M. · CC •••• 4905' },
+        { id: 'b4', evento: 'Millonarios vs. América', fecha: R(1).largo + ' · 20:00', lugar: 'Estadio El Campín', sitio: 'Norte', doc: 'CC •••• 4905', estado: 'transferido', nota: 'Cambiaste el titular a Santiago M. el ' + R(-1).corto }],
+        vinculos: [{ id: 'v1', nombre: 'Graderío', desde: R(-67).largo, dato: VINC }, { id: 'v2', nombre: 'Taquilla oficial · Atanasio Girardot', desde: R(-230).largo, dato: VINC }] },
+      'CC|1152708339': { ingresos: [
+        { id: 'b1', evento: 'Millonarios vs. América', fecha: R(1).largo + ' · 20:00', lugar: 'Estadio El Campín', sitio: 'Occidental', doc: 'CC •••• 8339', estado: 'vigente', nota: 'Entras con tu documento' }],
+        vinculos: [{ id: 'v1', nombre: 'Graderío', desde: R(-27).largo, dato: VINC }] }
+    };
+    return f[k] || { ingresos: [], vinculos: [] };
+  }
+  // Ventas autorizadas del bus a nombre de este documento: aparecen como ingresos y vinculan a la comercializadora.
+  function deVentas(k, doc) {
+    var vs = U.leer(function (x) { return x.tipo === 'venta' && x.clave === k && /autorizada/.test(x.detalle); });
+    return { ingresos: vs.map(function (x, i) {
+      return { id: 'bv' + i, evento: 'Nacional vs. Medellín', fecha: R(0).largo + ' · 19:00', lugar: 'Estadio Atanasio Girardot', sitio: (x.detalle.split(' · ')[1] || 'Oriental'), doc: doc, estado: 'vigente', nota: 'Entras con tu documento' };
+    }), vinculos: vs.length ? [{ id: 'vv', nombre: 'Graderío', desde: R(0).largo, dato: VINC }] : [] };
+  }
+  function enmasc(tipo, num) { return tipo + ' •••• ' + String(num).slice(-4); }
+  // Identifica a una persona por documento: el IVC y la demo primero, luego las fijas del SVN. `hoy` desplaza el día de lectura.
+  function buscar(tipo, num, hoy) {
+    var r = U.res(tipo, num, 'portal', hoy), k = U.clave(tipo, num), id = U.identidad(tipo, num);
+    if (!id) { return null; }
+    var f = fija(k), v = deVentas(k, enmasc(tipo, num));
+    return { tipo: U.cod(tipo), num: digitos(num), clave: k, nombre: id.nombre, visible: r ? r.nombreVisible : id.nombre, doc: r ? r.docVisible : tipo + ' ' + num, menor: !!(r && r.esMenor), r: r,
+      ingresos: f.ingresos.concat(v.ingresos), vinculos: f.vinculos.concat(v.vinculos) };
+  }
 
   var CASOS = [
     { id: 'sin', n: 1, corto: 'Persona sin medidas', punto: 'verde', form: { tipo: 'CC', num: '1.036.482.117', nombre: 'Andrés Felipe Restrepo Gil' },
       ve: 'Andrés Felipe Restrepo Gil: Sin medidas vigentes, cuatro ingresos en distintos estados y dos comercializadoras vinculadas.' },
     { id: 'vigente', n: 2, corto: 'Con medida vigente', punto: 'rojo', form: { tipo: 'CC', num: '71.894.447', nombre: 'Julián Andrés Posada' },
       ve: 'Julián Andrés Posada: la medida con autoridad, acto, desde y hasta, y los días que faltan. Una medida cumplida aparte.' },
-    { id: 'vencer', n: 3, corto: 'Medida por vencer', punto: 'ambar', form: { tipo: 'CE', num: '4.518.227', nombre: 'Daniela Restrepo Gil' },
-      ve: 'Vence en 6 días. Con «Adelantar el reloj» el estado pasa solo a Sin medidas vigentes, sin trámite.' },
-    { id: 'menor', n: 4, corto: 'Menor · representante legal', punto: 'rojo', form: { tipo: 'CC', num: '43.512.876', nombre: 'Gloria Patricia Hoyos Marín', menor: true, docMenor: '1.021.774.331' },
+    { id: 'vencer', n: 3, corto: 'Medida por vencer', punto: 'ambar', form: { tipo: 'CC', num: '1.090.000.004', nombre: 'Liliana Patricia Arango Ruiz' },
+      ve: 'Vence en pocos días, según el IVC. Con «Adelantar el reloj» el estado pasa solo a Sin medidas vigentes, sin trámite.' },
+    { id: 'menor', n: 4, corto: 'Menor · representante legal', punto: 'rojo', form: { tipo: 'CC', num: '1.090.000.107', nombre: 'Marta Lucía Duarte Gil', menor: true, docMenor: '1.090.000.007' },
       ve: 'Entra la madre y ve solo el estado de su hijo, con un aviso de que consulta como representante.' },
-    { id: 'compra', n: 5, corto: 'Desde un bloqueo de la compra', punto: 'rojo', directo: true, desde: { donde: 'Graderío', evento: 'Nacional vs. Medellín · 28 sep' }, form: { tipo: 'CC', num: '71.894.447', nombre: 'Julián Andrés Posada' },
+    { id: 'compra', n: 5, corto: 'Desde un bloqueo de la compra', punto: 'rojo', directo: true, desde: { donde: 'Graderío', evento: 'Nacional vs. Medellín · ' + R(0).corto }, form: { tipo: 'CC', num: '71.894.447', nombre: 'Julián Andrés Posada' },
       ve: 'Llega del enlace «consulta tu estado en el portal» de la compra rechazada; ya viene identificado.' },
     { id: 'reg', n: 6, corto: 'Documento no vigente', punto: 'ambar', form: { tipo: 'CC', num: '1.000.000.017', nombre: 'Camilo Torres Díaz' },
       ve: 'El no no es una medida: el documento no aparece vigente en la Registraduría. Dice qué hacer.' },
@@ -70,34 +80,43 @@ window.PANTALLAS = window.PANTALLAS || {};
   var guardado = { caso: 'sin' };
 
   window.PANTALLAS.portal = function (raiz, ctx) {
-    var D = ctx.D, V = D.ivc, HOY0 = tiempo(V.hoy);
+    var D = ctx.D;
     var disp, zoom = 1, timerToast = null, timerVerif = null, scr = 0;
+    // Llegar desde «Consultar mi estado» de una compra entra directo al caso con la persona ya identificada.
+    try { if (sessionStorage.getItem('svn.portal.desde')) { guardado.caso = 'compra'; } } catch (e) { /* sin almacenamiento */ }
     var st = nuevo(casoPorId(guardado.caso));
 
     function nuevo(c) {
       var s = { caso: c.id, pantalla: 'id', form: Object.assign({ menor: false, docMenor: '' }, c.form), error: null, verif: false, desde: c.desde || null,
         sujeto: null, rep: null, off: 0, abierto: {}, ingresos: [], vinculos: [], toast: null, otros: null };
-      if (c.directo) { entrar(s, PERS[digitos(c.form.num)], null); }
+      // Desde «Consultar mi estado» de una compra bloqueada llega ya identificada.
+      var h = c.directo && llegada();
+      if (h) { s.desde = h.desde; s.form = Object.assign(s.form, h.form); }
+      if (c.directo) { var p = buscar(s.form.tipo, s.form.num); if (p) { entrar(s, p, null); } }
       return s;
     }
-    function hoy() { return HOY0 + st.off * DIA; }
+    function llegada() {
+      try { var x = JSON.parse(sessionStorage.getItem('svn.portal.desde') || 'null'); sessionStorage.removeItem('svn.portal.desde'); return x && { desde: { donde: x.donde, evento: x.evento }, form: { tipo: x.tipo, num: x.num, nombre: x.nombre } }; } catch (e) { return null; }
+    }
+    // «Adelantar el reloj» solo desplaza el día de lectura que se le pasa al resolver; el IVC no se toca.
+    function hoy() { return U.sumar(U.hoyIso(), st.off); }
 
     function entrar(s, sujeto, rep) {
       s.sujeto = sujeto; s.rep = rep; s.pantalla = 'estado'; s.error = null; s.verif = false;
+      emitirConsulta(sujeto, rep);
       s.ingresos = (sujeto.ingresos || []).map(function (b) { return Object.assign({}, b); });
       s.vinculos = (sujeto.vinculos || []).map(function (v) { return Object.assign({}, v); });
     }
 
-    /* ---------- Medidas: el fin y el estado se calculan igual que en el registro ---------- */
+    /* ---------- Medidas: salen del resolver y de GI al día de lectura (hoy, o el simulado) ---------- */
 
-    function vigencia(m, h) {
-      var ejec = tiempo(m.ejecutoria), desde = ejec + DIA, dd = new Date(desde);
-      var fin = Date.UTC(dd.getUTCFullYear(), dd.getUTCMonth() + m.meses, dd.getUTCDate()) - DIA;
-      return { desde: desde, fin: fin, vigente: fin >= h, dias: Math.round((fin - h) / DIA), total: Math.round((fin - desde) / DIA) + 1 };
-    }
     function medidasDe(p) {
-      if (!p || !p.persona) { return []; }
-      return V.medidas.filter(function (m) { return m.persona === p.persona; }).map(function (m) { return Object.assign({ v: vigencia(m, hoy()) }, m); });
+      if (!p || !p.tipo) { return []; }
+      return U.medidas(U.res(p.tipo, p.num, 'portal', hoy()), hoy());
+    }
+    // Cada consulta verificada queda en la auditoría del IVC; el origen 5 es «Portal de la persona».
+    function emitirConsulta(p, rep) {
+      U.emitir({ tipo: 'consulta', clave: p.clave, evento: U.EVENTO, puerta: 0, origen: 5, detalle: rep ? 'Consulta de estado como representante legal' : 'Consulta de estado en el portal', quien: 'Portal de la persona' });
     }
 
     /* ---------- Piezas ---------- */
@@ -147,37 +166,37 @@ window.PANTALLAS = window.PANTALLAS || {};
       if (s.desde) {
         return aviso('azul', 'info', 'Llegaste desde tu compra en ' + s.desde.donde, s.desde.donde + ' solo supo que la compra no era posible. El motivo lo ves solo tú, aquí.');
       }
-      if (s.rep) { return aviso('azul', 'info', 'Consultas como representante legal', 'Estás viendo el estado de ' + s.sujeto.nombre + ', a quien representas. Tu consulta queda auditada.'); }
+      if (s.rep) { return aviso('azul', 'info', 'Consultas como representante legal', 'Estás viendo el estado de ' + s.sujeto.visible + ', a quien representas. Tu consulta queda auditada.'); }
       return '';
     }
 
     function pEstado() {
       var p = st.sujeto, ms = medidasDe(p), h = hoy();
-      var vig = ms.filter(function (m) { return m.v.vigente; });
-      var cum = ms.filter(function (m) { return !m.v.vigente; });
+      var vig = ms.filter(function (m) { return m.vigente; });
+      var cum = ms.filter(function (m) { return !m.vigente; });
       var m = vig[0];
-      var quien = p.menor ? p.nombre : p.nombre.split(' ')[0];
+      var quien = p.menor ? p.visible : p.nombre.split(' ')[0];
       var cab, medida = '';
       if (m) {
-        var porVencer = m.v.dias <= 30;
+        var porVencer = m.dias <= 30;
         var tono = porVencer ? 'ambar' : 'rojo';
-        var avance = Math.max(0, Math.min(100, Math.round((m.v.total - m.v.dias) / m.v.total * 100)));
-        cab = bloque({ tono: tono, ic: porVencer ? 'reloj' : 'alerta', etq: (p.menor ? 'Estado de ' + esc(quien) : 'Tu estado') + ' al ' + fmt(h), h: 1, id: 'pt-h1',
+        var avance = Math.max(0, Math.min(100, Math.round((m.total - m.dias) / m.total * 100)));
+        cab = bloque({ tono: tono, ic: porVencer ? 'reloj' : 'alerta', etq: (p.menor ? 'Estado de ' + esc(quien) : 'Tu estado') + ' al ' + U.fechaIso(h), h: 1, id: 'pt-h1',
           t: porVencer ? 'Tu medida vence pronto' : (p.menor ? 'Tiene' : 'Tienes') + ' una medida vigente',
-          d: '<b class="pt-num">' + m.v.dias + (m.v.dias === 1 ? ' día' : ' días') + '</b> restantes' + (porVencer ? ': cuando termine, vuelves a Sin medidas vigentes sin hacer ningún trámite.' : '.') });
+          d: '<b class="pt-num">' + m.dias + (m.dias === 1 ? ' día' : ' días') + '</b> restantes' + (porVencer ? ': cuando termine, vuelves a Sin medidas vigentes sin hacer ningún trámite.' : '.') });
         medida = bloque({ tono: tono, ic: 'alerta', etq: 'Vigente', t: esc(m.conductas.join(' · ')), attrs: ' aria-label="La medida"', extra:
-          '<dl class="pt-kvs">' + kv('Autoridad que la emitió', m.autoridad) + kv('Acto administrativo', m.acto) + kv('Desde', fmt(m.v.desde)) + kv('Hasta', fmt(m.v.fin)) + '</dl>' +
+          '<dl class="pt-kvs">' + kv('Autoridad que la emitió', m.autoridad) + kv('Acto administrativo', m.acto) + kv('Desde', U.fechaIso(m.desde)) + kv('Hasta', U.fechaIso(m.fin)) + '</dl>' +
           '<div class="pt-prog" role="progressbar" aria-label="Avance de la medida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + avance + '"><i style="width:' + avance + '%"></i></div>' +
           '<p class="pt-sub">Han pasado ' + avance + ' % del tiempo. Mientras esté vigente no se puede comprar ni entrar a eventos deportivos en el país.</p>' +
           '<button type="button" class="pt-mas" data-acc="hechos" aria-expanded="' + !!st.abierto.hechos + '">Ver los hechos' + ico('mas', 20) + '</button>' +
-          (st.abierto.hechos ? '<dl class="pt-kvs pt-kvs--hechos">' + kv('Evento', m.evento) + kv('Fecha de los hechos', fmt(tiempo(m.hechos))) + kv('Qué pasó', m.descripcion || 'Hechos descritos en el informe de la autoridad.') + '</dl>' : '') }) +
+          (st.abierto.hechos ? '<dl class="pt-kvs pt-kvs--hechos">' + kv('Evento', m.evento) + kv('Fecha de los hechos', U.fechaIso(m.hechos)) + kv('Qué pasó', m.descripcion || 'Hechos descritos en el informe de la autoridad.') + '</dl>' : '') }) +
           boton('controvertir', 'Cómo controvertirla', 'sec');
       } else {
-        cab = bloque({ tono: 'verde', ic: 'check', etq: (p.menor ? 'Estado de ' + esc(quien) : 'Tu estado') + ' al ' + fmt(h), h: 1, id: 'pt-h1', t: 'Sin medidas vigentes',
+        cab = bloque({ tono: 'verde', ic: 'check', etq: (p.menor ? 'Estado de ' + esc(quien) : 'Tu estado') + ' al ' + U.fechaIso(h), h: 1, id: 'pt-h1', t: 'Sin medidas vigentes',
           d: cum.length && st.off > 0 ? 'La medida se cumplió y tu estado cambió solo, sin trámite.' : 'No hay ninguna medida correctiva que te impida comprar o entrar a un evento.' });
       }
       var cumplidas = cum.length ? bloque({ tono: 'gris', ic: 'check', t: 'Medidas cumplidas', attrs: ' aria-label="Medidas cumplidas"', extra: cum.map(function (c) {
-        return '<div class="pt-fila-c"><b>' + esc(c.conductas.join(' · ')) + '</b><span class="pt-sub">' + esc(c.acto) + ' · ' + esc(c.autoridad) + '</span><span class="pt-sub">Cumplida el ' + fmt(c.v.fin + DIA) + '</span></div>';
+        return '<div class="pt-fila-c"><b>' + esc(c.conductas.join(' · ')) + '</b><span class="pt-sub">' + esc(c.acto) + ' · ' + esc(c.autoridad) + '</span><span class="pt-sub">Cumplida el ' + U.fechaIso(U.sumar(c.fin, 1)) + '</span></div>';
       }).join('') + '<p class="pt-sub">Una medida cumplida ya no bloquea nada.</p>' }) : '';
       var ayuda = bloque({ el: 'button', attrs: ' type="button" data-acc="otros"', tono: 'azul', ic: 'info', t: '¿Te dijeron que no y no tienes una medida?' });
       return '<div class="pt-body" data-sc="cuerpo">' + bannerEntrada() + cab + medida + cumplidas + ayuda +
@@ -185,7 +204,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     }
 
     function pControvertir() {
-      var m = medidasDe(st.sujeto).filter(function (x) { return x.v.vigente; })[0];
+      var m = medidasDe(st.sujeto).filter(function (x) { return x.vigente; })[0];
       var aut = m ? m.autoridad : 'la autoridad competente que la emitió';
       return '<div class="pt-body" data-sc="cuerpo"><h1 class="pt-h1" tabindex="-1">Cómo controvertirla</h1>' + tag('azul', 'Exploratorio') +
         '<p class="pt-p">Este portal solo muestra lo que la autoridad registró: no puede modificar ni levantar una medida. Quien puede revisarla es la autoridad que la emitió.</p>' +
@@ -212,13 +231,13 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     var ESTADO_B = { usado: ['gris', 'Ya ingresaste'], vigente: ['verde', 'Vigente'], transferido: ['gris', 'Cambiaste el titular'] };
     function pIngresos() {
-      var p = st.sujeto, bs = st.ingresos, vig = medidasDe(p).some(function (m) { return m.v.vigente; });
+      var p = st.sujeto, bs = st.ingresos, vig = medidasDe(p).some(function (m) { return m.vigente; });
       var cuerpo = bs.length ? bs.map(function (b) {
         var e = ESTADO_B[b.estado];
         return bloque({ el: 'article', tono: e[0], ic: 'ingreso', etq: e[1], t: 'Tu ingreso a ' + esc(b.evento), d: '<span class="pt-sub">' + ico('cal', 16) + esc(b.fecha) + '</span><span class="pt-sub">' + ico('lugar', 16) + esc(b.lugar) + ' · ' + esc(b.sitio) + '</span><span class="pt-sub">' + ico('estado', 16) + 'Con el documento ' + esc(b.doc) + '</span><b class="pt-bl">' + esc(b.nota) + '</b>' });
       }).join('') : bloque({ tono: 'gris', ic: 'ingreso', t: vig ? 'Sin ingresos por ahora' : 'No tienes ingresos',
         d: vig ? 'Con una medida vigente no puedes comprar ni que te asignen un ingreso.' : 'Cuando compres o te asignen un ingreso, aparecerá aquí con tu documento.' });
-      return '<div class="pt-body" data-sc="cuerpo"><h1 class="pt-h1" tabindex="-1">Mis ingresos</h1><p class="pt-p">A qué partidos tienes derecho a entrar y con qué documento. Puedes cambiar el titular desde la comercializadora hasta el inicio del partido.</p>' + (st.rep ? aviso('azul', 'info', 'Ingresos de ' + p.nombre, 'Ves solo los que están con su documento.') : '') + cuerpo + '</div>';
+      return '<div class="pt-body" data-sc="cuerpo"><h1 class="pt-h1" tabindex="-1">Mis ingresos</h1><p class="pt-p">A qué partidos tienes derecho a entrar y con qué documento. Puedes cambiar el titular desde la comercializadora hasta el inicio del partido.</p>' + (st.rep ? aviso('azul', 'info', 'Ingresos de ' + p.visible, 'Ves solo los que están con su documento.') : '') + cuerpo + '</div>';
     }
 
     function pVinculos() {
@@ -273,9 +292,9 @@ window.PANTALLAS = window.PANTALLAS || {};
       raiz.querySelectorAll('.pt-caso').forEach(function (n) { n.classList.toggle('pt-caso--activo', n.dataset.caso === c.id); });
       var r = raiz.querySelector('#pt-reloj');
       if (r) {
-        var m = st.sujeto && medidasDe(st.sujeto).filter(function (x) { return x.v.vigente; })[0];
+        var m = st.sujeto && medidasDe(st.sujeto).filter(function (x) { return x.vigente; })[0];
         var pasa = st.off > 0 && !m;
-        r.innerHTML = m || pasa ? '<nwt-detail-item actionable icon="calendar" nwt-theme="informative" data-acc="reloj">' + (pasa ? 'Volver a hoy · 29 sep 2026' : 'Adelantar el reloj hasta que venza') + '</nwt-detail-item>' : '';
+        r.innerHTML = m || pasa ? '<nwt-detail-item actionable icon="calendar" nwt-theme="informative" data-acc="reloj">' + (pasa ? 'Volver a hoy · ' + R(0).largo : 'Adelantar el reloj hasta que venza') + '</nwt-detail-item>' : '';
         // Sin interruptores ni reloj, la tarjeta quedaría vacía.
         var cd = raiz.querySelector('#pt-cond'); if (cd) { cd.style.display = r.innerHTML ? '' : 'none'; }
       }
@@ -316,17 +335,20 @@ window.PANTALLAS = window.PANTALLAS || {};
     /* ---------- Acciones ---------- */
 
     function verificar() {
-      var f = st.form, d = digitos(f.num), p = PERS[d];
+      var f = st.form, d = digitos(f.num), p = f.menor ? null : buscar(f.tipo, f.num, hoy()), hijo = f.menor ? buscar('TI', f.docMenor) : null;
       st.error = null; st.verif = true; pintar(false);
       clearTimeout(timerVerif);
       timerVerif = setTimeout(function () {
         st.verif = false;
-        if (!p || p.tipo !== f.tipo) { st.error = 'reg'; }
+        if (f.menor) {
+          // El menor solo lo consulta su representante legal registrado en el IVC.
+          var rp = hijo && hijo.menor && U.representante(hijo.r);
+          if (!rp || rp.num !== d || rp.tipo !== U.cod(f.tipo)) { st.error = 'rep'; }
+          else if (norm(f.nombre) !== norm(rp.nombre)) { st.error = 'nombre'; }
+          else { entrar(st, hijo, { nombre: rp.nombre }); }
+        } else if (!p) { st.error = 'reg'; }
         else if (norm(f.nombre) !== norm(p.nombre)) { st.error = 'nombre'; }
-        else if (f.menor) {
-          var m = PERS[digitos(f.docMenor)];
-          if (!m || !m.menor || m.rep !== d) { st.error = 'rep'; } else { entrar(st, m, p); }
-        } else { entrar(st, p, null); }
+        else { entrar(st, p, null); }
         pintar(!!st.sujeto);
       }, 1000);
     }
@@ -360,7 +382,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         case 'otro': st.otros = st.otros === d.id ? null : d.id; break;
         case 'hechos': st.abierto.hechos = !st.abierto.hechos; break;
         case 'salir-portal': var formPrevio = st.form; st = nuevo(casoPorId(guardado.caso)); st.form = formPrevio; st.sujeto = null; st.pantalla = 'id'; st.desde = null; pintar(true); return;
-        case 'reloj': st.off = st.off > 0 ? 0 : (function () { var m = medidasDe(st.sujeto).filter(function (x) { return x.v.vigente; })[0]; return m ? m.v.dias + 1 : 0; })(); pintar(false); return;
+        case 'reloj': st.off = st.off > 0 ? 0 : (function () { var m = medidasDe(st.sujeto).filter(function (x) { return x.vigente; })[0]; return m ? m.dias + 1 : 0; })(); pintar(false); return;
       }
       pintar(false);
     }
@@ -375,16 +397,14 @@ window.PANTALLAS = window.PANTALLAS || {};
       st.form[d.k] = el.type === 'checkbox' ? el.checked : el.value;
       st.error = null;
       if (d.k === 'menor') {
-        st.form.num = el.checked ? '43.512.876' : '1.036.482.117'; st.form.nombre = el.checked ? 'Gloria Patricia Hoyos Marín' : 'Andrés Felipe Restrepo Gil'; st.form.tipo = 'CC'; st.form.docMenor = el.checked ? '1.021.774.331' : '';
+        st.form.num = el.checked ? '1.090.000.107' : '1.036.482.117'; st.form.nombre = el.checked ? 'Marta Lucía Duarte Gil' : 'Andrés Felipe Restrepo Gil'; st.form.tipo = 'CC'; st.form.docMenor = el.checked ? '1.090.000.007' : '';
       }
       pintar(false);
     }
 
     /* ---------- Montaje ---------- */
 
-    raiz.innerHTML = '<div class="pp-demo"><nwt-toolbar class="pp-toolbar">' +
-      '<nwt-title class="pp-toolbar__titulo">Portal de la persona<span slot="subtitle">Superficie 8 · Web móvil · Persona y representante legal</span></nwt-title>' +
-      '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button></nwt-toolbar>' +
+    raiz.innerHTML = '<div class="pp-demo">' + window.SVN_TOOLBAR({ titulo: 'Portal de la persona', subtitulo: 'Superficie 8 · Web móvil · Persona y representante legal', acciones: [{ texto: 'Cambiar de perfil', acc: 'salir' }] }) +
       '<div class="pp-demo__cuerpo">' + guion() + '<main class="pp-escenario"><div class="pp-escena pp-escena--ctl"><div class="pp-controles"><div class="pp-zoom">' +
         '<nwt-icon-button icon="zoom-out" nwt-size="small" nwt-variant="mute" nwt-theme="neutral" label="Alejar" data-zoom="out"></nwt-icon-button>' +
         '<nwt-icon-button icon="zoom-in" nwt-size="small" nwt-variant="mute" nwt-theme="neutral" label="Acercar" data-zoom="in"></nwt-icon-button>' +

@@ -119,6 +119,11 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   CASOS.forEach(function (c, i) { c.n = i + 1; });
   function casoPorId(id) { return CASOS.filter(function (c) { return c.id === id; })[0] || CASOS[0]; }
 
+  // El partido es hoy: «Dom 18/ Oct/26».
+  function fechaEvento() {
+    var r = U.rel(0), c = function (t) { return t.charAt(0).toUpperCase() + t.slice(1, 3); };
+    return c(r.dia) + ' ' + r.num + '/ ' + c(r.mes) + '/' + r.iso.slice(2, 4);
+  }
   function loc(x) { var id = x && x.id ? x.id : x; return LOCS.filter(function (l) { return l.id === id; })[0] || LOCS[1]; }
   function total(st) { return st.cantidad * (loc(st.localidad).p + CARGO); }
   // La silla es dato de la comercializadora: el derecho de ingreso solo lleva documento, evento y sector.
@@ -215,8 +220,19 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
   function paso(n, logo, texto, baja, sube, ms) { return { n: n, logo: logo, texto: texto, baja: baja, sube: sube, r: 'ok', ms: ms }; }
   function marcar(p, texto, sube) { p.texto = texto; p.sube = sube; p.r = 'falla'; }
   function ingresos(n) { return n + (n === 1 ? ' ingreso' : ' ingresos'); }
-  // Casos de prueba (shared/demo-casos.js): una sanción vigente en el IVC corta la venta sin decir el motivo.
-  function conMedida(tipo, num) { return !!(window.DemoCasos && window.DemoCasos.bloqueado(tipo, num)); }
+  // El resolver del IVC manda: una medida vigente (o por vencer) en GI corta la venta sin decir el motivo.
+  var U = window.SVN_UTIL;
+  function conMedida(tipo, num) { var r = U.res(tipo, num, 'compra'); return !!(r && r.bloquea); }
+  // Documento del IVC o de las personas fijas del SVN: el nombre digitado debe ser el suyo; si no, no coincide (como el ANI).
+  function sinCoincidir(tipo, num, nombre) {
+    var d = U.identidad(tipo, num), n = function (x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); };
+    return !!d && n(d.nombre) !== n(nombre);
+  }
+  // Cada consulta que cierra una venta queda en el bus: la ven la Auditoría del IVC y el portal de la persona.
+  function emitirVenta(tipoDoc, num, nombre, detalle) {
+    var k = U.clave(tipoDoc, num);
+    if (U.limpioNum(num)) { U.emitir({ tipo: 'venta', clave: k, evento: U.EVENTO, puerta: 0, origen: 2, detalle: detalle, quien: 'Canal web' }); }
+  }
   function dePaso(p, nombre) { return p.filter(function (x) { return x.n === nombre; })[0]; }
 
   // Consulta 1 · ¿Puede comprar? Valida a quien compra; `extra.cantidad` es lo que pide al subir la cantidad en Titulares.
@@ -231,9 +247,9 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     ];
     var def = { consulta: 'Consulta 1 de 3 · ¿Puede comprar?', tag: 'Autorizado', pasos: p, codigo: 'Autorizado' };
     var corta = function (i, texto, sube, tag, cod) { marcar(p[i], texto, sube); def.tag = 'Denegado · ' + tag; def.codigo = cod || tag; };
-    if (c.id === 'medida-id') { corta(2, 'Tiene una medida correctiva vigente', 'Medida vigente ✕', 'Medida restrictiva vigente'); }
-    else if (c.id === 'doc-invalido') { corta(1, 'Cédula cancelada en el ANI', 'No válido ✕', 'Documento no válido'); }
+    if (c.id === 'doc-invalido') { corta(1, 'Cédula cancelada en el ANI', 'No válido ✕', 'Documento no válido'); }
     else if (c.id === 'identidad' && !extra.corregido) { corta(1, 'El nombre no corresponde al documento', 'No coincide ✕', 'Identidad no coincide'); }
+    else if (sinCoincidir(st.form.tipo, st.form.doc, st.form.nombre)) { corta(1, 'El nombre no corresponde al documento', 'No coincide ✕', 'Identidad no coincide'); }
     else if (conMedida(st.form.tipo, st.form.doc)) { corta(2, 'Tiene una medida correctiva vigente', 'Medida vigente ✕', 'Medida restrictiva vigente'); }
     else if (previas + pide > MAX) { corta(3, 'Ya tiene ' + previas + ' ingresos para este evento en otra comercializadora · pide ' + pide, 'Supera 5 ✕', 'Límite de venta excedido'); }
     else if (previas) { p[3].texto = previas + ' de 5 en otra comercializadora · pide ' + pide; }
@@ -255,8 +271,10 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     var def = { consulta: 'Consulta 2 de 3 · ¿Puede recibir? · Ingreso ' + k + (tr ? ' (cambio de titular)' : ''), tag: 'Autorizado', pasos: p, codigo: 'Autorizado' };
     if (c.noConcluyente) { var af = dePaso(p, 'Afinidad y sector'); af.texto = 'Afinidad no concluyente · deja pasar y queda en la auditoría'; af.sube = 'No concluyente ✓'; }
     var f = c.falla;
-    if (c.c === 2 && c.malo && f && claveDoc(t.tipo, t.num) === claveDoc(c.malo.tipo, c.malo.num)) {
+    if (c.c === 2 && c.malo && f && f !== F_MEDIDA && claveDoc(t.tipo, t.num) === claveDoc(c.malo.tipo, c.malo.num)) {
       marcar(dePaso(p, f.paso), f.texto, f.sube); def.tag = 'Denegado · ' + f.cod; def.codigo = f.cod;
+    } else if (sinCoincidir(t.tipo, t.num, t.nombre)) {
+      marcar(dePaso(p, 'Registraduría'), 'El nombre no corresponde al documento', 'No coincide ✕'); def.tag = 'Denegado · Identidad no coincide'; def.codigo = 'Identidad no coincide';
     } else if (conMedida(t.tipo, t.num)) {
       marcar(dePaso(p, 'Medidas'), F_MEDIDA.texto, F_MEDIDA.sube); def.tag = 'Denegado · ' + F_MEDIDA.cod; def.codigo = F_MEDIDA.cod;
     }
@@ -347,7 +365,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       var cuerpo =
         '<section class="pc-evento"><img src="assets/estadios/atanasio.webp" alt="Estadio Atanasio Girardot" class="pc-evento__img"><div class="pc-evento__t">' +
           '<span class="pc-evento__liga">LIGA · FECHA 12</span><h1 class="pc-h1" tabindex="-1">Nacional vs. Medellín</h1>' +
-          '<div class="pc-evento__meta"><span>' + ico('cal', 16) + 'Lun 28/ Sep/26 · 7:00 p. m.</span><span>' + ico('lugar', 16) + 'Atanasio Girardot, Medellín</span></div></div></section>' +
+          '<div class="pc-evento__meta"><span>' + ico('cal', 16) + fechaEvento() + ' · 7:00 p. m.</span><span>' + ico('lugar', 16) + 'Atanasio Girardot, Medellín</span></div></div></section>' +
         '<section class="pc-seccion"><h2 class="pc-h2">Elige tu localidad</h2><div class="pc-opts" role="radiogroup" aria-label="Localidad">' + locs + '</div></section>' +
         '<p class="pc-sub">Máximo 5 ingresos por persona. Cada ingreso es de una persona con su documento; la cantidad y los titulares los eliges después de identificarte.</p>';
       var pie = '<div class="pc-total"><span class="pc-total__t"><span data-resumen>' + totalTexto(st) + '</span></span><b data-total>' + precioUna(st) + '</b></div>' + boton('cmp-continuar', 'Continuar', 'flecha');
@@ -614,9 +632,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
     var ATRAS = { identificar: 'evento', titulares: 'cantidad', pago: 'titulares' };
 
     function toolbar() {
-      return '<nwt-toolbar class="pp-toolbar">' +
-        '<nwt-title class="pp-toolbar__titulo">Comprar y asignar ingresos<span slot="subtitle">Paso 6 del flujo · Graderío (comercializadora ficticia)</span></nwt-title>' +
-        '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Volver al inicio</nwt-button></nwt-toolbar>';
+      return window.SVN_TOOLBAR({ titulo: 'Comprar y asignar ingresos', subtitulo: 'Paso 6 del flujo · Graderío (comercializadora ficticia)', acciones: [{ texto: 'Volver al inicio', acc: 'salir' }] });
     }
     // Mismo semáforo y marcado que la lista de /puerta, para que los dos paneles se lean igual.
     var ASPECTO = { verde: ['positive', 'positive'], amarillo: ['warning', 'attention'], rojo: ['negative', 'negative'] };
@@ -747,6 +763,17 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       timerToast = setTimeout(function () { var n = disp.querySelector('.pp-toast'); if (n) { n.remove(); } }, 3200);
     }
 
+    // Autorizada: una por titular al pagar. Bloqueada: el documento a quien se le dijo que no (quien compra o el titular).
+    function registrarVenta(n, r, extra) {
+      var l = loc(st.localidad).n, motivo = String(r.codigo || '').toLowerCase().replace('medida restrictiva vigente', 'medida vigente');
+      if (r.ok) {
+        if (n === 3) { st.cupos.forEach(function (q) { if (q.titular) { emitirVenta(q.titular.tipo, q.titular.num, q.titular.nombre, 'Venta autorizada · ' + l); } }); }
+        return;
+      }
+      var quien = n === 2 ? extra.titular : r.sujeto === 'cupo' ? (st.cupos.filter(function (q) { return q.n === r.cupo; })[0] || {}).titular : (n === 1 ? st.form : st.persona);
+      if (quien) { emitirVenta(quien.tipo, quien.num || quien.doc, quien.nombre, 'Venta bloqueada · ' + motivo); }
+    }
+
     /* ---------- Consultas ---------- */
     // Elige la definición según la consulta; quien llama decide qué hace con el no (bloqueo, error en el campo o vuelta a Titulares).
     function consultar(n, alTerminar, extra) {
@@ -756,6 +783,7 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
       capa.correrDef(def, { velocidad: M.vel, alCambiar: escalar }, function (r) {
         if (miGen !== gen) { return; }
         r.sujeto = def.sujeto || null; r.cupo = def.cupo || 0;
+        registrarVenta(n, r, extra);
         if (alTerminar) { alTerminar(r); }
       });
     }
@@ -830,7 +858,11 @@ window.COMPRA.registrar = window.COMPRA.registrar || function (id, def) { window
         if (st.pantalla === 'cantidad') { alEvento(); return; }
         ir(ATRAS[st.pantalla] || 'evento'); return;
       }
-      if (a === 'cmp-portal') { toast('Portal de la persona', 'Aún fuera del flujo de la demo. Ya está modelado en modeling/desing-views.'); return; }
+      if (a === 'cmp-portal') {
+        var q = st.persona || st.form;
+        try { sessionStorage.setItem('svn.portal.desde', JSON.stringify({ tipo: q.tipo, num: q.num || q.doc, nombre: q.nombre, donde: 'Graderío', evento: 'Nacional vs. Medellín' })); } catch (e) { /* sin almacenamiento */ }
+        ctxApp.ir('#/portal'); return;
+      }
       var pan = pantallaActual();
       if (pan && pan.onClick) { pan.onClick(el, ev, cx); }
     }

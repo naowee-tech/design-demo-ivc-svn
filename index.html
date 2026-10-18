@@ -95,8 +95,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="naowee-credit">
+                <div class="naowee-credit" style="flex-wrap:wrap;row-gap:4px">
                     <a class="naowee-credit__text" href="svn/index.html" style="text-decoration:none;padding-right:var(--spacing-sm);border-right:1px solid var(--color-gray-300,#d5d5e0)" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">SVN · Platform</a>
+                    <a class="naowee-credit__text" href="#" data-demo-panel title="Casos de prueba · Ctrl/⌘ + Shift + L" style="text-decoration:none;padding-right:var(--spacing-sm);border-right:1px solid var(--color-gray-300,#d5d5e0)" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'" onclick="event.preventDefault();window.DemoCasos&&DemoCasos.abrir()">Panel demo</a>
+                    <a class="naowee-credit__text" href="manuales/index.html" style="text-decoration:none;padding-right:var(--spacing-sm);border-right:1px solid var(--color-gray-300,#d5d5e0)" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Manuales</a>
                     <span class="naowee-credit__text">Todos los derechos reservados © 2026</span>
                     <img src="suid/login/img/naowee.png" alt="Naowee" class="naowee-credit__logo">
                 </div>
@@ -104,6 +106,10 @@
         </main>
     </div>
 
+    <script src="suid/gi-catalogos.js"></script>
+    <script src="suid/gi-data.js"></script>
+    <script src="shared/demo-casos.data.js"></script>
+    <script src="shared/demo-casos.js"></script>
     <script>
         function togglePasswordVisibility(inputId, button) {
             var input = document.getElementById(inputId);

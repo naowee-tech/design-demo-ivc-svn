@@ -2,6 +2,7 @@
 window.PANTALLAS = window.PANTALLAS || {};
 
 (function () {
+  var U = window.SVN_UTIL, R = U.rel;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function ico(n) { return '<nwt-icon value="' + n + '"></nwt-icon>'; }
   var CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
@@ -61,7 +62,7 @@ window.PANTALLAS = window.PANTALLAS || {};
       cuando: 'Para mostrar en tu canal si las puertas ya abrieron. Es un dato público del evento: no trae información de personas.',
       req: [['id', 'ruta', 'Sí', 'El escenario, por ejemplo ATANASIO-GIRARDOT.']],
       ejemplo: null,
-      resp: [['En vivo', 200, { escenario: 'ATANASIO-GIRARDOT', evento_id: 'EV-2026-0412', estado: 'puertas_abiertas', aforo: 38000, ingresos: 4812, actualizado: '2026-09-28T18:42:10-05:00' }]] }
+      resp: [['En vivo', 200, { escenario: 'ATANASIO-GIRARDOT', evento_id: 'EV-2026-0412', estado: 'puertas_abiertas', aforo: 38000, ingresos: 4812, actualizado: R(0).iso + 'T18:42:10-05:00' }]] }
   ];
   var DOCS_ITEMS = ENDPOINTS.map(function (e) { return [e.id, e.titulo, e.punto]; }).concat([['codigos', 'Códigos de motivo', 'Referencia'], ['limites', 'Autenticación y límites', 'Referencia'], ['versiones', 'Versiones y migración', 'Referencia']]);
   var CASOS = [
@@ -110,8 +111,8 @@ window.PANTALLAS = window.PANTALLAS || {};
     var st = {
       seccion: 'integraciones', integ: null, env: 'produccion', homol: 'homologada', toast: null, modal: null, modalFoco: false,
       llaves: {
-        pruebas: { estado: 'activa', fin: 'a91f', creada: '3 ago 2026', uso: 'hace 4 min', gracia: '' },
-        produccion: { estado: 'activa', fin: '7c2e', creada: '12 ago 2026', uso: 'hace 1 min', gracia: '' }
+        pruebas: { estado: 'activa', fin: 'a91f', creada: R(-76).largo, uso: 'hace 4 min', gracia: '' },
+        produccion: { estado: 'activa', fin: '7c2e', creada: R(-67).largo, uso: 'hace 1 min', gracia: '' }
       },
       doc: { id: 'compra', resp: 0 },
       pruebas: pruebasDe(CASOS.length),
@@ -137,14 +138,14 @@ window.PANTALLAS = window.PANTALLAS || {};
     ];
     var FILAS_BASE = SEMILLA.map(function (s, i) {
       var min = 4 + i * 3 + (i % 4), h = 10 * 60 + 14 - min;
-      return { id: 'req_' + cadena(6), env: i % 5 === 4 ? 'pruebas' : 'produccion', ts: '29 sep ' + ('0' + Math.floor(h / 60)).slice(-2) + ':' + ('0' + (h % 60)).slice(-2) + ':' + ('0' + ((i * 17) % 60)).slice(-2), punto: s[0], tipo: s[1], fin: s[2], resultado: s[3], codigo: s[4], http: s[5], ms: s[6], prop: s[7] };
+      return { id: 'req_' + cadena(6), env: i % 5 === 4 ? 'pruebas' : 'produccion', ts: R(0).corto + ' ' + ('0' + Math.floor(h / 60)).slice(-2) + ':' + ('0' + (h % 60)).slice(-2) + ':' + ('0' + ((i * 17) % 60)).slice(-2), punto: s[0], tipo: s[1], fin: s[2], resultado: s[3], codigo: s[4], http: s[5], ms: s[6], prop: s[7] };
     });
 
     function filasLog() {
       var base = st.log.extra.concat(FILAS_BASE).filter(function (f) { return f.env === st.env; });
       if (st.env === 'produccion' && st.homol !== 'homologada' && st.homol !== 'suspendida') { return []; }
       if (st.env === 'produccion' && st.homol === 'suspendida') {
-        var err = [0, 1, 2].map(function (i) { return { id: 'req_e' + i + 'b4f', env: 'produccion', ts: '29 sep 09:5' + (6 - i) + ':12', punto: 'compra1', tipo: 'CC', fin: ['2884', '4310', '1180'][i], resultado: 'error', codigo: 'COMERCIALIZADORA_NO_HABILITADA', http: 403, ms: 22 }; });
+        var err = [0, 1, 2].map(function (i) { return { id: 'req_e' + i + 'b4f', env: 'produccion', ts: R(0).corto + ' 09:5' + (6 - i) + ':12', punto: 'compra1', tipo: 'CC', fin: ['2884', '4310', '1180'][i], resultado: 'error', codigo: 'COMERCIALIZADORA_NO_HABILITADA', http: 403, ms: 22 }; });
         base = err.concat(base);
       }
       return base;
@@ -214,6 +215,12 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     /* ---------- 0 · Con quién nos integramos ---------- */
 
+    /* DC-090: conectadas primero, luego en pruebas y al final por conectar; estable dentro de cada grupo. */
+    function integOrdenadas() {
+      var o = { ok: 0, enpruebas: 1, pendiente: 2 };
+      return INTEGRACIONES.map(function (i, n) { return { i: i, n: n }; })
+        .sort(function (a, b) { return (o[a.i.estado] - o[b.i.estado]) || (a.n - b.n); }).map(function (x) { return x.i; });
+    }
     function tarjetaInteg(i) {
       return '<section class="ig-card ig-integ' + (st.integ === i.id ? ' ig-card--actual' : '') + '" id="ig-integ-' + i.id + '"><div class="ig-integ__cab"><span class="ig-integ__ico">' + ico(i.icono) + '</span>' +
         '<span class="ig-integ__nom"><b>' + esc(i.nombre) + '</b><span class="ig-sub">' + esc(i.que) + '</span></span>' + tag(i.estado === 'ok' ? 'ok' : i.estado === 'pendiente' ? 'h-pendiente' : 'h-enpruebas', i.estadoT) + '</div>' +
@@ -223,7 +230,7 @@ window.PANTALLAS = window.PANTALLAS || {};
     function seccionIntegraciones() {
       var grupo = function (lado, titulo, sub) {
         return '<div class="ig-integ__grupo"><div class="ig-cab"><h2 class="ig-h2">' + titulo + '</h2><p class="ig-sub">' + sub + '</p></div>' +
-          INTEGRACIONES.filter(function (i) { return i.lado === lado; }).map(tarjetaInteg).join('') + '</div>';
+          integOrdenadas().filter(function (i) { return i.lado === lado; }).map(tarjetaInteg).join('') + '</div>';
       };
       return '<div class="ig-pag" data-sc="pag"><div class="ig-cab"><h1 class="ig-h1">Con quién nos integramos</h1><p class="ig-sub">Varias entidades nos ayudan a responder una pregunta: ¿esta persona puede entrar?</p></div>' +
         '<div class="ig-dos ig-dos--integ">' + grupo('da', 'Nos dan la información', 'Lo que sabemos de cada persona.') + grupo('usa', 'Usan nuestra respuesta', 'Reciben solo lo necesario.') + '</div>' +
@@ -234,7 +241,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function avisoHomol() {
       if (st.homol === 'homologada') { return aviso('ok', 'Homologada por Mindeporte', 'Puedes consultar en producción con tu llave de producción.'); }
-      if (st.homol === 'suspendida') { return aviso('error', 'Tu comercializadora está suspendida', 'Desde el 21 sep tus consultas en producción responden 403. Habla con Mindeporte para reactivarla.'); }
+      if (st.homol === 'suspendida') { return aviso('error', 'Tu comercializadora está suspendida', 'Desde el ' + R(-8).corto + ' tus consultas en producción responden 403. Habla con Mindeporte para reactivarla.'); }
       return aviso('alerta', 'En pruebas: ' + pasaron() + ' de ' + CASOS.length + ' casos aprobados', 'Tu llave de producción se entrega cuando Mindeporte te homologue.', '<button type="button" class="ig-link" data-acc="seccion" data-id="pruebas">Ir a las pruebas</button>');
     }
 
@@ -339,7 +346,7 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     function seccionPruebas() {
       var n = pasaron();
-      var cab = st.homol === 'homologada' ? aviso('ok', 'Homologada', 'Superaste las ' + CASOS.length + ' pruebas y Mindeporte te homologó el 12 ago 2026. Puedes volver a correrlas cuando integres un cambio.')
+      var cab = st.homol === 'homologada' ? aviso('ok', 'Homologada', 'Superaste las ' + CASOS.length + ' pruebas y Mindeporte te homologó el ' + R(-67).largo + '. Puedes volver a correrlas cuando integres un cambio.')
         : st.homol === 'suspendida' ? aviso('error', 'Suspendida', 'Puedes seguir probando, pero las consultas en producción responden 403 hasta que Mindeporte te reactive.')
         : aviso('info', n + ' de ' + CASOS.length + ' casos aprobados', n === CASOS.length ? 'Ya puedes pedirle a Mindeporte que te homologue.' : 'Corre los casos contra el entorno de pruebas. Cada uno dice qué debe responder.');
       var filas = CASOS.map(function (c) {
@@ -349,7 +356,7 @@ window.PANTALLAS = window.PANTALLAS || {};
           '<button type="button" class="ig-btn ig-btn--chico" data-acc="correr" data-id="' + c.id + '">' + ico('play') + 'Ejecutar</button></div>';
       }).join('');
       var pie = st.homol === 'enpruebas'
-        ? (st.pruebas.solicitud ? '<p class="ig-texto ig-ok">' + CHECK + ' Solicitud enviada a Mindeporte el 29 sep. Te avisará cuando la revise.</p>'
+        ? (st.pruebas.solicitud ? '<p class="ig-texto ig-ok">' + CHECK + ' Solicitud enviada a Mindeporte el ' + R(0).corto + '. Te avisará cuando la revise.</p>'
           : '<button type="button" class="ig-btn ig-btn--pri" data-acc="solicitar"' + (n === CASOS.length ? '' : ' disabled') + '>Solicitar la homologación</button>' + (n === CASOS.length ? '' : '<span class="ig-sub ig-falta">Faltan ' + (CASOS.length - n) + ' caso' + (CASOS.length - n === 1 ? '' : 's') + ' por aprobar.</span>'))
         : '';
       return '<div class="ig-pag" data-sc="pag"><div class="ig-cab"><h1 class="ig-h1">Pruebas de homologación</h1><p class="ig-sub">Documentos de prueba del entorno de pruebas. Cada corrida queda en el registro de llamadas.</p></div>' + cab +
@@ -426,9 +433,9 @@ window.PANTALLAS = window.PANTALLAS || {};
       return '<div class="ig-pag" data-sc="pag"><div class="ig-cab"><h1 class="ig-h1">Estado del servicio</h1><p class="ig-sub">Lo que opera Mindeporte para tus consultas. Sin datos de personas.</p></div>' + banner +
         '<div class="ig-tabla ig-tabla--serv"><div class="ig-fila-t ig-fila-t--cab" role="row"><span>Componente</span><span>Estado</span><span>Últimos 30 días</span><span>Disponibilidad</span><span>Respuesta</span></div>' + filas + '</div>' +
         '<section class="ig-card"><h2 class="ig-h2">Historial y mantenimientos</h2><ul class="ig-incs">' +
-          '<li><span class="ig-pt ig-pt--prox"></span><span><b>Sáb 3 oct · 02:00 a 03:00</b><span class="ig-sub">Mantenimiento programado. No se espera impacto en las consultas.</span></span></li>' +
-          '<li><span class="ig-pt ig-pt--ok"></span><span><b>9 sep · 14:20 a 14:52</b><span class="ig-sub">Verificación de identidad más lenta. Resuelto.</span></span></li>' +
-          '<li><span class="ig-pt ig-pt--ok"></span><span><b>21 ago · 19:05 a 19:12</b><span class="ig-sub">Validación de compra con errores 503 intermitentes. Resuelto.</span></span></li></ul></section></div>';
+          '<li><span class="ig-pt ig-pt--prox"></span><span><b>' + R(5).dia.charAt(0).toUpperCase() + R(5).dia.slice(1, 3) + ' ' + R(5).corto + ' · 02:00 a 03:00</b><span class="ig-sub">Mantenimiento programado. No se espera impacto en las consultas.</span></span></li>' +
+          '<li><span class="ig-pt ig-pt--ok"></span><span><b>' + R(-9).corto + ' · 14:20 a 14:52</b><span class="ig-sub">Verificación de identidad más lenta. Resuelto.</span></span></li>' +
+          '<li><span class="ig-pt ig-pt--ok"></span><span><b>' + R(-58).corto + ' · 19:05 a 19:12</b><span class="ig-sub">Validación de compra con errores 503 intermitentes. Resuelto.</span></span></li></ul></section></div>';
     }
 
     /* ---------- Modal de llave ---------- */
@@ -452,16 +459,12 @@ window.PANTALLAS = window.PANTALLAS || {};
     /* ---------- Panel del demo ---------- */
 
     function toolbar() {
-      return '<nwt-toolbar class="pp-toolbar">' +
-        '' +
-        '<nwt-title class="pp-toolbar__titulo">API y portal de integración<span slot="subtitle">Con quién se integra el SVN</span></nwt-title>' +
-        '<nwt-button slot="actions" nwt-variant="quiet" nwt-theme="neutral" nwt-size="medium" icon-end="logout" data-acc="salir">Cambiar de perfil</nwt-button>' +
-      '</nwt-toolbar>';
+      return window.SVN_TOOLBAR({ titulo: 'API y portal de integración', subtitulo: 'Con quién se integra el SVN', acciones: [{ texto: 'Cambiar de perfil', acc: 'salir' }] });
     }
     function tarjeta(titulo, cuerpo) { return '<nwt-card class="pp-panel__card" nwt-size="small"><span slot="header" class="nwt-body-font-bold">' + esc(titulo) + '</span>' + cuerpo + '</nwt-card>'; }
     function guion() {
       var item = function (p) { return '<nwt-detail-item actionable icon="' + p[1] + '" nwt-theme="' + p[2] + '" data-acc="' + p[0] + '">' + esc(p[3]) + '</nwt-detail-item>'; };
-      var con = INTEGRACIONES.map(function (i) { return ['g-integ-' + i.id, i.icono, 'informative', i.nombre]; }).map(item).join('');
+      var con = integOrdenadas().map(function (i) { return ['g-integ-' + i.id, i.icono, 'informative', i.nombre]; }).map(item).join('');
       var casos = [
         ['g-conectar', 'link', 'informative', 'Cómo se conecta una comercializadora'],
         ['g-denegada', 'caution', 'negative', 'Una venta a la que el SVN dice no'],
@@ -537,13 +540,18 @@ window.PANTALLAS = window.PANTALLAS || {};
 
     /* ---------- Acciones ---------- */
 
-    function hora() { var d = new Date(); return '29 sep ' + ('0' + 10).slice(-2) + ':' + ('0' + (15 + (st.log.extra.length % 40))).slice(-2) + ':' + ('0' + ((st.log.extra.length * 7) % 60)).slice(-2) + (d ? '' : ''); }
+    function hora() { var d = new Date(); return R(0).corto + ' ' + ('0' + 10).slice(-2) + ':' + ('0' + (15 + (st.log.extra.length % 40))).slice(-2) + ':' + ('0' + ((st.log.extra.length * 7) % 60)).slice(-2) + (d ? '' : ''); }
 
     // Corre un caso contra el sandbox: la respuesta sale del caso (la cumplida autoriza) y la llamada queda en el registro.
+    // Con un documento que también existe en el IVC o en la demo, la respuesta la da el resolver; el sandbox solo inventa los 100000000x.
     function correrCaso(c) {
+      var num = c.doc.replace(/\D/g, ''), r = U.res('CC', num, 'compra');
+      var resu = r ? (r.bloquea ? 'denegado' : 'autorizado') : c.res, cod = r ? (r.bloquea ? 'MEDIDA_RESTRICTIVA_VIGENTE' : null) : c.cod;
       st.pruebas[c.id] = 'paso';
-      st.pruebas.ultimo = { id: c.id, res: c.res, cod: c.cod };
-      st.log.extra.unshift({ id: 'req_' + cadena(6), env: 'pruebas', ts: hora(), punto: c.punto || 'compra1', tipo: 'CC', fin: c.doc.slice(-4), resultado: c.res, codigo: c.cod, http: 200, ms: 180 + Math.floor(azar() * 160) });
+      st.pruebas.ultimo = { id: c.id, res: resu, cod: cod };
+      st.log.extra.unshift({ id: 'req_' + cadena(6), env: 'pruebas', ts: hora(), punto: c.punto || 'compra1', tipo: 'CC', fin: c.doc.slice(-4), resultado: resu, codigo: cod, http: 200, ms: 180 + Math.floor(azar() * 160) });
+      // Queda en el bus como consulta (origen 7, «API de integración»): la Auditoría del IVC la ve con el documento enmascarado.
+      U.emitir({ tipo: 'consulta', clave: U.clave('CC', num), evento: U.EVENTO, puerta: 0, origen: 7, detalle: 'Prueba en el sandbox · ' + (c.punto || 'compra1') + ' · ' + resu + (cod ? ' · ' + cod : ''), quien: COM });
     }
 
     function nuevaLlave(env, tipo) {
@@ -579,7 +587,7 @@ window.PANTALLAS = window.PANTALLAS || {};
         case 'm-listo':
           if (!st.modal.guardada) { return; }
           var m = st.modal, k = st.llaves[m.env];
-          k.estado = 'activa'; k.fin = m.valor.slice(-4); k.creada = '29 sep 2026'; k.uso = 'sin uso'; k.gracia = m.gracia;
+          k.estado = 'activa'; k.fin = m.valor.slice(-4); k.creada = R(0).largo; k.uso = 'sin uso'; k.gracia = m.gracia;
           st.modal = null;
           mostrarToast('Llave guardada', 'Ahora aparece enmascarada: termina en ' + k.fin + '.', 'positive', 'positive'); return;
         case 'm-revocar':

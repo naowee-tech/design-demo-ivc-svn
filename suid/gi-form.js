@@ -43,11 +43,12 @@
     if (o.calc) return '<div class="gi-f gf-ro gi-c' + (o.c || 6) + (o.cls ? ' ' + o.cls : '') + '"><span class="gi-lbl"><span class="gi-n">' + n + '</span>' + label + '</span>' + inner + '</div>';
     var tag = '';
     return '<div class="gi-f gi-c' + (o.c || 6) + (o.cls ? ' ' + o.cls : '') + '"' + (o.id ? ' id="' + o.id + '"' : '') + (o.req && o.err ? ' data-req="' + o.err + '"' : '') + '><label class="gi-lbl' + (o.req ? ' gi-lbl--req' : '') + '"><span class="gi-n">' + n + '</span>' + label + tag + '</label>' + inner +
-      (o.help ? '<p class="gi-help"' + (o.helpId ? ' id="' + o.helpId + '"' : '') + '>' + o.help + '</p>' : '') + (o.tag && AH[o.tag] ? '<p class="gi-help gf-ah" data-ah="' + o.tag + '" hidden></p>' : '') + '<p class="gi-ferr" data-err="' + (o.err || '') + '"></p></div>';
+      (o.help ? '<p class="gi-help"' + (o.helpId ? ' id="' + o.helpId + '"' : '') + '>' + o.help + '</p>' : '') + (o.tag && AH[o.tag] ? '<p class="gi-help gf-ah" data-ah="' + o.tag + '" hidden></p>' : '') + (o.after || '') + '<p class="gi-ferr" data-err="' + (o.err || '') + '"></p></div>';
   }
   function inp(path, o) {
     o = o || {};
-    return '<input class="gi-in" data-p="' + path + '" type="' + (o.type || 'text') + '"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.max ? ' maxlength="' + o.max + '"' : '') + (o.attr ? ' ' + o.attr : '') + ' value="' + esc(get(path) || '') + '">';
+    var h = '<input class="gi-in" data-p="' + path + '" type="' + (o.type || 'text') + '"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.max ? ' maxlength="' + o.max + '"' : '') + (o.attr ? ' ' + o.attr : '') + ' value="' + esc(get(path) || '') + '">';
+    return !o.type && !o.noclip && w.GIClip ? w.GIClip.wrap(h, get(path)) : h;
   }
   function sel(path, opts, ph, o) {
     o = o || {};
@@ -80,7 +81,7 @@
   function personHtml(k, n0) {
     var num = function (i) { return String(n0 + i); }, h = '', R = k === 'r', AD = R ? ' gf-addr-r' : '';
     h += fld(num(0), 'Tipo de identificación', seg(k + '.tipoId', C.tiposId.filter(function (t) { return !R || !/\(TI\)/.test(t); }).map(function (t) { return [t, codeOf(t), t]; }), 'Tipo de identificación') + '<p class="gi-help" data-tiponame="' + k + '">Elige el tipo de documento.</p>', { c: 12, req: 1, err: k + '.tipoId' });
-    h += fld(num(1), 'Número de identificación', inp(k + '.numId', { max: 20, ph: 'Solo números para CC, CE y TI' }), { c: 4, req: 1, err: k + '.numId' });
+    h += fld(num(1), 'Número de identificación', inp(k + '.numId', { max: 20, ph: 'Solo números para CC, CE y TI' }), { c: 4, req: 1, err: k + '.numId', after: k === 'i' && !editId ? '<div class="gf-idinfo" data-idinfo="i" role="status" hidden></div>' : '' });
     h += fld(num(2), 'Nombre(s)', inp(k + '.nombres', { max: 60 }), { c: 4, req: 1, err: k + '.nombres' });
     h += fld(num(3), 'Apellido(s)', inp(k + '.apellidos', { max: 60 }), { c: 4, req: 1, err: k + '.apellidos' });
     if (R) h += sw('ui.mismaDir', 'Vive en la misma dirección del infractor', { help: ['gfMisma', 'Si lo activas, se copian país, municipio y dirección del infractor y se ocultan estos campos.'] });
@@ -487,6 +488,7 @@
     syncSegs();
     view.querySelectorAll('[data-sw]').forEach(function (b) { var p = b.getAttribute('data-sw'); setSw(b, !!get(p)); });
     refreshInputs(); updateHelp(); progress();
+    if (w.GIClip) w.GIClip.refresh(view);
   }
 
   /* ───────── validación y guardado ───────── */
@@ -515,6 +517,8 @@
     function person(k, tag) {
       var p = st[k], co = p.pais === 'Colombia';
       req(k + '.tipoId', tag + ': tipo de identificación', p.tipoId); req(k + '.numId', tag + ': número de identificación', p.numId);
+      var vg = vigenteDe(k);
+      if (vg) errs.push([k + '.numId', 'Esta persona ya tiene una sanción vigente (' + vg.id + '); no se puede registrar otra.']);
       req(k + '.nombres', tag + ': nombre(s)', p.nombres.trim()); req(k + '.apellidos', tag + ': apellido(s)', p.apellidos.trim());
       req(k + '.pais', tag + ': país', p.pais);
       if (co) { req(k + '.depto', tag + ': departamento', p.depto); req(k + '.ciudad', tag + ': ciudad', p.ciudad); req(k + '.rural', tag + ': zona rural', p.rural);
@@ -733,13 +737,56 @@
       if (/\.a\.adicOn$/.test(path)) { var a = st[path[0]].a; a.adic = ''; a.indic = ''; }
     }
   }
+  /* Quién es la persona de la cédula: vigente (no se puede registrar otra), en trámite o con antecedentes. */
+  function estadoCedula(k) {
+    var p = st[k], n = String(p.numId || '').replace(/\D/g, '');
+    return w.DemoCasos && !editId && k === 'i' && n.length >= 5 ? w.DemoCasos.estado(p.tipoId || C.tiposId[0], p.numId) : null;
+  }
+  function idInfo(k) {
+    var el = view.querySelector('[data-idinfo="' + k + '"]'), e = el && estadoCedula(k);
+    if (!el) return;
+    var r, h = '', cls = '', link = function (x) { return '<a href="' + UI.BASE + '/' + x.id + '">' + x.id + '</a>'; };
+    if (e && e.vigentes.length) {
+      r = e.vigentes[0]; cls = 'neg';
+      h = '<strong>Ya tiene una sanción vigente</strong> ' + esc(r.nombres + ' ' + r.apellidos) + ' · ' + link(r) + ' · hasta ' + U.fmt(D.finVigencia(r)) + ' (' + GI.fmtDias(D.diasRestantes(r)) + '). Consulte el expediente para tramitar su estado.';
+    } else if (e && e.enTramite.length) {
+      r = e.enTramite[0]; cls = 'warn';
+      h = '<strong>Ya tiene un registro en trámite</strong> · ' + link(r) + ' · ' + esc(r.estadoRegistro) + '. Revisa si es el mismo caso antes de registrar.';
+    } else if (e && e.cumplidas.length) {
+      cls = 'info';
+      h = '<strong>Con antecedentes</strong> · ' + e.cumplidas.length + (e.cumplidas.length === 1 ? ' sanción cumplida' : ' sanciones cumplidas') + ' (' + e.cumplidas.map(link).join(', ') + ').';
+    }
+    el.hidden = !h; el.className = 'gf-idinfo' + (cls ? ' gf-idinfo--' + cls : ''); el.innerHTML = h;
+    if (cls === 'neg') el.setAttribute('role', 'alert'); else el.setAttribute('role', 'status');
+    if (k === 'i') bloquear(cls === 'neg');
+  }
+  /* DC-103: con sanción vigente solo queda editable el documento; data-lock recuerda qué se deshabilitó aquí. */
+  function bloquear(on) {
+    var form = view.querySelector('#giForm'), num = form.querySelector('[data-p="i.numId"]');
+    form.classList.toggle('gf-lock', on);
+    if (num) { num.classList.toggle('is-invalid', on); num.setAttribute('aria-invalid', on ? 'true' : 'false'); }
+    var slot = form.querySelector('[data-err="i.numId"]');
+    if (slot && on) slot.textContent = 'Esta persona tiene una sanción vigente; no es posible continuar con el registro.';
+    else if (slot && !on && /sanción vigente/.test(slot.textContent)) slot.textContent = '';
+    form.querySelectorAll('input, select, textarea, button').forEach(function (c) {
+      var libre = c.matches('[data-p="i.numId"]') || c.name === 'i.tipoId';
+      if (on && !libre) { if (!c.disabled) { c.disabled = true; c.setAttribute('data-lock', ''); } }
+      else if (!on && c.hasAttribute('data-lock')) { c.disabled = false; c.removeAttribute('data-lock'); }
+    });
+    ['#gfNext', '#giSave'].forEach(function (id) {
+      var b = view.querySelector(id); if (!b) return;
+      if (on) { b.disabled = true; b.setAttribute('data-lock', ''); } else if (b.hasAttribute('data-lock')) { b.disabled = false; b.removeAttribute('data-lock'); }
+    });
+  }
+  function vigenteDe(k) { var e = estadoCedula(k); return e && e.vigentes[0] || null; }
   /* Casos de prueba: una cédula conocida (shared/demo-casos.js) completa la persona, los hechos, el acto y lo interno. */
   function porCedula(k) {
-    var o = w.DemoCasos && !editId && w.DemoCasos.autocompletar(st[k].tipoId, st[k].numId);
+    idInfo(k);
+    var o = w.DemoCasos && !editId && w.DemoCasos.autocompletar(st[k].tipoId || C.tiposId[0], st[k].numId);
     if (!o) return;
     var s = w.LaserFill && secEl(cur) ? w.LaserFill.snap(secEl(cur)) : null;
     Object.assign(st[k], o.persona);
-    if (k === 'i') {
+    if (k === 'i' && !vigenteDe('i')) {
       if (o.rep) Object.assign(st.r, o.rep);
       Object.keys(o.hechos || {}).forEach(function (c) { var v = st.f[c]; if (v == null || v === '' || (Array.isArray(v) && !v.length)) st.f[c] = o.hechos[c]; });
       fillHechos(); fillSancion(); fillInterna();
@@ -762,7 +809,7 @@
       if (t.value !== v) t.value = v;
       set(p, v); mark(p);
       if (/^[ir]\.ciudad$/.test(p)) inferDepto(p[0]);
-      if (/^[ir]\.numId$/.test(p)) porCedula(p[0]);
+      if (/^[ir]\.numId$/.test(p)) { idInfo(p[0]); porCedula(p[0]); }
       sync();
     });
     form.addEventListener('change', function (e) {

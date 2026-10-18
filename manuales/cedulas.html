@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cédulas de prueba · Manuales</title>
+  <link rel="stylesheet" href="../shared/fonts/google-sans.css">
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../svn/vendor/fonts.css">
+  <link rel="stylesheet" href="../svn/vendor/foundations.css">
+  <link rel="stylesheet" href="../svn/vendor/components.css">
+  <link rel="stylesheet" href="../svn/vendor/icons.css">
+  <link rel="stylesheet" href="../svn/toolbar.css">
+  <link rel="stylesheet" href="manuales.css">
+  <script src="../svn/vendor/nwt.js"></script>
+</head>
+<body class="mn">
+  <div id="barra" class="mn-barra"></div>
+  <div class="mn-layout">
+    <nav class="mn-nav" aria-label="Manuales"></nav>
+    <main class="mn-main" id="contenido">
+      <header class="mn-cab">
+        <p class="mn-eyebrow">Manual</p>
+        <h1>Cédulas de prueba</h1>
+        <p class="mn-lead">Documentos ficticios para probar cada caso. Funcionan en el IVC, en Entidades, en Comprar, en la puerta (digitando) y en el portal.</p>
+      </header>
+
+      <section class="mn-sec" id="personas">
+        <h2>Personas con un caso</h2>
+        <p>Así empiezan. Puede cambiar el estado de cualquiera desde el «Panel de casos de prueba» (<span class="mn-tecla">Ctrl</span> + <span class="mn-tecla">Shift</span> + <span class="mn-tecla">L</span>).</p>
+        <p class="mn-nota">Una sanción recién registrada no bloquea. Bloquea cuando se valida.</p>
+        <div id="mn-cedulas"></div>
+      </section>
+
+      <section class="mn-sec" id="libres">
+        <h2>Cédulas libres</h2>
+        <p>Personas sin ningún registro. Úselas para registrar una sanción desde cero o para reportar un incidente.</p>
+        <div id="mn-libres"></div>
+      </section>
+
+      <section class="mn-sec" id="casos-svn">
+        <h2>Casos propios de cada aplicación</h2>
+        <p>Además de las cédulas, cada aplicación del SVN trae casos listos en la columna izquierda. Elija uno y observe el resultado.</p>
+        <div class="mn-tabla-w">
+          <table class="mn-tabla">
+            <thead><tr><th>Aplicación</th><th>Casos</th><th>Qué permiten ver</th></tr></thead>
+            <tbody>
+              <tr><td data-th="Aplicación"><a href="../svn/index.html#/compra" target="_blank" rel="noopener">Comprar y asignar ingresos</a></td><td data-th="Casos">16</td><td data-th="Qué permiten ver">Compra sin problemas, compra para otros y fallas al identificarse, al asignar titulares y al pagar.</td></tr>
+              <tr><td data-th="Aplicación"><a href="../svn/index.html#/puerta" target="_blank" rel="noopener">Acceso en puerta</a></td><td data-th="Casos">14</td><td data-th="Qué permiten ver">Quién entra, quién no entra en esa puerta, quién no entra por una medida y lecturas con huella.</td></tr>
+              <tr><td data-th="Aplicación"><a href="../svn/index.html#/entidades" target="_blank" rel="noopener">Entidades y comercializadoras</a></td><td data-th="Casos">6</td><td data-th="Qué permiten ver">Reporte semestral, incidentes, un menor de edad y un documento que no se encuentra.</td></tr>
+              <tr><td data-th="Aplicación"><a href="../svn/index.html#/portal" target="_blank" rel="noopener">Portal de la persona</a></td><td data-th="Casos">7</td><td data-th="Qué permiten ver">Sin medidas, medida vigente o por vencer, un menor y datos que no coinciden.</td></tr>
+              <tr><td data-th="Aplicación"><a href="../svn/index.html#/soporte" target="_blank" rel="noopener">Consola de soporte</a></td><td data-th="Casos">10</td><td data-th="Qué permiten ver">Reclamaciones abiertas, en gestión, resueltas y rechazadas.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="mn-pie">Prototipo de demostración · datos ficticios.</p>
+    </main>
+  </div>
+  <script src="../shared/demo-casos.data.js"></script>
+  <script src="../svn/marca.js"></script>
+  <script src="../svn/toolbar.js"></script>
+  <script src="manuales.js"></script>
+</body>
+</html>

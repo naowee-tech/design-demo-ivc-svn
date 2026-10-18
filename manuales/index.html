@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manuales · IVC y SVN</title>
+  <link rel="stylesheet" href="../shared/fonts/google-sans.css">
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../svn/vendor/fonts.css">
+  <link rel="stylesheet" href="../svn/vendor/foundations.css">
+  <link rel="stylesheet" href="../svn/vendor/components.css">
+  <link rel="stylesheet" href="../svn/vendor/icons.css">
+  <link rel="stylesheet" href="../svn/toolbar.css">
+  <link rel="stylesheet" href="manuales.css">
+  <script src="../svn/vendor/nwt.js"></script>
+</head>
+<body class="mn">
+  <div id="barra" class="mn-barra"></div>
+  <div class="mn-layout">
+    <nav class="mn-nav" aria-label="Manuales"></nav>
+    <main class="mn-main" id="contenido">
+      <header class="mn-cab">
+        <p class="mn-eyebrow">Manuales</p>
+        <h1>Cómo usar la demo</h1>
+        <p class="mn-lead">Guía corta para recorrer el IVC y el SVN con datos de prueba. Nada de lo que haga aquí sale de su navegador.</p>
+      </header>
+
+      <section class="mn-sec" id="que-es">
+        <h2>Qué es esto</h2>
+        <p>Dos sistemas conectados. Lo que se registra en uno se refleja en el otro al instante.</p>
+        <div class="mn-grid">
+          <a class="mn-tarjeta" href="ivc.html"><b>IVC</b><span>Registra, valida y consulta las sanciones. También administra los eventos.</span></a>
+          <a class="mn-tarjeta" href="svn.html"><b>SVN</b><span>Compra de ingresos, acceso en puerta y monitoreo de la autoridad.</span></a>
+          <a class="mn-tarjeta" href="cedulas.html"><b>Cédulas de prueba</b><span>Qué documento usar para cada caso.</span></a>
+        </div>
+      </section>
+
+      <section class="mn-sec" id="recorrido">
+        <h2>Recorrido en 5 minutos</h2>
+        <p>Una persona sancionada en el IVC queda bloqueada en todo el sistema. Siga los pasos en orden.</p>
+        <ol class="mn-recorrido">
+          <li><b>Inicie sesión</b><p>Escriba cualquier dato y toque «Iniciar sesión».</p><a class="mn-ir" href="../index.html" target="_blank" rel="noopener">Abrir el inicio de sesión</a></li>
+          <li><b>Copie una cédula de prueba</b><p>Pulse <span class="mn-tecla">Ctrl</span> + <span class="mn-tecla">Shift</span> + <span class="mn-tecla">L</span> (en Mac, <span class="mn-tecla">⌘</span>) y copie 1090000001.</p></li>
+          <li><b>Registre la sanción</b><p>En «Gestión de sanciones», toque «Registrar infractores» y pegue la cédula. Toque «Siguiente» hasta «Guardar registro».</p></li>
+          <li><b>Valídela</b><p>En el expediente, toque «Validar registro» y luego «Confirmar». Desde ese momento la persona queda bloqueada.</p></li>
+          <li><b>Pase al SVN</b><p>Toque su avatar, arriba a la derecha, y elija «Ir a SVN · Platform».</p></li>
+          <li><b>Intente comprar</b><p>Abra «Comprar y asignar ingresos», toque «Continuar» y escriba la cédula y el nombre. Verá «No es posible continuar».</p><a class="mn-ir" href="../svn/index.html#/compra" target="_blank" rel="noopener">Abrir Comprar</a></li>
+          <li><b>Intente entrar</b><p>En «Acceso en puerta», toque «Digitar documento», marque la cédula y «Validar». Verá «NO ENTRA».</p><a class="mn-ir" href="../svn/index.html#/puerta" target="_blank" rel="noopener">Abrir la puerta</a></li>
+          <li><b>Vea la alerta</b><p>En «Monitor PMU», abra «Nacional vs. Medellín». La alerta de la puerta ya está ahí.</p><a class="mn-ir" href="../svn/index.html#/policia" target="_blank" rel="noopener">Abrir el PMU</a></li>
+          <li><b>Revise la auditoría</b><p>En el IVC, abra «Eventos», luego «Nacional vs. Medellín» y «Registros». Escriba la cédula en «Documento».</p><a class="mn-ir" href="../suid/app.html#/control-acceso/eventos/e1" target="_blank" rel="noopener">Abrir el evento</a></li>
+        </ol>
+        <p class="mn-nota">Para empezar de nuevo, abra el panel de casos de prueba y toque «Reiniciar todo».</p>
+      </section>
+
+      <section class="mn-sec" id="accesos">
+        <h2>Dónde está cada acceso</h2>
+        <p>El IVC es la entrada principal. El SVN y estos manuales se abren desde estos puntos.</p>
+
+        <article class="mn-paso" id="acceso-login">
+          <h3>En el inicio de sesión</h3>
+          <p class="mn-para">En el pie de la página, junto a «Todos los derechos reservados».</p>
+          <figure class="mn-cap" data-cap="acc-login-pie"></figure>
+          <ol class="mn-marcas"><li>Abre el SVN</li><li>Abre el panel de casos</li><li>Abre estos manuales</li></ol>
+          <a class="mn-ir" href="../index.html" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="acceso-avatar">
+          <h3>Dentro del IVC</h3>
+          <p class="mn-para">Toque su avatar, arriba a la derecha. Ahí también está «Cerrar sesión».</p>
+          <figure class="mn-cap" data-cap="acc-avatar"></figure>
+          <ol class="mn-marcas"><li>Panel de casos de prueba</li><li>Ir a SVN · Platform</li><li>Manuales</li></ol>
+          <a class="mn-ir" href="../suid/app.html#/control-acceso/infractores" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="acceso-gate">
+          <h3>En el inicio del SVN</h3>
+          <p class="mn-para">Al pie de la página. Las tarjetas 1, 2, 5 y 9 lo llevan de vuelta al IVC.</p>
+          <figure class="mn-cap" data-cap="acc-gate-pie"></figure>
+          <ol class="mn-marcas"><li>Panel de casos de prueba</li><li>Manuales</li></ol>
+          <a class="mn-ir" href="../svn/index.html#/" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+
+        <article class="mn-paso" id="acceso-panel">
+          <h3>Panel de casos de prueba</h3>
+          <p class="mn-para">Pulse <span class="mn-tecla">Ctrl</span> + <span class="mn-tecla">Shift</span> + <span class="mn-tecla">L</span> en cualquier pantalla. Sirve para copiar cédulas y cambiar el estado de una persona.</p>
+          <figure class="mn-cap" data-cap="acc-panel"></figure>
+          <ol class="mn-marcas"><li>Saltar a una vista</li><li>Copiar cédula</li><li>Cambiar estado</li><li>Reiniciar</li></ol>
+          <figure class="mn-cap" data-cap="acc-panel-estado" data-foco="1"></figure>
+          <ol class="mn-marcas"><li>Elija el estado</li></ol>
+          <p class="mn-para">Arriba del panel está el enlace «Manuales».</p>
+        </article>
+
+        <article class="mn-paso" id="acceso-animacion">
+          <h3>En la animación de integración</h3>
+          <p class="mn-para">Tarjeta 1 del SVN. Arriba a la derecha están «Manuales» e «Ir a SVN · Platform».</p>
+          <a class="mn-ir" href="../fase0/index.html" target="_blank" rel="noopener">Abrir en la demo</a>
+        </article>
+      </section>
+
+      <p class="mn-pie">Prototipo de demostración · datos ficticios.</p>
+    </main>
+  </div>
+  <script src="capturas.data.js"></script>
+  <script src="../svn/marca.js"></script>
+  <script src="../svn/toolbar.js"></script>
+  <script src="manuales.js"></script>
+</body>
+</html>

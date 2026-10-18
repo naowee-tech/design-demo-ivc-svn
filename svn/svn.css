@@ -70,7 +70,9 @@ button { font-family: inherit; }
   animation: sv-brillo 3.4s linear infinite;
 }
 @keyframes sv-brillo { from { background-position: 120% 0; } to { background-position: -20% 0; } }
-.sv-gate__modo { margin-top: var(--naotech-sizing-16); }
+.sv-gate__modo { margin-top: var(--naotech-sizing-16); margin-bottom: calc(var(--naotech-sizing-16) * -1); }
+/* Texto de pestañas a 1.5x (DC-118); el alcance es solo esta nwt-tabs, no las del panel. */
+.sv-gate__modo .nwt-tabs__label-text { font-size: calc(var(--naotech-sizing-14) * 1.5); }
 
 .sv-gate__cuerpo { width: 100%; max-width: 1240px; display: flex; flex-direction: column; gap: var(--naotech-sizing-24); }
 .sv-gate__fila { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--naotech-sizing-16); }
@@ -119,6 +121,9 @@ button { font-family: inherit; }
 .sv-card__icono { font-size: 36px; color: var(--naotech-primary-color-600); }
 
 .sv-gate__pie { display: flex; flex-direction: column; align-items: center; gap: var(--naotech-sizing-4); margin-top: auto; padding-bottom: var(--naotech-sizing-24); color: var(--naotech-app-color-600); text-align: center; }
+.sv-gate__demo { margin-top: var(--naotech-sizing-4); padding: 0; border: 0; background: none; color: var(--naotech-app-color-600); font-family: inherit; text-decoration: underline; cursor: pointer; }
+.sv-gate__demo:hover, .sv-gate__demo:focus-visible { color: var(--naotech-app-color-900); }
+.sv-gate__accesos { display: flex; flex-wrap: wrap; gap: var(--naotech-sizing-16); justify-content: center; }
 
 .sv-chip { cursor: pointer; }
 .sv-chip--badge {
@@ -201,10 +206,6 @@ button { font-family: inherit; }
 
 /* ---------- Mindeporte + IVC en las barras (DC-319) ---------- */
 
-.pp-alianza { flex: none; display: inline-flex; align-items: center; gap: var(--naotech-sizing-12); }
-.pp-alianza__sep { width: 1px; height: var(--naotech-sizing-24); background: var(--naotech-app-color-300); }
-.pp-alianza__min { display: block; height: var(--naotech-sizing-40); width: auto; }
-.pp-alianza__ivc { display: inline-flex; align-items: center; height: var(--naotech-sizing-28); padding: 0 var(--naotech-sizing-10); border-radius: var(--naotech-radius-md); background: var(--naotech-primary-color-050); color: var(--naotech-primary-color-800); font-size: var(--naotech-sizing-14); font-weight: 800; letter-spacing: .03em; }
 
 /* Lista de casos del panel (DC-353): divisores finos, sin cajas; la hereda toda app con .pp-panel__lista. */
 .pp-panel .pp-panel__lista { gap: 0; }
@@ -231,3 +232,4 @@ button { font-family: inherit; }
 /* Logo de Naowee flotante: sin clics, por encima de todo, para no tapar controles. */
 .sv-flota { position: fixed; right: var(--naotech-sizing-16); bottom: var(--naotech-sizing-16); z-index: 2147483000; pointer-events: none; --naotech-logo-width: 6rem; }
 .sv-flota[hidden] { display: none; }
+

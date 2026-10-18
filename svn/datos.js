@@ -1,4 +1,84 @@
 /* Datos del prototipo. Todo ficticio: ningún nombre ni documento sale de los insumos. */
+/* Fechas relativas a hoy y adaptador al resolver del IVC (shared/demo-casos.js): las apps nunca leen GI directo. */
+window.SVN_UTIL = (function () {
+  var M3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  var MM = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  var DS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  var DIA = 86400000;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function dia(off, base) { var d = base ? new Date(base + 'T12:00:00') : new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + (off || 0)); return d; }
+  function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parse(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+  // `off` días desde hoy (o desde `base`, ISO): { iso, corto: '29 sep', largo: '29 sep 2026', dia: 'martes', num, mes }.
+  function rel(off, base) {
+    var d = dia(off, base), c = d.getDate() + ' ' + M3[d.getMonth()];
+    return { iso: iso(d), corto: c, largo: c + ' ' + d.getFullYear(), dia: DS[d.getDay()], num: d.getDate(), mes: MM[d.getMonth()] };
+  }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  // «Hoy · lunes 28 de septiembre», «Mañana · …», «Ayer · …» o «Sábado 3 de octubre».
+  function etiquetaDia(off) {
+    var r = rel(off), b = r.dia + ' ' + r.num + ' de ' + r.mes;
+    return off === 0 ? 'Hoy · ' + b : off === 1 ? 'Mañana · ' + b : off === -1 ? 'Ayer · ' + b : cap(b);
+  }
+  function fechaIso(t) { var d = parse(t); return d.getDate() + ' ' + M3[d.getMonth()] + ' ' + d.getFullYear(); }
+  function hoyIso() { return iso(dia(0)); }
+  function diasEntre(a, b) { return Math.round((parse(b) - parse(a)) / DIA); }
+  function sumar(isoF, n) { return iso(dia(n, isoF)); }
+
+  /* ---------- Resolver, bus y claves ---------- */
+  function cod(t) {
+    var m = /\(([A-Z]+)\)/.exec(String(t || '')), c = (m ? m[1] : String(t || '')).trim().toUpperCase();
+    return c === 'PA' || c === 'PASAPORTE' ? 'P' : c;
+  }
+  function limpio(n) { return String(n == null ? '' : n).replace(/[^A-Za-z0-9]/g, ''); }
+  function clave(t, n) { return cod(t) + '|' + limpio(n).toUpperCase(); }
+  function deClave(k) { var p = String(k || '').split('|'); return { tipo: p[0] || 'CC', num: p[1] || '' }; }
+  // null si el resolver no está o el documento no existe en el IVC ni en la demo.
+  function res(tipo, num, vista, hoy) {
+    var d = window.DemoCasos;
+    if (!d || !d.resolver || !limpio(num)) { return null; }
+    try { return d.resolver(cod(tipo), limpio(num), { vista: vista, hoy: hoy }); } catch (e) { return null; }
+  }
+  function emitir(o) { return window.DemoBus ? window.DemoBus.emitir(o) : null; }
+  function leerBus(f) { return window.DemoBus ? window.DemoBus.leer(f) : []; }
+  function suscribir(fn) { return window.DemoBus ? window.DemoBus.suscribir(fn) : function () {}; }
+
+  /* ---------- Medidas desde los registros de GI ---------- */
+  // «Pretender ingresar o ingerir bebidas alcohólicas… (art. 97, 6)» a partir del catálogo del IVC.
+  function conducta(i) {
+    var t = (window.GI_CAT && window.GI_CAT.origen[i]) || '', m = /^(\w)[.)]\s+Art\. (\d+) - (.*?)\.?$/.exec(t);
+    return m ? m[3] + ' (art. ' + m[2] + ', ' + m[1] + ')' : t.replace(/^\w[.)]\s+/, '').replace(/\.$/, '');
+  }
+  // Una medida por registro validado: fin y estado salen de GI.derive, `hoy` solo desplaza el día de lectura.
+  function medidas(r, hoy) {
+    var D = window.GI && window.GI.derive, h = hoy || hoyIso();
+    return (r ? r.registros : []).filter(function (x) { return x.estadoRegistro === 'Validado'; }).map(function (x) {
+      var fin = D.finVigencia(x), vig = h <= fin, desde = sumar(x.fechaEjecutoria, 1);
+      return { id: x.id, reg: x, conductas: (x.origen || []).map(conducta), acto: x.numActo, autoridad: 'Inspección municipal de ' + (x.ciudadHechos || x.ciudad || 'la jurisdicción'),
+        ejecutoria: x.fechaEjecutoria, desde: desde, fin: fin, vigente: vig, dias: diasEntre(h, fin), total: diasEntre(desde, fin) + 1, hechos: x.fechaHechos,
+        evento: [x.local, x.visitante].filter(Boolean).join(' vs. '), descripcion: x.descripcion };
+    }).sort(function (a, b) { return a.fin < b.fin ? 1 : -1; });
+  }
+  function representante(r) {
+    var p = r && r.fuente === 'demo' && window.DemoCasos && window.DemoCasos.personas.filter(function (x) { return x.id === r.persona.id; })[0];
+    var rep = (p && p.rep) || (r && r.registros.map(function (x) { return x.rep; }).filter(Boolean)[0]) || null;
+    return rep ? { tipo: cod(rep.tipoId), num: limpio(rep.numId), nombre: (rep.nombres + ' ' + rep.apellidos).trim() } : null;
+  }
+  // Personas del SVN que no están en el IVC: sin registro, el resolver devuelve null y la identidad sale de aquí.
+  var FIJOS = {
+    'CC|1036482117': 'Andrés Felipe Restrepo Gil', 'CC|1152708339': 'Mariana Cárdenas Ríos', 'CC|1017889214': 'Daniela Gómez Arias', 'CC|1037664905': 'Santiago Mejía Correa'
+  };
+  function identidad(t, n) {
+    var r = res(t, n, 'ivc');
+    if (r) { return { nombre: (r.persona.nombres + ' ' + r.persona.apellidos).trim(), fuente: r.fuente, r: r }; }
+    var k = clave(t, n);
+    return FIJOS[k] ? { nombre: FIJOS[k], fuente: 'svn', r: null } : null;
+  }
+  return { rel: rel, etiquetaDia: etiquetaDia, fechaIso: fechaIso, hoyIso: hoyIso, diasEntre: diasEntre, sumar: sumar, parse: parse, cod: cod, clave: clave, limpioNum: limpio, deClave: deClave, res: res,
+    emitir: emitir, leer: leerBus, suscribir: suscribir, conducta: conducta, medidas: medidas, representante: representante, identidad: identidad, FIJOS: FIJOS, EVENTO: 'EV-2026-0412' };
+})();
+(function () {
+var U = window.SVN_UTIL, R = U.rel;
 window.SVN_DATOS = {
   entidad: { nombre: 'Ministerio del Deporte', sigla: 'Mindeporte', monograma: 'MD', sistema: 'Sistema de Validación Nacional' },
 
@@ -50,7 +130,7 @@ window.SVN_DATOS = {
   casos: [
     { id: 'verde', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Entra escaneando cédulas', color: 'verde', nombre: 'Andrés Felipe Restrepo Gil', doc: 'CC 1.036.482.117', detalle: 'Oriental Baja · Fila E · Silla 18' },
     { id: 'solocc', foto: 'assets/fotos/verde-cc.webp', punto: 'verde', etiqueta: 'Entra solo con cédula', color: 'verde', digitado: true, nombre: 'Felipe Osorio Marín', doc: 'CC 1.037.615.208', detalle: 'Oriental Baja · Fila H · Silla 12', registro: 'Entró · documento digitado · Oriental Baja' },
-    { id: 'medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Medida vigente', color: 'rojo', doc: 'CC •••• 4447' },
+    { id: 'medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Medida vigente', color: 'rojo', doc: 'CC •••• 4447', clave: 'CC|71894447' },
     { id: 'sin', foto: 'assets/fotos/amarillo.webp', punto: 'rojo', etiqueta: 'Sin ingreso a este partido', color: 'rojo', operativo: true, causa: 'Sin ingreso a este partido', nombre: 'Sebastián Cardona Ruiz', doc: 'CC 1.152.708.664' },
     { id: 'usada', foto: 'assets/fotos/sospechoso-sin.webp', punto: 'rojo', etiqueta: 'Ya ingresó', color: 'rojo', operativo: true, causa: 'Ya ingresó', nombre: 'Mateo Giraldo Paz', doc: 'CC 1.001.246.583' },
     { id: 'puerta', foto: 'assets/fotos/verde-cc.webp', punto: 'rojo', etiqueta: 'Puerta equivocada', color: 'rojo', operativo: true, sinPolicia: true, causa: 'Puerta equivocada', dato: 'Diríjase a la Puerta 6 · Sur', nombre: 'Camilo Andrés Vélez Soto', doc: 'CC 1.020.553.771' },
@@ -62,7 +142,7 @@ window.SVN_DATOS = {
     { id: 'huella-lector', foto: 'assets/fotos/verde.webp', punto: 'verde', etiqueta: 'Lector de huella sin servicio', color: 'verde', huella: 'lector', modo: 'opcional', que: 'Apaga el lector: sin huella hasta que el supervisor active la contingencia', nombre: 'Mónica Patricia Ariza Lozano', doc: 'CC 1.098.331.760', detalle: 'Oriental Baja · Fila F · Silla 21' },
     { id: 'huella-no', foto: 'assets/fotos/sospechoso-otro.webp', punto: 'rojo', etiqueta: 'Huella no coincide', color: 'verde', huella: 'no', modo: 'opcional', que: 'Tiene derecho de ingreso, pero la huella no coincide con el documento: tres lecturas legibles y rojo', nombre: 'Esteban Cardona Arias', doc: 'CC 1.001.774.218', detalle: 'Oriental Baja · Fila D · Silla 7' },
     { id: 'huella-sinderecho', foto: 'assets/fotos/sospechoso-sin.webp', punto: 'rojo', etiqueta: 'Huella válida, sin derecho de ingreso', color: 'rojo', operativo: true, base: 'sin', huella: 'coincide', modo: 'opcional', que: 'La huella coincide, pero el documento no tiene derecho de ingreso', causa: 'Sin ingreso a este partido', registro: 'No entró · sin derecho de ingreso (huella coincide)', nombre: 'Hernán Darío Quintero Salas', doc: 'CC 1.044.205.836' },
-    { id: 'huella-medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Huella válida con medida vigente', color: 'rojo', base: 'medida', huella: 'coincide', modo: 'opcional', que: 'La huella coincide, pero la medida vigente cierra el paso: alerta al PMU', doc: 'CC •••• 5120' }
+    { id: 'huella-medida', foto: 'assets/fotos/rabioso.webp', punto: 'rojo', etiqueta: 'Huella válida con medida vigente', color: 'rojo', base: 'medida', huella: 'coincide', modo: 'opcional', que: 'La huella coincide, pero la medida vigente cierra el paso: alerta al PMU', doc: 'CC •••• 0004', clave: 'CC|1090000004' }
   ],
 
   // El operador no ve los antecedentes: se guardan en `aviso` y la auditoría del turno los recoge.
@@ -78,13 +158,13 @@ window.SVN_DATOS = {
   policia: {
     // Eventos de la jurisdicción: la primera pantalla de la autoridad de seguridad. `tablero: true` abre el tablero armado.
     eventos: [
-      { id: 'e1', estado: 'vivo', fecha: '2026-09-28', dia: 'Hoy · lunes 28 de septiembre', hora: '19:00', partido: 'Nacional vs. Medellín', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Puertas abiertas', dato: { principal: '4.812', total: '38.000', etiqueta: 'ingresados' }, alertas: 2, tablero: true },
-      { id: 'e2', estado: 'vivo', fecha: '2026-09-28', dia: 'Hoy · lunes 28 de septiembre', hora: '18:00', partido: 'Junior vs. Santa Fe', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Metropolitano', ciudad: 'Barranquilla', foto: 'metropolitano', nota: 'En juego · 2.º tiempo', dato: { principal: '41.230', total: '46.000', etiqueta: 'ingresados' }, alertas: 0, estados: { nueva: 0, atencion: 1, cerrada: 3 } },
-      { id: 'e3', estado: 'proximo', fecha: '2026-09-29', dia: 'Mañana · martes 29 de septiembre', hora: '20:00', partido: 'Millonarios vs. América', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Puertas abren 17:30', dato: { principal: '28.400', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '12 ventas bloqueadas' } },
-      { id: 'e4', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '16:00', partido: 'América vs. Once Caldas', competicion: 'Liga profesional · fecha 13', escenario: 'Estadio Olímpico Pascual Guerrero', ciudad: 'Cali', foto: 'pascual-guerrero', nota: 'Sin hinchada visitante', dato: { principal: '14.020', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '3 ventas bloqueadas' } },
-      { id: 'e5', estado: 'proximo', fecha: '2026-10-03', dia: 'Sábado 3 de octubre', hora: '18:30', partido: 'Real Cartagena vs. Unión Magdalena', competicion: 'Torneo de ascenso · fecha 9', escenario: 'Estadio Jaime Morón', ciudad: 'Cartagena', foto: 'jaime-moron', nota: 'Venta abierta', dato: { principal: '9.310', total: '16.000', etiqueta: 'con derecho de ingreso', resto: '1 venta bloqueada' } },
-      { id: 'e6', estado: 'pasado', fecha: '2026-09-27', dia: 'Ayer · domingo 27 de septiembre', hora: '17:00', partido: 'Medellín vs. Junior', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Finalizado', dato: { principal: '35.102', total: '38.000', etiqueta: 'asistentes', resto: '3 rojos · alertas cerradas' } },
-      { id: 'e7', estado: 'pasado', fecha: '2026-09-26', dia: 'Sábado 26 de septiembre', hora: '19:30', partido: 'Santa Fe vs. Nacional', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Finalizado', dato: { principal: '29.880', total: '36.000', etiqueta: 'asistentes', resto: '5 rojos · alertas cerradas' } }
+      { id: 'e1', estado: 'vivo', fecha: R(0).iso, dia: U.etiquetaDia(0), hora: '19:00', partido: 'Nacional vs. Medellín', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Puertas abiertas', dato: { principal: '4.812', total: '38.000', etiqueta: 'ingresados' }, alertas: 2, tablero: true },
+      { id: 'e2', estado: 'vivo', fecha: R(0).iso, dia: U.etiquetaDia(0), hora: '18:00', partido: 'Junior vs. Santa Fe', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio Metropolitano', ciudad: 'Barranquilla', foto: 'metropolitano', nota: 'En juego · 2.º tiempo', dato: { principal: '41.230', total: '46.000', etiqueta: 'ingresados' }, alertas: 0, estados: { nueva: 0, atencion: 1, cerrada: 3 } },
+      { id: 'e3', estado: 'proximo', fecha: R(1).iso, dia: U.etiquetaDia(1), hora: '20:00', partido: 'Millonarios vs. América', competicion: 'Liga profesional · fecha 12', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Puertas abren 17:30', dato: { principal: '28.400', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '12 ventas bloqueadas' } },
+      { id: 'e4', estado: 'proximo', fecha: R(5).iso, dia: U.etiquetaDia(5), hora: '16:00', partido: 'América vs. Once Caldas', competicion: 'Liga profesional · fecha 13', escenario: 'Estadio Olímpico Pascual Guerrero', ciudad: 'Cali', foto: 'pascual-guerrero', nota: 'Sin hinchada visitante', dato: { principal: '14.020', total: '36.000', etiqueta: 'con derecho de ingreso', resto: '3 ventas bloqueadas' } },
+      { id: 'e5', estado: 'proximo', fecha: R(5).iso, dia: U.etiquetaDia(5), hora: '18:30', partido: 'Real Cartagena vs. Unión Magdalena', competicion: 'Torneo de ascenso · fecha 9', escenario: 'Estadio Jaime Morón', ciudad: 'Cartagena', foto: 'jaime-moron', nota: 'Venta abierta', dato: { principal: '9.310', total: '16.000', etiqueta: 'con derecho de ingreso', resto: '1 venta bloqueada' } },
+      { id: 'e6', estado: 'pasado', fecha: R(-1).iso, dia: U.etiquetaDia(-1), hora: '17:00', partido: 'Medellín vs. Junior', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio Atanasio Girardot', ciudad: 'Medellín', foto: 'atanasio', nota: 'Finalizado', dato: { principal: '35.102', total: '38.000', etiqueta: 'asistentes', resto: '3 rojos · alertas cerradas' } },
+      { id: 'e7', estado: 'pasado', fecha: R(-2).iso, dia: U.etiquetaDia(-2), hora: '19:30', partido: 'Santa Fe vs. Nacional', competicion: 'Liga profesional · fecha 11', escenario: 'Estadio El Campín', ciudad: 'Bogotá', foto: 'campin', nota: 'Finalizado', dato: { principal: '29.880', total: '36.000', etiqueta: 'asistentes', resto: '5 rojos · alertas cerradas' } }
     ],
     // Tablero del evento: la primera pantalla de la autoridad de seguridad, antes del perfil.
     tablero: {
@@ -101,7 +181,7 @@ window.SVN_DATOS = {
         { nombre: 'Puerta 8 · Occidental', flujo: 37, ing: 480, avisos: 3, rojos: 1 }
       ],
       alertas: [
-        { id: 'a1', estado: 'nueva', puerta: 'Puerta 4 · Oriental', hora: '18:42', doc: 'CC •••• 4447', causa: 'Medida vigente', origen: 'Lectura en puerta',
+        { id: 'a1', estado: 'nueva', puerta: 'Puerta 4 · Oriental', hora: '18:42', doc: 'CC •••• 4447', clave: 'CC|71894447', causa: 'Medida vigente', origen: 'Lectura en puerta',
           pasos: [{ hora: '18:42', texto: 'Generada en la puerta', quien: 'Op. L. Mejía' }] },
         { id: 'a2', estado: 'nueva', puerta: 'Puerta 6 · Sur', hora: '18:40', doc: 'CC •••• 9013', causa: 'Posible cédula prestada', origen: 'Llamado del operador',
           pasos: [{ hora: '18:40', texto: 'El operador llamó a la autoridad', quien: 'Op. D. Salazar' }] },
@@ -114,9 +194,9 @@ window.SVN_DATOS = {
       ],
       // Avisos silenciosos de la puerta (no son alertas): la persona entró como verde y el PMU recibe causa, puerta y hora.
       avisosPuerta: [
-        { id: 'v1', tipo: 'veto', etiqueta: 'Medida levantada', puerta: 'Puerta 5 · Oriental', hora: '18:39', doc: 'CC •••• 6583', causa: 'Medida recién levantada', detalle: 'Medida levantada el 25 sep · Res. 0198', quien: 'Op. S. León' },
-        { id: 'v2', tipo: 'cumplida', etiqueta: 'Sanción cumplida', puerta: 'Puerta 3 · Occidental', hora: '18:36', doc: 'CC •••• 2188', causa: 'Antecedente: sanción cumplida', detalle: 'Bebidas alcohólicas · cumplida el 3 sep 2025', quien: 'Op. D. Salazar' },
-        { id: 'v3', tipo: 'agresion', etiqueta: 'Antecedente por agresión', puerta: 'Puerta 1 · Norte', hora: '18:29', doc: 'CC •••• 3250', causa: 'Antecedente: sanción cumplida', detalle: 'Agresión verbal · cumplida el 12 jun 2026', quien: 'Op. A. Rueda' },
+        { id: 'v1', tipo: 'veto', etiqueta: 'Medida levantada', puerta: 'Puerta 5 · Oriental', hora: '18:39', doc: 'CC •••• 6583', causa: 'Medida recién levantada', detalle: 'Medida levantada el ' + R(-3).corto + ' · Res. 0198', quien: 'Op. S. León' },
+        { id: 'v2', tipo: 'cumplida', etiqueta: 'Sanción cumplida', puerta: 'Puerta 3 · Occidental', hora: '18:36', doc: 'CC •••• 2188', causa: 'Antecedente: sanción cumplida', detalle: 'Bebidas alcohólicas · cumplida el ' + R(-410).largo, quien: 'Op. D. Salazar' },
+        { id: 'v3', tipo: 'agresion', etiqueta: 'Antecedente por agresión', puerta: 'Puerta 1 · Norte', hora: '18:29', doc: 'CC •••• 3250', causa: 'Antecedente: sanción cumplida', detalle: 'Agresión verbal · cumplida el ' + R(-108).largo, quien: 'Op. A. Rueda' },
         { id: 'v4', tipo: 'riesgo', etiqueta: 'Posible riesgo', puerta: 'Puerta 8 · Occidental', hora: '18:24', doc: 'CC •••• 0310', causa: 'Posible riesgo en este partido', detalle: 'Posible hincha de equipo rival · señal, no certeza', quien: 'Op. M. Cano' },
         // Huella: la excepción (solo en modo obligatorio) y la contingencia del lector, que es un solo aviso por puerta y no de una persona.
         { id: 'v5', tipo: 'sin-huella', etiqueta: 'Sin huella', puerta: 'Puerta 3 · Occidental', hora: '18:19', doc: 'CC •••• 5502', causa: 'Ingreso sin huella · discapacidad o lesión', detalle: 'Modo obligatorio · entró con excepción documentada · señal, no certeza', quien: 'Op. D. Salazar' },
@@ -135,10 +215,9 @@ window.SVN_DATOS = {
       { id: 'g8', nombre: 'Pt. H. Londoño', puesto: 'Puerta 7 · Sur' },
       { id: 'g9', nombre: 'Pt. S. Ramírez', puesto: 'Puerta 3 · Occidental' }
     ],
-    persona: 'Julián Andrés Posada', doc: 'CC 71.894.447', puerta: 'Puerta 4 · Oriental', hora: '18:42',
     // Auditoría (superficie 3): mismos hechos que las alertas del tablero, más ventas, lecturas y consultas.
     auditoria: {
-      total: 5117, porPagina: 25, fecha: '28 sep 2026', evento: 'Nacional vs. Medellín · 28 sep',
+      total: 5117, porPagina: 25, fecha: R(0).largo, evento: 'Nacional vs. Medellín · ' + R(0).corto,
       registros: [
         { hora: '18:43', tipo: 'consulta', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 4447', origen: 'Vista de seguridad', detalle: 'Abrió el perfil desde la alerta', quien: 'Pt. R. Gómez' },
         { hora: '18:42', tipo: 'medida', puerta: 'Puerta 4 · Oriental', doc: 'CC •••• 4447', origen: 'Lectura en puerta', detalle: 'No entró · alerta al PMU', quien: 'Op. L. Mejía' },
@@ -167,10 +246,6 @@ window.SVN_DATOS = {
         { hora: '12:30', tipo: 'venta', puerta: '—', doc: 'CC •••• 4447', origen: 'Comercializadora A', detalle: 'Venta bloqueada · medida vigente', quien: 'Taquilla oficial' }
       ]
     },
-    medidas: [
-      { estado: 'Vigente', tema: 'negative', titulo: 'Agresión física (art. 98, a)', sub: 'Resolución de la Inspección 14 · vence 31 may 2027 · 245 días' },
-      { estado: 'Cumplida', tema: 'neutral', titulo: 'Ingresar bebidas alcohólicas (art. 97, 6)', sub: 'Acta de audiencia · cumplida el 3 sep 2025' }
-    ],
     senales: [
       { l: 'Club afín', v: 'Atlético Nacional · 86 %', por: '14 de 16 partidos en tribuna local.', decide: true },
       { l: 'Tribuna habitual', v: 'Sur', por: '11 de 16 ingresos por la tribuna Sur.' },
@@ -181,95 +256,38 @@ window.SVN_DATOS = {
     ]
   },
 
-  // Superficie 1 · Registro de medidas. Fechas en ISO: el estado lo calcula el portal.
+  // Superficie 1 · Registro de medidas. Las medidas viven en el IVC (GI); aquí solo los reportes de las entidades, con fechas relativas a hoy.
   ivc: {
     usuario: { nombre: 'Carolina Vélez Ortiz', cargo: 'Profesional del IVC · Mindeporte' },
-    hoy: '2026-09-29',
-    medidas: [
-      { id: 'MC-2025-0831', persona: 'p1', nombre: 'Julián Andrés Posada', doc: 'CC 71.894.447', conductas: ['Agresión física (art. 98, a)'], agravantes: ['Actuar bajo efectos de sustancias'],
-        evento: 'Nacional vs. Medellín · Estadio Atanasio Girardot', hechos: '2025-10-19', competicion: 'Liga profesional de fútbol · 2025-II',
-        acto: 'Resolución 0457 de 2025', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0457/2025 · Inspección 14',
-        ejecutoria: '2025-11-30', meses: 18, multa: '$ 1.423.500', nacimiento: '1994-07-12', residencia: 'Bello, Antioquia', contacto: '300 •••• 4471',
-        descripcion: 'Agredió a otro aficionado en la tribuna Oriental Baja durante el segundo tiempo. La logística lo retuvo y lo entregó a la autoridad.',
-        radicada: '2025-12-04', entrada: '2025-E-041872', respuesta: '2025-S-038110', financiera: '2025-F-006204', juridica: '2025-J-003391',
-        extra: [
-          { fecha: '11 dic 2025', texto: 'Radicado de financiera 2025-F-006204 agregado · soporte: oficio', quien: 'Jaime Pardo Ruiz', punto: 'azul' },
-          { fecha: '28 sep 2026', texto: 'Bloqueó el ingreso en Puerta 4 · Oriental (Nacional vs. Medellín)', quien: 'SVN · Op. L. Mejía', punto: 'rojo' }
-        ] },
-      { id: 'MC-2025-0214', persona: 'p1', nombre: 'Julián Andrés Posada', doc: 'CC 71.894.447', conductas: ['Ingresar bebidas alcohólicas (art. 97, 6)'],
-        evento: 'Medellín vs. Once Caldas · Estadio Atanasio Girardot', hechos: '2025-02-09', competicion: 'Liga profesional de fútbol · 2025-I',
-        acto: 'Resolución 0098 de 2025', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0098/2025 · Inspección 14',
-        ejecutoria: '2025-03-02', meses: 6, nacimiento: '1994-07-12', residencia: 'Bello, Antioquia', contacto: '300 •••• 4471',
-        descripcion: 'Ingresó bebidas alcohólicas a la tribuna Sur; se le encontraron en la segunda requisa.', radicada: '2025-03-10', entrada: '2025-E-009318' },
-      { id: 'MC-2025-0377', persona: 'p2', nombre: 'Brayan Stiven Ospina Mesa', doc: 'CC 1.036.482.119', conductas: ['Invadir el terreno de juego (art. 97, 4)'],
-        evento: 'Envigado vs. Nacional · Estadio Polideportivo Sur', hechos: '2025-03-16', ciudad: 'Envigado, Antioquia', competicion: 'Liga profesional de fútbol · 2025-I',
-        acto: 'Resolución 0212 de 2025', autoridad: 'Inspección municipal 3 de Envigado', corta: 'Res. 0212/2025 · Inspección 3 Envigado',
-        ejecutoria: '2025-04-18', meses: 18, nacimiento: '2001-05-03', residencia: 'Envigado, Antioquia', radicada: '2025-04-25', entrada: '2025-E-015540' },
-      { id: 'MC-2026-0802', persona: 'p3', nombre: 'Samuel David Rendón Hoyos', iniciales: 'S. D. R. H.', doc: 'TI 1.021.774.331', docMask: 'TI •••• 4331', menor: true,
-        conductas: ['Daño a infraestructura (art. 98, c)'], evento: 'Nacional vs. Medellín · Estadio Atanasio Girardot', hechos: '2026-07-12', competicion: 'Liga profesional de fútbol · 2026-I',
-        acto: 'Resolución 0371 de 2026', autoridad: 'Inspección municipal 5 de Medellín', corta: 'Res. 0371/2026 · Inspección 5',
-        ejecutoria: '2026-08-14', meses: 6, multa: 'Sin multa', nacimiento: '2010-02-02', residencia: 'Bello, Antioquia', contacto: '301 •••• 219',
-        descripcion: 'Arrancó dos sillas de la tribuna Norte al final del partido.', radicada: '2026-08-21', entrada: '2026-E-033905',
-        rep: [{ k: 'Nombre', v: 'Gloria Patricia Hoyos Marín' }, { k: 'Documento', v: 'CC 43.512.876' }, { k: 'Parentesco', v: 'Madre' }, { k: 'Teléfono', v: '312 •••• 407' }] },
-      { id: 'MC-2026-0877', persona: 'p4', nombre: 'Andrés Felipe Cardona Ruiz', doc: 'CC 1.017.225.804', conductas: ['Violencia contra la fuerza pública (art. 97, 3)'], agravantes: ['Actuar bajo efectos de sustancias'],
-        evento: 'Medellín vs. Millonarios · Estadio Atanasio Girardot', hechos: '2026-08-03', competicion: 'Liga profesional de fútbol · 2026-II',
-        acto: 'Resolución 0388 de 2026', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0388/2026 · Inspección 14',
-        ejecutoria: '2026-09-08', meses: 23, multa: '$ 2.135.250', nacimiento: '1990-11-21', radicada: '2026-09-15', entrada: '2026-E-036114' },
-      { id: 'MC-2025-0520', persona: 'p5', nombre: 'Luis Carlos Mejía Henao', doc: 'CC 98.765.310', conductas: ['Estupefacientes (art. 97, 2)'],
-        evento: 'Nacional vs. Junior · Estadio Atanasio Girardot', hechos: '2025-04-20', competicion: 'Liga profesional de fútbol · 2025-I',
-        acto: 'Resolución 0301 de 2025', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0301/2025 · Inspección 14',
-        ejecutoria: '2025-07-11', meses: 6, nacimiento: '1987-01-08', radicada: '2025-07-18', entrada: '2025-E-024417' },
-      { id: 'MC-2025-0611', persona: 'p6', nombre: 'Daniela Restrepo Gil', doc: 'CE 4.518.227', sexo: 'Mujer', conductas: ['Agresión verbal (art. 98, b)'],
-        evento: 'Medellín vs. América · Estadio Atanasio Girardot', hechos: '2025-08-24', competicion: 'Liga profesional de fútbol · 2025-II',
-        acto: 'Resolución 0512 de 2025', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0512/2025 · Inspección 14',
-        ejecutoria: '2025-10-05', meses: 12, nacimiento: '1996-09-17', radicada: '2025-10-14', entrada: '2025-E-037702' },
-      { id: 'MC-2026-0145', persona: 'p7', nombre: 'Kevin Alejandro Zapata Londoño', doc: 'CC 1.152.009.873', conductas: ['Armas u objetos peligrosos (art. 97, 1)'],
-        evento: 'Nacional vs. Medellín · Estadio Atanasio Girardot', hechos: '2026-02-01', competicion: 'Liga profesional de fútbol · 2026-I',
-        acto: 'Resolución 0077 de 2026', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0077/2026 · Inspección 14',
-        ejecutoria: '2026-03-22', meses: 36, multa: '$ 2.847.000', nacimiento: '1999-08-30', radicada: '2026-03-30', entrada: '2026-E-011290' },
-      { id: 'MC-2025-0702', persona: 'p8', nombre: 'Tomás Esteban Arango Vélez', iniciales: 'T. E. A. V.', doc: 'TI 1.013.556.045', docMask: 'TI •••• 6045', menor: true,
-        conductas: ['Invadir el terreno de juego (art. 97, 4)'], evento: 'Nacional vs. Pereira · Estadio Atanasio Girardot', hechos: '2025-11-09', competicion: 'Liga profesional de fútbol · 2025-II',
-        acto: 'Resolución 0610 de 2025', autoridad: 'Inspección municipal 5 de Medellín', corta: 'Res. 0610/2025 · Inspección 5',
-        ejecutoria: '2025-12-29', meses: 6, multa: 'Sin multa', nacimiento: '2009-05-14', radicada: '2026-01-08', entrada: '2026-E-000884',
-        rep: [{ k: 'Nombre', v: 'Hernán Darío Arango Ríos' }, { k: 'Documento', v: 'CC 70.118.942' }, { k: 'Parentesco', v: 'Padre' }, { k: 'Teléfono', v: '310 •••• 655' }] },
-      { id: 'MC-2025-0409', persona: 'p9', nombre: 'Sebastián Muñoz Arango', doc: 'PPT 5.882.104', conductas: ['Desatender a la logística en ubicación y tránsito (art. 97, 5)'],
-        evento: 'Medellín vs. Santa Fe · Estadio Atanasio Girardot', hechos: '2025-05-04', competicion: 'Liga profesional de fútbol · 2025-I',
-        acto: 'Resolución 0266 de 2025', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0266/2025 · Inspección 14',
-        ejecutoria: '2025-03-31', meses: 12, nacimiento: '1993-12-02', radicada: '2025-04-07', entrada: '2025-E-012076' },
-      { id: 'MC-2026-0529', persona: 'p10', nombre: 'Jhon Fredy Ríos Castaño', doc: 'CC 71.230.558', conductas: ['Agresión física (art. 98, a)'],
-        evento: 'Nacional vs. Cali · Estadio Atanasio Girardot', hechos: '2026-03-15',
-        acto: 'Resolución 0190 de 2026', autoridad: 'Inspección municipal 14 de Medellín', corta: 'Res. 0190/2026 · Inspección 14',
-        ejecutoria: '2026-07-02', meses: 6, multa: '$ 1.423.500', nacimiento: '1978-06-06', radicada: '2026-07-09', entrada: '2026-E-026503' }
-    ],
     reportes: [
-      { id: 'R-2026-0431', iso: '2026-09-29', fecha: '29 sep · 08:12', estado: 'enviado', entidad: 'Atlético Nacional', nombre: 'Mateo Giraldo Uribe', doc: 'CC 1.040.338.912',
-        evento: 'Nacional vs. Medellín · 28 sep 2026 · Estadio Atanasio Girardot', corto: 'Nacional vs. Medellín · 28 sep', hechos: '28 sep 2026', autoridad: 'Inspección municipal 14 de Medellín',
+      { id: 'R-2026-0431', iso: R(0).iso, fecha: R(0).corto + ' · 08:12', estado: 'enviado', entidad: 'Atlético Nacional', nombre: 'Mateo Giraldo Uribe', doc: 'CC 1.040.338.912',
+        evento: 'Nacional vs. Santa Fe · ' + R(-1).largo + ' · Estadio Atanasio Girardot', corto: 'Nacional vs. Santa Fe · ' + R(-1).corto, hechos: R(-1).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Invadir el terreno de juego (art. 97, 4)'], evid: { vid: true, fot: 3 }, descripcion: 'Saltó la malla de la tribuna Sur al minuto 88 y corrió hacia el arco. La logística lo retuvo en la pista atlética.',
-        historial: [{ fecha: '29 sep 2026', texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }] },
-      { id: 'R-2026-0430', iso: '2026-09-29', fecha: '29 sep · 07:40', estado: 'enviado', entidad: 'Independiente Medellín', nombre: 'Juan Esteban Toro Mesa', doc: 'CC 1.128.450.667',
-        evento: 'Nacional vs. Medellín · 28 sep 2026 · Estadio Atanasio Girardot', corto: 'Nacional vs. Medellín · 28 sep', hechos: '28 sep 2026', autoridad: 'Inspección municipal 14 de Medellín',
+        historial: [{ fecha: R(0).largo, texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }] },
+      { id: 'R-2026-0430', iso: R(0).iso, fecha: R(0).corto + ' · 07:40', estado: 'enviado', entidad: 'Independiente Medellín', nombre: 'Juan Esteban Toro Mesa', doc: 'CC 1.128.450.667',
+        evento: 'Nacional vs. Santa Fe · ' + R(-1).largo + ' · Estadio Atanasio Girardot', corto: 'Nacional vs. Santa Fe · ' + R(-1).corto, hechos: R(-1).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Ingresar bebidas alcohólicas (art. 97, 6)', 'Desatender a la logística (art. 97, 5)'], evid: { fot: 2 }, descripcion: 'Ingresó licor en la Puerta 5 · Oriental y se negó a ubicarse en su sector cuando la logística se lo pidió.',
-        historial: [{ fecha: '29 sep 2026', texto: 'Enviado por la entidad', quien: 'Independiente Medellín · Seguridad', punto: 'azul' }] },
-      { id: 'R-2026-0418', iso: '2026-09-22', fecha: '22 sep · 16:05', estado: 'recibido', entidad: 'Atlético Nacional', nombre: 'Cristian Camilo Bedoya Arias', doc: 'CC 1.001.225.390',
-        evento: 'Nacional vs. Junior · 20 sep 2026 · Estadio Atanasio Girardot', corto: 'Nacional vs. Junior · 20 sep', hechos: '20 sep 2026', autoridad: 'Inspección municipal 14 de Medellín',
+        historial: [{ fecha: R(0).largo, texto: 'Enviado por la entidad', quien: 'Independiente Medellín · Seguridad', punto: 'azul' }] },
+      { id: 'R-2026-0418', iso: R(-7).iso, fecha: R(-7).corto + ' · 16:05', estado: 'recibido', entidad: 'Atlético Nacional', nombre: 'Cristian Camilo Bedoya Arias', doc: 'CC 1.001.225.390',
+        evento: 'Nacional vs. Junior · ' + R(-9).largo + ' · Estadio Atanasio Girardot', corto: 'Nacional vs. Junior · ' + R(-9).corto, hechos: R(-9).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Agresión verbal (art. 98, b)'], evid: { fot: 1 }, descripcion: 'Insultos reiterados a un integrante de la logística en la Puerta 2 · Norte.',
-        historial: [{ fecha: '22 sep 2026', texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: '23 sep 2026', texto: 'Recibido por el IVC', quien: 'Jaime Pardo Ruiz', punto: 'gris' }] },
-      { id: 'R-2026-0412', iso: '2026-08-05', fecha: '5 ago · 11:30', estado: 'tramite', entidad: 'Independiente Medellín', nombre: 'Andrés Felipe Cardona Ruiz', doc: 'CC 1.017.225.804',
-        evento: 'Medellín vs. Millonarios · 3 ago 2026 · Estadio Atanasio Girardot', corto: 'Medellín vs. Millonarios · 3 ago', hechos: '3 ago 2026', autoridad: 'Inspección municipal 14 de Medellín',
+        historial: [{ fecha: R(-7).largo, texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: R(-6).largo, texto: 'Recibido por el IVC', quien: 'Jaime Pardo Ruiz', punto: 'gris' }] },
+      { id: 'R-2026-0412', iso: R(-55).iso, fecha: R(-55).corto + ' · 11:30', estado: 'tramite', entidad: 'Independiente Medellín', nombre: 'Andrés Felipe Cardona Ruiz', doc: 'CC 1.017.225.804',
+        evento: 'Medellín vs. Millonarios · ' + R(-57).largo + ' · Estadio Atanasio Girardot', corto: 'Medellín vs. Millonarios · ' + R(-57).corto, hechos: R(-57).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Violencia contra la fuerza pública (art. 97, 3)'], evid: { vid: true, fot: 4 }, candidatas: ['MC-2026-0877'], descripcion: 'Empujó y golpeó a un patrullero en la salida de la tribuna Occidental. Según la logística, estaba bajo efectos de alcohol.',
-        historial: [{ fecha: '5 ago 2026', texto: 'Enviado por la entidad', quien: 'Independiente Medellín · Seguridad', punto: 'azul' }, { fecha: '6 ago 2026', texto: 'Recibido por el IVC', quien: 'Carolina Vélez Ortiz', punto: 'gris' }, { fecha: '12 ago 2026', texto: 'La autoridad abrió procedimiento · oficio 2026-E-031778', quien: 'Carolina Vélez Ortiz', punto: 'amarillo' }] },
-      { id: 'R-2026-0405', iso: '2026-08-11', fecha: '11 ago · 09:18', estado: 'tramite', entidad: 'Atlético Nacional', nombre: 'Yeison Darío Montoya Cano', doc: 'CC 1.036.901.558',
-        evento: 'Nacional vs. Pereira · 10 ago 2026 · Estadio Atanasio Girardot', corto: 'Nacional vs. Pereira · 10 ago', hechos: '10 ago 2026', autoridad: 'Inspección municipal 14 de Medellín',
+        historial: [{ fecha: R(-55).largo, texto: 'Enviado por la entidad', quien: 'Independiente Medellín · Seguridad', punto: 'azul' }, { fecha: R(-54).largo, texto: 'Recibido por el IVC', quien: 'Carolina Vélez Ortiz', punto: 'gris' }, { fecha: R(-48).largo, texto: 'La autoridad abrió procedimiento · oficio 2026-E-031778', quien: 'Carolina Vélez Ortiz', punto: 'amarillo' }] },
+      { id: 'R-2026-0405', iso: R(-49).iso, fecha: R(-49).corto + ' · 09:18', estado: 'tramite', entidad: 'Atlético Nacional', nombre: 'Yeison Darío Montoya Cano', doc: 'CC 1.036.901.558',
+        evento: 'Nacional vs. Pereira · ' + R(-50).largo + ' · Estadio Atanasio Girardot', corto: 'Nacional vs. Pereira · ' + R(-50).corto, hechos: R(-50).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Armas u objetos peligrosos (art. 97, 1)'], evid: { fot: 2 }, descripcion: 'En la requisa de la Puerta 6 · Sur se le encontró un arma cortopunzante.',
-        historial: [{ fecha: '11 ago 2026', texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: '11 ago 2026', texto: 'Recibido por el IVC', quien: 'Jaime Pardo Ruiz', punto: 'gris' }, { fecha: '19 ago 2026', texto: 'La autoridad abrió procedimiento · oficio 2026-E-032410', quien: 'Jaime Pardo Ruiz', punto: 'amarillo' }] },
-      { id: 'R-2025-0288', iso: '2025-10-20', fecha: '20 oct 2025', estado: 'derivo', medida: 'MC-2025-0831', entidad: 'Atlético Nacional', nombre: 'Julián Andrés Posada', doc: 'CC 71.894.447',
-        evento: 'Nacional vs. Medellín · 19 oct 2025 · Estadio Atanasio Girardot', corto: 'Nacional vs. Medellín · 19 oct 2025', hechos: '19 oct 2025', autoridad: 'Inspección municipal 14 de Medellín',
+        historial: [{ fecha: R(-49).largo, texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: R(-49).largo, texto: 'Recibido por el IVC', quien: 'Jaime Pardo Ruiz', punto: 'gris' }, { fecha: R(-41).largo, texto: 'La autoridad abrió procedimiento · oficio 2026-E-032410', quien: 'Jaime Pardo Ruiz', punto: 'amarillo' }] },
+      { id: 'R-2025-0288', iso: R(-344).iso, fecha: R(-344).largo, estado: 'derivo', medida: 'MC-2025-0831', entidad: 'Atlético Nacional', nombre: 'Julián Andrés Posada', doc: 'CC 71.894.447',
+        evento: 'Nacional vs. Medellín · ' + R(-345).largo + ' · Estadio Atanasio Girardot', corto: 'Nacional vs. Medellín · ' + R(-345).largo, hechos: R(-345).largo, autoridad: 'Inspección municipal 14 de Medellín',
         conductas: ['Agresión física (art. 98, a)'], evid: { vid: true, fot: 2 }, descripcion: 'Agredió a otro aficionado en la tribuna Oriental Baja durante el segundo tiempo.',
-        historial: [{ fecha: '20 oct 2025', texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: '21 oct 2025', texto: 'Recibido por el IVC', quien: 'Carolina Vélez Ortiz', punto: 'gris' }, { fecha: '28 oct 2025', texto: 'La autoridad abrió procedimiento', quien: 'Carolina Vélez Ortiz', punto: 'amarillo' }, { fecha: '4 dic 2025', texto: 'Derivó en la medida MC-2025-0831', quien: 'Carolina Vélez Ortiz', punto: 'rojo' }] },
-      { id: 'R-2026-0379', iso: '2026-07-27', fecha: '27 jul · 14:52', estado: 'archivado', motivoArchivo: 'La autoridad no abrió procedimiento', notaArchivo: 'Oficio de la Inspección municipal 9 de Bogotá, radicado 2026-E-029904.', entidad: 'Millonarios', nombre: 'Óscar Iván Rincón Pulido', doc: 'CC 80.556.214',
-        evento: 'Millonarios vs. Nacional · 26 jul 2026 · Estadio El Campín', corto: 'Millonarios vs. Nacional · 26 jul', hechos: '26 jul 2026', autoridad: 'Inspección municipal 9 de Bogotá',
+        historial: [{ fecha: R(-344).largo, texto: 'Enviado por la entidad', quien: 'Atlético Nacional · Jefe de logística', punto: 'azul' }, { fecha: R(-343).largo, texto: 'Recibido por el IVC', quien: 'Carolina Vélez Ortiz', punto: 'gris' }, { fecha: R(-336).largo, texto: 'La autoridad abrió procedimiento', quien: 'Carolina Vélez Ortiz', punto: 'amarillo' }, { fecha: R(-300).largo, texto: 'Derivó en la medida MC-2025-0831', quien: 'Carolina Vélez Ortiz', punto: 'rojo' }] },
+      { id: 'R-2026-0379', iso: R(-64).iso, fecha: R(-64).corto + ' · 14:52', estado: 'archivado', motivoArchivo: 'La autoridad no abrió procedimiento', notaArchivo: 'Oficio de la Inspección municipal 9 de Bogotá, radicado 2026-E-029904.', entidad: 'Millonarios', nombre: 'Óscar Iván Rincón Pulido', doc: 'CC 80.556.214',
+        evento: 'Millonarios vs. Nacional · ' + R(-65).largo + ' · Estadio El Campín', corto: 'Millonarios vs. Nacional · ' + R(-65).corto, hechos: R(-65).largo, autoridad: 'Inspección municipal 9 de Bogotá',
         conductas: ['Agresión física (art. 98, a)'], evid: { fot: 0 }, descripcion: 'Riña en la tribuna Norte; el informe no identifica quién inició la agresión.',
-        historial: [{ fecha: '27 jul 2026', texto: 'Enviado por la entidad', quien: 'Millonarios · Seguridad', punto: 'azul' }, { fecha: '28 jul 2026', texto: 'Recibido por el IVC', quien: 'Natalia Suárez Pineda', punto: 'gris' }, { fecha: '2 sep 2026', texto: 'Archivado · la autoridad no abrió procedimiento', quien: 'Natalia Suárez Pineda', punto: 'gris' }] }
+        historial: [{ fecha: R(-64).largo, texto: 'Enviado por la entidad', quien: 'Millonarios · Seguridad', punto: 'azul' }, { fecha: R(-63).largo, texto: 'Recibido por el IVC', quien: 'Natalia Suárez Pineda', punto: 'gris' }, { fecha: R(-27).largo, texto: 'Archivado · la autoridad no abrió procedimiento', quien: 'Natalia Suárez Pineda', punto: 'gris' }] }
     ]
   }
 };
@@ -277,3 +295,4 @@ window.SVN_DATOS = {
 window.SVN_DATOS.quienDe = function (a) {
   return a.quien || a.roles.map(function (id) { return window.SVN_DATOS.roles.filter(function (r) { return r.id === id; })[0].rol; }).join(' · ');
 };
+})();

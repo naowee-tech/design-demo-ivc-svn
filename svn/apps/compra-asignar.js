@@ -5,7 +5,7 @@
   C.pantallas = C.pantallas || {};
   C.registrar = C.registrar || function (id, def) { C.pantallas[id] = def; };
 
-  var EVENTO_FECHA = 'lun 28 sep, 7:00 p. m.';
+  var EVENTO_FECHA = (function () { var r = window.SVN_UTIL.rel(0); return r.dia.slice(0, 3) + ' ' + r.corto + ', 7:00 p. m.'; })();
   var ESTADO = {
     vacio: ['Sin titular', 'vacio'], validando: ['Validando…', 'pend'], ok: ['Validado', 'ok'], denegado: ['No es posible', 'no']
   };

@@ -35,6 +35,8 @@ body { background: var(--surface-alt); font-family: var(--font-sans); }
 .suid-user__menu[hidden] { display: none; }
 .suid-user__menu a { display: block; padding: 10px 12px; border-radius: 8px; color: var(--text-primary); font-size: 14px; font-weight: 500; text-decoration: none; }
 .suid-user__menu a:hover { background: #f5f6fa; }
+/* Separa el grupo de navegación de Cerrar sesión; arriba no hay divider porque no hay nada antes. */
+.suid-user__sep { margin: 6px 0; border: 0; border-top: 1px solid var(--border); }
 .suid-avatar__ring { width: 44px; height: 44px; border-radius: 50%; background: var(--blue-bg); color: var(--accent); font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; }
 
 .suid-ph { align-items: flex-start; padding-top: 40px; }

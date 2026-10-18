@@ -123,11 +123,12 @@
     align-items: center;
     gap: var(--spacing-sm);
     margin-top: auto;
-    align-self: flex-end;
+    align-self: stretch;
     padding-top: var(--spacing-xl);
 }
 
 .naowee-credit__logo {
+    margin-left: auto;
     height: 20px;
     object-fit: contain;
 }
