@@ -5,22 +5,20 @@ and feel de Naowee. Modelo de cada superficie en [`modeling/desing-views/`](mode
 
 ## Publicación
 
-GitHub Pages sirve `main` en la raíz: https://naowee-tech.github.io/design-demo-control-acceso/
+GitHub Pages sirve `main` en la raíz de este repo: https://naowee-tech.github.io/design-demo-ivc-svn/
 
-- **IVC embebido:** `ivc/` es un submódulo de [`naowee-tech/design-demo-ivc-svn`](https://github.com/naowee-tech/design-demo-ivc-svn). Los cambios del IVC se hacen allá; para traerlos acá:
-  `git submodule update --remote ivc && git commit -am "IVC al día" && git push`.
-- **Versiones congeladas:** igual que las demás demos (`design-naowee-demo-template`): `gh release create vX.Y.Z --target main` congela `versions/vX.Y.Z/`, IVC incluido, y regenera `versions/index.html`.
+- **SVN en `svn/`, IVC en `suid/`:** viven en el mismo repo. El SVN abre en `svn/index.html` y el IVC en `suid/app.html`; ya no hay submódulo ni repo aparte.
 
 ## Abrirlo
 
-Clonar con `git clone --recurse-submodules` (sin el submódulo, las rutas a `ivc/` no abren). Doble clic en `index.html`. Funciona sin servidor.
+Clonar el repo y hacer doble clic en `svn/index.html`. Funciona sin servidor.
 
 - `#/`: gate **¿Quién puede entrar al evento hoy?**, por aplicación (abre primero, numerado por `paso` en `datos.js`: 1 a 9 consecutivos, DC-423; Portal de la persona y Consola de soporte no salen ahí pero siguen en `#/portal` y `#/soporte`, 8-oct-2026) o por rol (ordenado por el mismo flujo) (mismo patrón que `uaesp-rutas-alta`).
 
 Rutas en el orden del flujo de la demo (30-sep-2026); el gate las numera distinto desde el 8-oct (ver `datos.js`):
 
 1. Backoffice de eventos (superficie 4), organizador: vive en el IVC como **Control de acceso · Eventos**
-  (`ivc/suid/app.html#/control-acceso/eventos`, desde el 8-oct-2026). La card del gate y el viejo `#/backoffice` abren ahí.
+  (`../suid/app.html#/control-acceso/eventos`, desde el 8-oct-2026). La card del gate y el viejo `#/backoffice` abren ahí.
 
 2. `#/compra`: **Comprar y asignar ingresos** (paso 6 del gate; superficies 6 y 7), solo en celular, sobre una comercializadora ficticia (*graderío*).
   Flujo: **Evento e ingresos** → **Identificarse** (consulta 1: ¿puede comprar?, valida al comprador) → **Cantidad** (1 a 5) → **Titulares** (cada ingreso
@@ -65,10 +63,9 @@ Rutas en el orden del flujo de la demo (30-sep-2026); el gate las numera distint
   *En atención*. También pasa que un agente la toma antes (a los 20 s en la Puerta 6, o con el botón del panel del demo).
   *Ver perfil* o *Cerrar con resultado* abre el perfil de esa alerta, y *Tablero del evento* vuelve.
 
-5. `ivc/`: registro de medidas correctivas (superficie 1), profesional del IVC. Es el demo del IVC (submódulo `ivc` → `naowee-tech/design-demo-ivc-svn`,
-  publicado en `/ivc/`); la app del gate abre su login. Reemplazó a la pantalla `#/medidas` del SVN.
+5. `suid/`: registro de medidas correctivas (superficie 1), profesional del IVC. Es el demo del IVC, en este mismo repo (`../suid/app.html`); la app del gate abre su login. Reemplazó a la pantalla `#/medidas` del SVN.
 
-6. `#/auditoria`: **Auditoría vive ahora en el IVC, en Eventos > Pasados > Registros** (`ivc/suid/app.html#/control-acceso/eventos?momento=pasados`);
+6. `#/auditoria`: **Auditoría vive ahora en el IVC, en Eventos > Pasados > Registros** (`../suid/app.html#/control-acceso/eventos?momento=pasados`);
   la card, el rol de Mindeporte y `#/auditoria` llevan allá. `apps/auditoria.*` queda de respaldo, sin entrada. Lo que sigue es ese respaldo: auditoría (superficie 3), en escritorio y tablet, app aparte del Monitor. Arranca en la misma lista de
   eventos (`apps/eventos.js`); al entrar, una cabecera con la foto del escenario, el tiempo del operativo y del partido,
   los equipos, los filtros y el exportar (simulado, no baja archivo); chips por lo que pasó en la puerta, tabla de
