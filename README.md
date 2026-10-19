@@ -2,7 +2,7 @@
 
 Demo navegable del módulo **Control de acceso** del IVC (Inspección, Vigilancia y Control · Ministerio del Deporte), Parte 1: gestión de infractores según la HU-26.3.
 
-**Ver la demo:** https://jguzman-naowee.github.io/ivc-control-acceso-demo/
+**Ver la demo:** https://naowee-tech.github.io/design-demo-ivc-svn/
 
 Abre en el login del SUID. Es un login de demostración: entra con cualquier dato, incluso vacío.
 
