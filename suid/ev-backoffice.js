@@ -84,7 +84,7 @@ window.BACKOFFICE.registrar = function (id, def) { this.vistas[id] = def; };
 
   var LISTA = '#/control-acceso/eventos';
 
-  SUID.views['control-acceso/eventos'] = function (view, route) {
+  if (window.SUID_EVENTOS !== false) SUID.views['control-acceso/eventos'] = function (view, route) {
     // Sin id se presentan los eventos; con id (…/eventos/e1) se entra a uno. Un id que ya no existe vuelve a la lista.
     var idRuta = (route.rest || [])[0], detalle = !!idRuta && st.eventos.some(function (e) { return e.id === idRuta; });
     if (detalle) { st.evento = idRuta; if (st.visto !== idRuta) { st.visto = idRuta; st.vista = entrada(evActual()); } }

@@ -3,6 +3,20 @@
   'use strict';
   var GI = w.GI, U = GI.util, D = GI.derive, esc = SUID.esc, C = GI.cat;
   var BASE = '#/control-acceso/infractores';
+  /* Origen del alta/expediente: el volver regresa a la pantalla (y pestaña) previa, no a una ruta fija. */
+  var FLUJO = /^#\/control-acceso\/infractores\/(nuevo|carga-masiva|[^\/]+(\/editar)?)$/, origen = null, tabActiva = 'ind', tabPedida = null;
+  function hashDe(u) { var i = (u || '').indexOf('#'); return i < 0 ? '' : u.slice(i); }
+  w.addEventListener('hashchange', function (e) {
+    var a = hashDe(e.oldURL), b = hashDe(e.newURL);
+    if (!FLUJO.test(b)) origen = null;
+    else if (!FLUJO.test(a) && a) origen = { hash: a, tab: a === BASE ? tabActiva : null };
+  }, true); /* captura: debe correr antes del render del enrutador */
+  function volverA(def) { return origen ? origen.hash : def; }
+  function alVolver(e) {
+    var a = e.target.closest && e.target.closest('a.gi-back'); if (!a || !origen) return;
+    if (origen.hash === BASE) tabPedida = origen.tab;
+  }
+  d.addEventListener('click', alVolver, true);
 
   var PAISES = ['Colombia', 'Venezuela', 'Ecuador', 'Perú', 'Brasil', 'Argentina', 'Estados Unidos', 'España', 'Otro'];
   var INDICATIVO = { Colombia: '+57', Venezuela: '+58', Ecuador: '+593', 'Perú': '+51', Brasil: '+55', Argentina: '+54', 'Estados Unidos': '+1', 'España': '+34', Otro: '+' };
@@ -361,6 +375,7 @@
 
     /* Segunda tabla: expedientes de solicitudes; la fila abre su vista interna en Solicitudes. */
     function solHtml() {
+      if (!w.GS) return '';
       var ls = w.GS && w.GS.lista ? w.GS.lista() : [];
       return '<div id="giPanS" role="tabpanel" aria-labelledby="giTabS" hidden>' + '<section class="gt-card" aria-label="Expedientes por tramitar"><div class="gt-wrap"><table class="gt-table"><thead><tr><th>Radicado</th><th>Origen</th><th>Persona</th><th>Estado</th><th>Medida</th><th></th></tr></thead><tbody id="giBodyS">' +
         ls.map(function (x) {
@@ -373,10 +388,10 @@
     view.innerHTML = '<div class="page-inner gi-page gi-page--tabs">' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Gestión de infractores</h1>' +
       '<p class="page-subtitle">Registra, valida y consulta las sanciones en firme de la Ley 1453 de 2011.</p></div>' +
-      '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a></div></header>' +
+      '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--mute" disabled title="Propuesta: sin contrato definido. Pendiente de validar con IVC." aria-label="Registrar por integración, propuesta pendiente de validar con IVC">Por integración · Propuesta</button><a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a></div></header>' +
       '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión"><button type="button" role="tab" class="gi-tab" id="giTabI" aria-selected="true" aria-controls="giPanI" data-tab="ind">Indicadores</button>' +
       '<button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="false" aria-controls="giPanR" tabindex="-1" data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
-      '<button type="button" role="tab" class="gi-tab" id="giTabS" aria-selected="false" aria-controls="giPanS" tabindex="-1" data-tab="sol">Expedientes por tramitar <span class="gt-count" id="giTabSN">' + (w.GS && w.GS.lista ? w.GS.lista().length : 0) + '</span></button></div>' +
+      (w.GS ? '<button type="button" role="tab" class="gi-tab" id="giTabS" aria-selected="false" aria-controls="giPanS" tabindex="-1" data-tab="sol">Expedientes por tramitar <span class="gt-count" id="giTabSN">' + (w.GS.lista ? w.GS.lista().length : 0) + '</span></button>' : '') + '</div>' +
       '<div id="giPanI" class="gi-pan-ind" role="tabpanel" aria-labelledby="giTabI"><section class="gi-panel-row" aria-label="Panorama de infractores">' + insightsHtml() + '<div id="giChartCard">' + chartHtml() + '</div></section></div>' +
       '<div id="giPanR" role="tabpanel" aria-labelledby="giTabR" hidden>' +
       '<section class="gt-card" id="giCard" aria-label="Registros de infractores">' +
@@ -387,7 +402,7 @@
         '<nav id="giPag"></nav></section></div>' + solHtml() + '</div>';
 
     /* En una solicitud en trámite, Tramitar abre el alta con sus datos precargados. */
-    d.getElementById('giBodyS').addEventListener('click', function (e) {
+    if (d.getElementById('giBodyS')) d.getElementById('giBodyS').addEventListener('click', function (e) {
       var b = e.target.closest('[data-tramitar]'); if (!b) return; e.stopPropagation();
       var x = ((w.GS && w.GS.lista()) || []).filter(function (r) { return r.id === b.getAttribute('data-tramitar'); })[0], m = x && /^(\S+)\s+(.*)$/.exec(x.doc || '');
       try { sessionStorage.setItem('suid.gi.prefill', JSON.stringify({ doc: m && !x.menor ? m[2] : '', tipo: m ? m[1] : '', solicitud: x.id })); } catch (er) { /* sin almacenamiento: el alta abre vacía */ }
@@ -419,15 +434,19 @@
       if (abierto && !rows.some(function (r) { return r.id === abierto; })) GI.panel.cerrar('api'); else GI.panel.sincronizar();
     }
     paint();
-    GI.filasClicables(d.getElementById('giBodyS'), function (id) { location.hash = '#/control-acceso/solicitudes/' + encodeURIComponent(id); });
+    if (d.getElementById('giBodyS')) GI.filasClicables(d.getElementById('giBodyS'), function (id) { location.hash = '#/control-acceso/solicitudes/' + encodeURIComponent(id); });
     [].forEach.call(view.querySelectorAll('.gi-tab'), function (t) {
       t.addEventListener('click', function () {
         var k = t.getAttribute('data-tab');
-        d.getElementById('giPanI').hidden = k !== 'ind'; d.getElementById('giPanR').hidden = k !== 'reg'; d.getElementById('giPanS').hidden = k !== 'sol';
+        d.getElementById('giPanI').hidden = k !== 'ind'; d.getElementById('giPanR').hidden = k !== 'reg'; if (d.getElementById('giPanS')) d.getElementById('giPanS').hidden = k !== 'sol';
         [].forEach.call(view.querySelectorAll('.gi-tab'), function (o) { o.setAttribute('aria-selected', o === t ? 'true' : 'false'); o.tabIndex = o === t ? 0 : -1; });
+        tabActiva = k;
         if (k !== 'reg') GI.panel.cerrar('api');
       });
     });
+    tabActiva = 'ind';
+    if (tabPedida && tabPedida !== 'ind') { var tp = view.querySelector('.gi-tab[data-tab="' + tabPedida + '"]'); if (tp) tp.click(); }
+    tabPedida = null;
     d.getElementById('giQ').addEventListener('input', function (e) { filt.q = e.target.value; pag = 1; paint(); });
     /* selectGrafico no expone un reset: se repinta la vista, igual que al elegir un filtro. */
     d.getElementById('giFReset').addEventListener('click', function () { filt.q = ''; filt.reg = ''; filt.res = ''; chartQuiet = 1; viewList(view, ctx); d.getElementById('giFReset').focus(); });
@@ -474,7 +493,7 @@
     }
     /* El cuerpo es el expediente interno (mismo componente que el panel); aquí solo van el encabezado y las acciones. */
     view.innerHTML = '<div class="page-inner gi-page">' +
-      '<a class="gi-back" href="' + BASE + '" aria-label="Volver a la bandeja" title="Volver a la bandeja">' + svg('back') + '</a>' +
+      '<a class="gi-back" href="' + volverA(BASE) + '" aria-label="Volver" title="Volver">' + svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(D.nombreCompleto(r)) + (menor ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">Menor de edad</span>' : '') + '</h1>' +
       '<p class="page-subtitle"><span class="gi-mono">' + r.id + '</span> · ' + esc(r.tipoId) + ' ' + esc(GI.fmtDoc(r.tipoId, r.numId)) + '</p></div>' +
       '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' + acciones + '</div></header>' +
@@ -534,5 +553,5 @@
     return viewFicha(view, ctx, rest[0]);
   };
 
-  w.GIUI = { svg: svg, toast: toast, modal: modal, badgeReg: badgeReg, badgeRes: badgeRes, BASE: BASE, PAISES: PAISES, INDICATIVO: INDICATIVO, GEO: GEO, PROFESIONALES: PROFESIONALES };
+  w.GIUI = { svg: svg, toast: toast, modal: modal, badgeReg: badgeReg, badgeRes: badgeRes, BASE: BASE, volverA: volverA, PAISES: PAISES, INDICATIVO: INDICATIVO, GEO: GEO, PROFESIONALES: PROFESIONALES };
 })(window, document);

@@ -304,3 +304,5 @@
   .gc-try__list { position: absolute; top: calc(100% + 6px); left: -52px; z-index: 5; padding: 4px; background: #fff; border: 1px solid var(--border-dark); border-radius: 8px; box-shadow: var(--shadow-card); }
   .gc-try__list .gc-case { height: 44px; }
 }
+
+.gc-persona__ini { display: grid; place-items: center; width: 100%; height: 100%; font-size: 28px; font-weight: 600; color: var(--naotech-color-text-subtle, #5b6475); }

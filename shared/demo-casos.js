@@ -176,10 +176,10 @@
     if (!fuente) { return null; }
     var out = { persona: aForm(fuente), rep: fuente.rep ? aForm(Object.assign({ tipoId: fuente.rep.tipoId }, fuente.rep)) : null, hechos: null };
     if (b) {
-      var bor = borrador(b), s = plantilla({ borrador: bor, ciudad: b.ciudad }), hoy = u.today(), hechos = u.addDays(hoy, -(bor.diasHechos || 45)), acto = u.addDays(hechos, 15), ej = u.addDays(acto, 7);
+      var bor = borrador(b), s = plantilla({ borrador: bor, ciudad: b.ciudad }), hoy = u.today(), hechos = u.addDays(hoy, -(bor.diasHechos || 45)), acto = u.addDays(hechos, 15); if (acto > u.addDays(hoy, -2)) acto = u.addDays(hoy, -2); var ej = u.addDays(acto, 7); if (ej > u.addDays(hoy, -1)) ej = u.addDays(hoy, -1);
       out.hechos = {
         fechaHechos: hechos, competicion: s.competicion, local: s.local, visitante: s.visitante, ciudadHechos: s.ciudadHechos, origen: s.origen.slice(), descripcion: s.descripcion,
-        fechaActo: acto, numActo: 'RES-' + (600 + DATA.personas.concat(DATA.libres || []).indexOf(b)) + '-' + hoy.slice(0, 4), fechaEjecutoria: ej > hoy ? hoy : ej, meses: String(s.meses), valor: (s.meses * 150000).toLocaleString('es-CO')
+        fechaActo: acto, numActo: 'RES-' + (600 + DATA.personas.concat(DATA.libres || []).indexOf(b)) + '-' + hoy.slice(0, 4), fechaEjecutoria: ej, meses: String(s.meses), valor: (s.meses * 150000).toLocaleString('es-CO')
       };
     }
     return out;

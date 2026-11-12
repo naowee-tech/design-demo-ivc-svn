@@ -169,7 +169,7 @@
       fld('55', 'Observaciones del procedimiento del IVC', '<textarea class="gi-in gi-ta" data-p="observaciones" rows="3">' + esc(st.f.observaciones) + '</textarea>', { c: 12 }) +
       '<div class="gi-c12 gf-regdate">Fecha de registro: <strong>' + U.fmt(editId ? GI.get(editId).fechaRegistro : U.today()) + '</strong> · la genera el sistema</div>');
 
-    var back = editId ? UI.BASE + '/' + editId : sol ? sol.ruta : UI.BASE;
+    var back = editId ? UI.BASE + '/' + editId : UI.volverA(sol ? sol.ruta : UI.BASE);
     view.innerHTML = '<div class="page-inner gi-page gi-form">' +
       '<a class="gi-back" href="' + back + '" aria-label="Volver" title="Volver">' + UI.svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + (editId ? 'Editar registro ' + editId : sol ? 'Registrar medida desde una solicitud' : 'Registrar infractores') + '</h1>' +
@@ -549,7 +549,8 @@
     req('descripcion', 'Descripción de la conducta', f.descripcion.trim());
     req('fechaActo', 'Fecha del acto administrativo', f.fechaActo); req('numActo', 'Número del acto administrativo', f.numActo.trim());
     req('fechaEjecutoria', 'Fecha de ejecutoria', f.fechaEjecutoria);
-    if (f.fechaActo && f.fechaEjecutoria && f.fechaEjecutoria < f.fechaActo) errs.push(['fechaEjecutoria', 'La ejecutoria no puede ser anterior a la fecha del acto.']);
+    if (f.fechaActo && f.fechaEjecutoria && f.fechaEjecutoria <= f.fechaActo) errs.push(['fechaEjecutoria', 'La ejecutoria debe ser posterior a la fecha del acto.']);
+    if (f.fechaEjecutoria && f.fechaRadicado && f.fechaRadicado <= f.fechaEjecutoria) errs.push(['fechaRadicado', 'El radicado debe ser posterior a la ejecutoria.']);
     req('meses', 'Tiempo de sanción', f.meses);
     if (f.meses && +f.meses < 6) errs.push(['meses', 'El mínimo es 6 meses; escribe 6 o más.']);
     if (st.ui.multaOn) req('valor', 'Valor de la multa', +String(f.valor).replace(/\D/g, '') > 0);
@@ -662,9 +663,9 @@
   }
   function fillSancion() {
     var f = st.f, today = U.today();
-    if (!f.fechaActo || f.fechaActo > today || (f.fechaHechos && f.fechaActo <= f.fechaHechos)) f.fechaActo = minD(U.addDays(f.fechaHechos || U.addDays(today, -60), 15), today);
+    if (!f.fechaActo || f.fechaActo > today || (f.fechaHechos && f.fechaActo <= f.fechaHechos)) f.fechaActo = minD(U.addDays(f.fechaHechos || U.addDays(today, -60), 15), U.addDays(today, -2));
     if (!f.numActo.trim()) f.numActo = 'RES-2026-' + pad4(412 + GI.all().length);
-    if (!f.fechaEjecutoria || f.fechaEjecutoria < f.fechaActo) f.fechaEjecutoria = minD(U.addDays(f.fechaActo, 7), today);
+    if (!f.fechaEjecutoria || f.fechaEjecutoria <= f.fechaActo) f.fechaEjecutoria = minD(U.addDays(f.fechaActo, 7), U.addDays(today, -1));
     if (!f.meses) f.meses = '12';
     if (!(+String(f.valor).replace(/\D/g, '') > 0)) f.valor = (Math.max(+f.meses, 6) * 150000).toLocaleString('es-CO');
   }

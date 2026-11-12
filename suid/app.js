@@ -41,8 +41,9 @@
     { sec: 'Control de acceso', items: [
       { id: 'infractores', label: 'Gestión de sanciones', icon: img('icon-acceso'), href: '#/control-acceso/infractores' },
       { id: 'consulta', label: 'Búsqueda avanzada', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
-      { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
-      { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
+      w.SUID_SOLICITUDES === false ? null : { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
+      { id: 'calidad', label: 'Calidad y auditoría', icon: img('icon-busqueda'), href: '#/control-acceso/calidad' },
+      w.SUID_EVENTOS === false ? null : { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
     ] },
     { sec: 'Configuración', items: [{ id: 'equipo-coord', label: 'Usuarios y áreas', icon: img('icon-equipo'), ph: 1 }] },
     { sec: 'Operación', items: [{ id: 'bandeja-prof', label: 'Mi bandeja', icon: img('icon-bandeja'), ph: 1 }] },
@@ -77,7 +78,8 @@
       '<img src="login/img/ministerio.svg" alt="Ministerio del Deporte" class="suid-logo__img"><div class="logo-sep"></div>' +
       '<span class="sb-logo-img sb-logo-img--pill" title="Inspección, Vigilancia y Control">IVC</span></div>' +
       '<nav class="sidebar-nav" role="navigation" aria-label="Menú principal">';
-    MENU.forEach(function (s) {
+    MENU.forEach(function (s0) {
+      var s = { sec: s0.sec, items: s0.items.filter(Boolean) };
       /* Una sección sin ítems vivos va a media opacidad: solo Control de acceso tiene contenido en la demo (DC-422). */
       var dim = s.items.every(function (it) { return it.ph; }) ? ' is-dim' : '';
       html += '<div class="nav-section' + dim + '">' + SUID.esc(s.sec) + '</div>';
@@ -165,7 +167,7 @@
     /* Sin ruta: inicio en blanco con la marca de agua del IVC (DC-001). */
     var inicio = !r.path;
     var ctx = { route: r, rest: match ? r.path.slice(match.length).replace(/^\//, '').split('/').filter(Boolean) : [] };
-    var ITEM = { 'control-acceso/consulta': 'consulta', 'control-acceso/solicitudes': 'solicitudes', 'control-acceso/eventos': 'eventos' };
+    var ITEM = { 'control-acceso/consulta': 'consulta', 'control-acceso/solicitudes': 'solicitudes', 'control-acceso/calidad': 'calidad', 'control-acceso/eventos': 'eventos' };
     /* Registrar, editar, carga masiva y la ficha son acciones de Gestión, no ítems del menú. */
     renderSidebar({ parent: '', item: match ? (ITEM[match] || 'infractores') : '' });
 

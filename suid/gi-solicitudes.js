@@ -1,6 +1,7 @@
 /* Solicitudes de control: reportes de entidades deportivas e inspecciones. Un reporte nunca bloquea por sí solo. */
 (function (w, d) {
   'use strict';
+  if (w.SUID_SOLICITUDES === false) return;
   var GI = w.GI, U = GI.util, UI = w.GIUI, esc = SUID.esc;
   var KEY = 'suid.gs.v5';
   var ESTADOS = [['enviado', 'Enviado'], ['recibido', 'Recibido'], ['tramite', 'En trámite'], ['derivo', 'Derivó en medida'], ['archivado', 'Archivado']];

@@ -49,12 +49,13 @@
 
   /* Foto y huella: normales, difuminadas (menor) o con candado (reservado). sm = 64×80, xs = 48×60. */
   function bio(m, tam) {
+    if (w.SUID_PERFIL === false) return '';
     var h = !w.GIBio ? '' : m.reservado ? w.GIBio.reservada() : w.GIBio.par(m.docDigitos || m.doc, { menor: !!m.menor });
     return '<div class="gx-bio gx-bio--' + tam + '">' + h + '</div>';
   }
 
   /* Perfil de afinidad: menor o reservado = sin cálculo (GI.perfilDe lo devuelve reservado). */
-  function perfilDe(m) { return GI.perfilDe ? GI.perfilDe(m.docDigitos || m.doc, { menor: !!(m.menor || m.reservado) }) : null; }
+  function perfilDe(m) { return w.SUID_PERFIL !== false && GI.perfilDe ? GI.perfilDe(m.docDigitos || m.doc, { menor: !!(m.menor || m.reservado) }) : null; }
   function motivoReserva(p) { return p.motivo === 'menor' ? 'Perfil de afinidad no disponible: la persona es menor de edad.' : 'Perfil de afinidad no disponible: el documento no está completo.'; }
   function barras(c) {
     var on = c.cert == null ? 0 : Math.round(c.cert / 20), h = '';
@@ -84,6 +85,7 @@
     return sec((m.resumenTitulo === '' ? '' : cap(m.resumenTitulo || (m.caso === 'solicitud' ? 'Qué reporta' : 'Resumen de la medida'))) + kv(m.resumen, 'gx-kv--lista') + extra);
   }
   function bloquePersona(m, p) {
+    if (w.SUID_PERFIL === false) return '';
     return sec('<div class="gx-persona">' + bio(m, 'sm') + '</div>');
   }
   function bloqueAfinidad(m, p) {
@@ -151,7 +153,7 @@
   function interno(m) {
     var p = perfilDe(m), left = [], right = [];
     (m.seccionesAntes || []).forEach(function (s) { left.push(tarjeta(s)); });
-    if (m.persona) left.push(card(m.persona.t || 'Persona', '<div class="gx-bio-w">' + bio(m, 'lg') + '</div>' + kv(m.persona.kv, 'gx-kv--3')));
+    if (m.persona) left.push(card(m.persona.t || 'Persona', (w.SUID_PERFIL === false ? '' : '<div class="gx-bio-w">' + bio(m, 'lg') + '</div>') + kv(m.persona.kv, 'gx-kv--3')));
     left.push(afinidadCard(m, p));
     if (m.rep) left.push(card(m.rep.t, kv(m.rep.kv, 'gx-kv--3')));
     (m.secciones || []).forEach(function (s) { left.push(tarjeta(s)); });

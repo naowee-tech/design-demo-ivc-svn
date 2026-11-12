@@ -1,0 +1,138 @@
+{
+ "login": [
+  {
+   "cap": "c1",
+   "label": "Autenticación con el SUID",
+   "x": 51.84,
+   "y": 33.83,
+   "w": 33.6,
+   "h": 28.89
+  }
+ ],
+ "bandeja": [
+  {
+   "cap": "c2",
+   "label": "Registrar infractores",
+   "x": 82.13,
+   "y": 14.15,
+   "w": 15.51,
+   "h": 4.88
+  },
+  {
+   "cap": "c4",
+   "label": "Por integración (propuesta)",
+   "x": 65,
+   "y": 14.15,
+   "w": 16.4,
+   "h": 4.88
+  },
+  {
+   "cap": "c6",
+   "label": "Lista y consulta de registros",
+   "x": 22.5,
+   "y": 24.22,
+   "w": 75.15,
+   "h": 6.1
+  }
+ ],
+ "registro": [
+  {
+   "cap": "c2",
+   "label": "Cinco secciones del registro (campos 1 a 55)",
+   "x": 22.5,
+   "y": 31.78,
+   "w": 75.15,
+   "h": 52.62
+  },
+  {
+   "cap": "c3",
+   "label": "Entrada a la carga masiva",
+   "x": 85.47,
+   "y": 21.71,
+   "w": 12.17,
+   "h": 4.88
+  }
+ ],
+ "carga-masiva": [
+  {
+   "cap": "c3",
+   "label": "Asistente de carga masiva",
+   "x": 32.13,
+   "y": 35.43,
+   "w": 55.88,
+   "h": 35.61
+  }
+ ],
+ "ficha": [
+  {
+   "cap": "c5",
+   "label": "Estados del registro y de la restricción",
+   "x": 72.65,
+   "y": 31.78,
+   "w": 25,
+   "h": 30.27
+  },
+  {
+   "cap": "c5",
+   "label": "Historial de cambios",
+   "x": 72.65,
+   "y": 64,
+   "w": 25,
+   "h": 27.48
+  },
+  {
+   "cap": "c2",
+   "label": "Datos del infractor",
+   "x": 22.5,
+   "y": 31.78,
+   "w": 48.68,
+   "h": 31.68
+  }
+ ],
+ "consulta": [
+  {
+   "cap": "c6",
+   "label": "Búsqueda y filtros",
+   "x": 23.75,
+   "y": 32.57,
+   "w": 16.18,
+   "h": 5.85
+  },
+  {
+   "cap": "c6",
+   "label": "Personas con medida",
+   "x": 22.5,
+   "y": 57.08,
+   "w": 75.15,
+   "h": 42.92
+  }
+ ],
+ "calidad": [
+  {
+   "cap": "c7",
+   "label": "Hallazgos de calidad",
+   "x": 22.5,
+   "y": 36.41,
+   "w": 75.15,
+   "h": 9.49
+  },
+  {
+   "cap": "c7",
+   "label": "Detalle de hallazgos",
+   "x": 22.5,
+   "y": 61.51,
+   "w": 75.15,
+   "h": 10.37
+  }
+ ],
+ "trazabilidad": [
+  {
+   "cap": "c8",
+   "label": "Bitácora de cambios de estado",
+   "x": 22.5,
+   "y": 45.93,
+   "w": 75.15,
+   "h": 54.07
+  }
+ ]
+}

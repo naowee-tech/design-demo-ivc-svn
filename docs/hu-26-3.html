@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HU-26.3 Gestión de infractores</title>
+<meta name="description" content="Historia de usuario HU-26.3 del IVC junto a las pantallas de la demo donde vive cada capacidad.">
+<style>
+:root{
+  --bg:#ffffff;--fg:#18202f;--mu:#525b6c;--bd:#d6dbe4;--sf:#f3f5f9;--sf2:#e9edf4;--ac:#1d4ed8;--acbg:#e6edff;
+  --ok:#166534;--okbg:#e3f5e9;--wa:#92400e;--wabg:#fdf0dc;--sl:#3f4a5c;--slbg:#eceff4;--nw:#5b21b6;--nwbg:#efe8fd;
+  --ng:#9f1239;--ngbg:#fde8ee;--shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){
+    --bg:#0f131a;--fg:#e8ebf1;--mu:#a3acbc;--bd:#2b3242;--sf:#171c26;--sf2:#202736;--ac:#93b2ff;--acbg:#1c2a4d;
+    --ok:#7ee2a3;--okbg:#14301f;--wa:#fbc27f;--wabg:#3a2810;--sl:#c3cbd8;--slbg:#262d3a;--nw:#cbb8ff;--nwbg:#2c2148;
+    --ng:#fda4b8;--ngbg:#3d1522;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;
+  }
+}
+:root[data-theme=dark]{
+  --bg:#0f131a;--fg:#e8ebf1;--mu:#a3acbc;--bd:#2b3242;--sf:#171c26;--sf2:#202736;--ac:#93b2ff;--acbg:#1c2a4d;
+  --ok:#7ee2a3;--okbg:#14301f;--wa:#fbc27f;--wabg:#3a2810;--sl:#c3cbd8;--slbg:#262d3a;--nw:#cbb8ff;--nwbg:#2c2148;
+  --ng:#fda4b8;--ngbg:#3d1522;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-wrap:break-word}
+main{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:clamp(26px,4vw,34px);line-height:1.15;margin:.3em 0 .2em}
+h2{font-size:22px;margin:0 0 .3em}
+h3{font-size:16px;margin:1.4em 0 .5em}
+p{margin:.4em 0 .8em}
+a{color:var(--ac)}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--sf2);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.mu{color:var(--mu)}
+.sm{font-size:14px}
+section{padding-top:40px;margin-top:40px;border-top:1px solid var(--bd)}
+.lead{color:var(--mu);max-width:75ch}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px;border-radius:6px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Cabecera */
+.top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.tag{display:inline-block;font-size:13px;padding:3px 10px;border-radius:99px;background:var(--sf);border:1px solid var(--bd);color:var(--mu)}
+.btn{font:inherit;font-size:14px;color:var(--fg);background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{background:var(--sf2)}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
+nav.toc a{font-size:14px;text-decoration:none;padding:5px 11px;border-radius:99px;border:1px solid var(--bd);color:var(--fg);background:var(--bg)}
+nav.toc a:hover{background:var(--sf)}
+
+/* Chips de estado: glifo + texto, nunca solo color */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+.chip .g{font-size:12px}
+.st-ok{color:var(--ok);background:var(--okbg);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.st-pa{color:var(--wa);background:var(--wabg);border-color:color-mix(in srgb,var(--wa) 35%,transparent)}
+.st-sl{color:var(--sl);background:var(--slbg);border:1px dashed var(--sl)}
+.st-nw{color:var(--nw);background:var(--nwbg);border-color:color-mix(in srgb,var(--nw) 35%,transparent)}
+.st-x{color:var(--ng);background:var(--ngbg)}
+
+/* Resumen */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0 0}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px 14px}
+.kpi b{display:block;font-size:30px;line-height:1.1}
+.kpi span{font-size:14px;color:var(--mu)}
+.kpi.wide{grid-column:span 2}
+.bar{display:flex;height:12px;border-radius:99px;overflow:hidden;margin:10px 0 8px;gap:2px}
+.bar i{display:block}
+.bar .b-ok{background:var(--ok)}.bar .b-pa{background:var(--wa)}.bar .b-sl{background:repeating-linear-gradient(45deg,var(--sl) 0 3px,transparent 3px 6px);border:1px solid var(--sl)}.bar .b-nw{background:var(--nw)}
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+.warn{display:flex;gap:10px;align-items:flex-start;background:var(--wabg);color:var(--fg);border:1px solid color-mix(in srgb,var(--wa) 40%,transparent);border-radius:10px;padding:10px 14px;margin:14px 0;font-size:15px}
+.warn::before{content:"!";flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--wa);color:var(--bg);font-weight:800;font-size:14px}
+
+/* Historia */
+.story{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin:14px 0}
+.story div{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;border-top:4px solid var(--ac)}
+.story small{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ac)}
+.must{counter-reset:m;list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:8px}
+.must li{counter-increment:m;display:flex;gap:10px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:15px}
+.must li::before{content:counter(m);flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--acbg);color:var(--ac);font-weight:700;font-size:13px}
+.gwt{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:10px 0;border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.gwt div{padding:14px 16px;position:relative;background:var(--sf)}
+.gwt div+div{border-left:1px solid var(--bd)}
+.gwt b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);margin-bottom:4px}
+.versions{list-style:none;padding:0;margin:10px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.versions li{position:relative;padding:30px 12px 0 0;font-size:14px}
+.versions li::before{content:"";position:absolute;top:8px;left:0;right:0;height:2px;background:var(--bd)}
+.versions li::after{content:"";position:absolute;top:2px;left:0;width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid var(--mu)}
+.versions li.cur::after{border-color:var(--ac);background:var(--ac)}
+.versions b{display:block;font-size:15px}
+
+/* Mapa historia <-> superficie */
+.map{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:18px;margin-top:16px;align-items:start}
+.caps{display:flex;flex-direction:column;gap:12px}
+.cg h3{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+.cg ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cap{width:100%;text-align:left;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:9px 10px;display:grid;grid-template-columns:30px 1fr;gap:4px 10px;cursor:pointer;position:relative}
+.cap:hover{background:var(--sf)}
+.cap[aria-pressed=true]{border-color:var(--ac);background:var(--acbg);box-shadow:inset 3px 0 0 var(--ac)}
+.cap .num{grid-row:span 2;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-weight:800;font-size:14px;color:#fff}
+.cap .nm{font-weight:600;font-size:15px;line-height:1.3}
+.cap .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cap .here{font-size:12px;color:var(--mu);display:none}
+.cap.is-here .here{display:inline}
+.n-ok{background:#166534}.n-pa{background:#a64b06}.n-sl{background:#475569;outline:2px dashed #475569;outline-offset:2px}.n-nw{background:#6d28d9}
+.viewer{min-width:0;display:flex;flex-direction:column;gap:12px}
+.stage{position:relative;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--sf);box-shadow:var(--shadow)}
+.frame{position:relative;aspect-ratio:1360/820;width:100%}
+.frame img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.pin{position:absolute;border:3px solid var(--pc);border-radius:8px;background:transparent;padding:0;cursor:pointer;transition:background-color .2s,opacity .2s,box-shadow .2s}
+.pin .badge{position:absolute;top:4px;left:4px;display:inline-flex;align-items:center;gap:3px;background:var(--pc);color:#fff;font:700 13px/1 system-ui,sans-serif;padding:4px 7px;border-radius:99px;box-shadow:0 1px 3px rgba(0,0,0,.35);white-space:nowrap}
+.pin:hover,.pin.on{background:color-mix(in srgb,var(--pc) 16%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--pc) 30%,transparent)}
+.stage.has-cap .pin:not(.on){opacity:.45;border-width:2px}
+.stage.has-cap .pin:not(.on):hover{opacity:1}
+.p-ok{--pc:#166534;border-style:solid}
+.p-pa{--pc:#a64b06;border-style:dotted}
+.p-sl{--pc:#475569;border-style:dashed}
+.p-nw{--pc:#6d28d9;border-style:double;border-width:5px}
+.scr-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;justify-content:space-between}
+.scr-head h3{margin:0;font-size:18px}
+.pinlist{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.pinlist button{font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:99px;padding:3px 10px 3px 4px;display:inline-flex;gap:6px;align-items:center;cursor:pointer;text-align:left}
+.pinlist button:hover{background:var(--sf)}
+.pinlist button[aria-pressed=true]{border-color:var(--ac);background:var(--acbg)}
+.pinlist .num{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:99px;color:#fff;font-weight:700;font-size:12px;padding:0 5px}
+.detail{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px}
+.detail h4{margin:0 0 6px;font-size:17px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.detail dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:10px 0 0;font-size:15px}
+.detail dt{color:var(--mu);font-size:14px}
+.detail dd{margin:0;min-width:0}
+.also{display:flex;flex-wrap:wrap;gap:6px}
+.also button{font:inherit;font-size:13px;border:1px solid var(--bd);background:var(--bg);color:var(--ac);border-radius:99px;padding:2px 10px;cursor:pointer}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:16px}
+.thumb{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:5px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px}
+.thumb img{width:100%;height:auto;aspect-ratio:1360/820;object-fit:cover;border-radius:6px;display:block;background:var(--sf)}
+.thumb span{font-size:13px;font-weight:600;line-height:1.25}
+.thumb small{font-size:12px;color:var(--mu);display:flex;gap:3px;flex-wrap:wrap}
+.thumb[aria-selected=true]{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.dots i{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:99px;color:#fff;font-style:normal;font-weight:700;font-size:11px;padding:0 4px}
+
+/* Flujo de estados */
+.flow-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:12px;background:var(--sf);margin-top:14px}
+.flow{display:block;min-width:720px;width:100%;height:auto}
+.flow text{fill:var(--fg);font:14px system-ui,sans-serif}
+.flow .lbl{fill:var(--mu);font-size:13px}
+.flow .lane-t{font-weight:700;font-size:13px;letter-spacing:.05em;fill:var(--mu)}
+.flow .lane{fill:var(--bg);stroke:var(--bd)}
+.flow .nd{stroke-width:2}
+.flow .nd-reg{fill:var(--acbg);stroke:var(--ac)}
+.flow .nd-in{fill:var(--slbg);stroke:var(--sl)}
+.flow .nd-ac{fill:var(--ngbg);stroke:var(--ng)}
+.flow .nd-cu{fill:var(--okbg);stroke:var(--ok)}
+.flow .nd-ps{fill:var(--wabg);stroke:var(--wa)}
+.flow .nt{font-weight:700;text-anchor:middle}
+.flow .ar{stroke:var(--fg);stroke-width:2;fill:none}
+.flow .ar-x{stroke:var(--ac);stroke-width:2.5;fill:none;stroke-dasharray:7 5}
+.flow .ah{fill:var(--fg)}.flow .ah-x{fill:var(--ac)}
+.flow-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px;margin-top:12px}
+.flow-notes div{border:1px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:15px}
+.flow-notes b{display:block;margin-bottom:2px}
+.hint-scroll{display:none;font-size:13px;color:var(--mu);margin:6px 0 0}
+
+/* Diccionario */
+.ftools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:14px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);border-radius:99px;padding:5px 12px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.seg button em{font-style:normal;opacity:.75;font-size:12px;margin-left:4px}
+.search{flex:1 1 240px;min-width:0;display:flex}
+.search input{width:100%;font:inherit;font-size:15px;color:var(--fg);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px}
+.fcount{font-size:14px;color:var(--mu);margin:4px 0 8px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.flist{list-style:none;margin:0;padding:0;border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.flist>li+li{border-top:1px solid var(--bd)}
+.frow{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:0;text-align:left;cursor:pointer;display:grid;grid-template-columns:56px minmax(0,1fr) 190px 230px 20px;gap:4px 12px;align-items:center;padding:10px 14px}
+.frow:hover{background:var(--sf)}
+.frow .fn{font:600 14px ui-monospace,Menlo,monospace}
+.frow .fc{font-weight:600}
+.frow .ft,.frow .fs{font-size:14px;color:var(--mu)}
+.frow .sub{display:inline-block;font-size:11px;font-weight:600;color:var(--mu);border:1px solid var(--bd);border-radius:99px;padding:0 6px;margin-left:6px;vertical-align:1px}
+.frow .car{width:10px;height:10px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:rotate(45deg);justify-self:center;transition:transform .2s}
+.frow[aria-expanded=true]{background:var(--sf)}
+.frow[aria-expanded=true] .car{transform:rotate(225deg)}
+.fdet{padding:4px 14px 16px 82px;background:var(--sf);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.fdet[hidden]{display:none}
+.fdet h5{margin:0 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+.fdet p{margin:0;white-space:pre-line;font-size:15px}
+.empty{padding:24px;text-align:center;color:var(--mu)}
+.secg{display:inline-flex;align-items:center;gap:6px}
+.secg i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--acbg);color:var(--ac);font-weight:800;font-size:12px}
+
+/* Alcance y apagado */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:18px;margin-top:14px}
+.panel{border:1px solid var(--bd);border-radius:12px;padding:14px 16px;background:var(--sf)}
+.panel h3{margin:0 0 10px}
+.excl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}
+.excl li{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;font-size:15px}
+.excl svg{flex:none;color:var(--ng)}
+.flags{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.flags li{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:start;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
+.sw{position:relative;width:46px;height:26px;border-radius:99px;background:var(--sf2);border:2px solid var(--mu);margin-top:2px}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--mu)}
+.sw.none{border-style:dashed;opacity:.7}
+.flags b{display:block}
+.flags .st{font-size:13px;color:var(--mu);margin-top:2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+/* Conexiones */
+.hub{margin-top:18px;display:flex;flex-direction:column;align-items:center}
+.hub-core{background:var(--acbg);border:2px solid var(--ac);border-radius:14px;padding:12px 18px;text-align:center;max-width:460px}
+.hub-core b{display:block;font-size:17px}
+.hub-core span{font-size:14px;color:var(--mu)}
+.hub-stem{width:0;height:26px;border-left:2px dashed var(--mu)}
+.spokes{list-style:none;margin:0;padding:0;width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;border-top:2px dashed var(--mu);padding-top:0}
+.spokes li{position:relative;margin-top:26px;border:2px dashed var(--bd);border-radius:12px;padding:12px;background:var(--bg);font-size:14px}
+.spokes li::before{content:"";position:absolute;top:-28px;left:50%;height:26px;border-left:2px dashed var(--mu)}
+.spokes b{display:block;font-size:15px;margin:6px 0 4px}
+.spokes .q{color:var(--mu);margin-top:6px}
+.spokes .tags{display:flex;flex-wrap:wrap;gap:4px}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:12px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--bd)}
+th{background:var(--sf);font-size:13px}
+tr:last-child td{border-bottom:0}
+footer{margin-top:48px;font-size:13px;color:var(--mu)}
+
+@media (max-width:960px){
+  .frow{grid-template-columns:56px minmax(0,1fr) 20px}
+  .frow .ft,.frow .fs{grid-column:2}
+  .frow .car{grid-column:3;grid-row:1}
+  .spokes{grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));border-top:0}
+  .spokes li{margin-top:0}
+  .spokes{margin-top:12px}
+  .spokes li::before{display:none}
+  .hub-stem{display:none}
+}
+@media (max-width:820px){
+  .map{grid-template-columns:1fr}
+  .viewer{order:-1}
+  .gwt{grid-template-columns:1fr}
+  .gwt div+div{border-left:0;border-top:1px solid var(--bd)}
+  .hint-scroll{display:block}
+}
+@media (max-width:560px){
+  .versions{grid-template-columns:1fr 1fr;row-gap:10px}
+  .kpi.wide{grid-column:auto}
+  .fdet{padding-left:14px}
+  .frow{grid-template-columns:44px minmax(0,1fr) 16px;padding:10px 12px}
+  .detail dl{grid-template-columns:1fr}
+  .detail dt{margin-top:4px}
+  .pin .badge{font-size:11px;padding:3px 5px;top:2px;left:2px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+  <span class="tag">Historia de usuario · v04 · 22-sep-2026 · aprobada por la Dirección Técnica de IVC</span>
+  <button class="btn" id="theme" type="button" aria-label="Cambiar tema">Tema: automático</button>
+</div>
+<h1>HU-26.3 · Gestión de infractores</h1>
+<p class="lead">Módulo «Gestión de sanciones» del SUID (Sistema de Validación Nacional como módulo del SUID). Fuente: <code>content-supplies/insumos-hu/</code>, versión del 30-sep-2026. Estado de la demo medido el 10-nov-2026.</p>
+<nav class="toc" aria-label="Contenido">
+  <a href="#mapa">Historia ↔ pantalla</a><a href="#hu">La historia</a><a href="#flujo">Estados</a><a href="#campos">Campos (55)</a><a href="#alcance">Fuera de alcance</a><a href="#conexiones">Conexiones abiertas</a><a href="#mapeo">Mapeo detallado</a>
+</nav>
+
+<div class="kpis" aria-label="Resumen">
+  <div class="kpi"><b>5</b><span>capacidades en la HU</span></div>
+  <div class="kpi"><b>55</b><span>campos del diccionario (91 filas con subcampos)</span></div>
+  <div class="kpi"><b>1</b><span>superficie: Gestión de sanciones</span></div>
+  <div class="kpi"><b>8</b><span>pantallas capturadas</span></div>
+  <div class="kpi wide">
+    <span>8 puntos verificables contra la demo</span>
+    <div class="bar" aria-hidden="true"><i class="b-ok" style="flex:5"></i><i class="b-pa" style="flex:1"></i><i class="b-sl" style="flex:1"></i><i class="b-nw" style="flex:1"></i></div>
+    <div class="legend"><span class="chip st-ok"><span class="g" aria-hidden="true">✓</span>5 cubiertos</span><span class="chip st-pa"><span class="g" aria-hidden="true">◐</span>1 parcial</span><span class="chip st-sl"><span class="g" aria-hidden="true">○</span>1 slot abierto</span><span class="chip st-nw"><span class="g" aria-hidden="true">★</span>1 nuevo</span></div>
+  </div>
+</div>
+<p class="warn">Las reglas de los 55 campos no están cotejadas una a una contra la columna «Regla o validación» del diccionario. Los campos existen en el formulario; que cada regla se cumpla está por verificar.</p>
+
+<section id="mapa" aria-labelledby="mapa-t">
+  <h2 id="mapa-t">Historia ↔ pantalla</h2>
+  <p class="lead">Elige una capacidad para ver la pantalla donde vive y lo que la cubre, resaltado. O elige una pantalla abajo para ver qué capacidades viven ahí. Los pines llevan el número de la capacidad y un símbolo de su estado.</p>
+  <div class="map">
+    <div class="caps" id="caps" aria-label="Capacidades de la HU"></div>
+    <div class="viewer">
+      <div class="stage" id="stage" role="tabpanel" aria-labelledby="scr-title">
+        <div class="frame" id="frame"><img id="shot" src="img/login.jpg" alt="" loading="lazy" width="1360" height="820"></div>
+      </div>
+      <div class="scr-head"><h3 id="scr-title">—</h3><span class="sm"><code id="scr-route"></code> · <a id="scr-open" href="../suid/login.html">Abrir en la demo</a></span></div>
+      <p class="sm mu" id="scr-desc" style="margin:0"></p>
+      <div><span class="sm mu" id="pins-t">En esta pantalla:</span><ul class="pinlist" id="pinlist" aria-labelledby="pins-t"></ul></div>
+      <div class="detail" id="detail" aria-live="polite"></div>
+    </div>
+  </div>
+  <h3>Pantallas de la superficie</h3>
+  <div class="thumbs" id="thumbs" role="tablist" aria-label="Pantallas"></div>
+</section>
+
+<section id="hu" aria-labelledby="hu-t">
+  <h2 id="hu-t">La historia</h2>
+  <div class="story">
+    <div><small>Yo como</small>Funcionario autorizado del Ministerio del Deporte con permisos para registrar, revisar, modificar o consultar sanciones.</div>
+    <div><small>Requiero</small>Registrar, actualizar y consultar sanciones de multa y restricciones de ingreso respaldadas por decisiones en firme (arts. 97 y 98, Ley 1453 de 2011).</div>
+    <div><small>Para</small>Mantener información confiable, vigente y trazable para que el Sistema valide el acceso en eventos de fútbol profesional y se haga seguimiento general.</div>
+  </div>
+  <h3>El sistema debe</h3>
+  <ol class="must">
+    <li>Registrar decisiones en firme que contengan prohibición de ingreso a escenarios deportivos y multa.</li>
+    <li>Validar la completitud formal del registro, sin reabrir ni modificar la decisión de la autoridad.</li>
+    <li>Registrar identidad, acto o decisión, fecha de ejecutoria, alcance (restricción y sanción pecuniaria), vigencia y los demás datos de la base de caracterización.</li>
+    <li>Administrar por separado el estado del registro y su seguimiento (con historial) y el estado de la sanción (vigencia y monto, datos inmutables).</li>
+    <li>Controlar duplicados, vencimientos con soporte y trazabilidad.</li>
+  </ol>
+  <h3>Las 5 capacidades de la HU y sus puntos verificables</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Capacidad de la HU</th><th>Qué exige</th><th>Puntos en la demo</th></tr></thead>
+    <tbody>
+      <tr><td><b>Acceso a módulo</b></td><td>Autenticación con los servicios del SUID y validación del privilegio de acceso al módulo.</td><td>1</td></tr>
+      <tr><td><b>Registro de sanciones</b></td><td>Individual (formulario «Registrar infractor», con bloque del representante si es menor), masivo (plantilla de la base de sancionatorios, con reporte de inconsistencias) o por integración.</td><td>2 · 3 · 4</td></tr>
+      <tr><td><b>Administración de restricciones</b></td><td>ID único por registro; varias restricciones por persona sin confundirlas; sin duplicados equivalentes (persona + acto + vigencia); estados del registro y de la restricción; las cumplidas no se eliminan; ficha única con el historial completo.</td><td>5</td></tr>
+      <tr><td><b>Calidad, vigencia y auditoría</b></td><td>Validar registros incompletos, duplicados y fechas incoherentes; inactivar sola la restricción al vencer; registrar usuario, fecha, hora, estado anterior y nuevo; reportes de calidad y trazabilidad con acceso restringido.</td><td>7 · 8</td></tr>
+      <tr><td><b>Alcance y exclusiones</b></td><td>Lo que el módulo no hace. Ver <a href="#alcance">Fuera de alcance</a>.</td><td>—</td></tr>
+      <tr><td class="mu">De la historia</td><td>El punto 6, <b>Consulta</b>, sale del «Requiero … consultar» de la historia, no de una capacidad aparte.</td><td>6</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Criterio de aceptación 01 · Registro de decisión en firme</h3>
+  <div class="gwt">
+    <div><b>Dado</b>que el Ministerio recibe una decisión en firme con identidad, autoridad, acto, ejecutoria, alcance, vigencia y soporte completos,</div>
+    <div><b>Cuando</b>un funcionario autorizado registra y somete la información a validación documental formal,</div>
+    <div><b>Entonces</b>el sistema crea un expediente único, marca el registro como validado y activa la restricción cuando su periodo se encuentra vigente.</div>
+  </div>
+  <p class="sm"><span class="chip st-ok"><span class="g" aria-hidden="true">✓</span>Cubierto en la demo</span> con el formulario de registro y los estados de la ficha.</p>
+  <h3>Control de versiones</h3>
+  <ol class="versions">
+    <li><b>v01</b>11-03-2025<br><span class="mu">Diego Boada · Diseño de la historia de usuario</span></li>
+    <li><b>v02</b>24-04-2025<br><span class="mu">Alejandro Munevar · Actualización</span></li>
+    <li><b>v03</b>12-08-2025<br><span class="mu">Diego Boada · Actualización</span></li>
+    <li class="cur"><b>v04 · vigente</b>22-09-2026<br><span class="mu">GIT SUID y Proyectos Estratégicos · Ajuste del alcance para el SVN y decisiones en firme (aprobador: Dirección Técnica de IVC)</span></li>
+  </ol>
+</section>
+
+<section id="flujo" aria-labelledby="flujo-t">
+  <h2 id="flujo-t">Dos estados separados</h2>
+  <p class="lead">La HU separa el estado del registro (el trámite) del estado de la restricción (la sanción). Se tocan en un solo punto: cuando el registro queda Validado, la restricción pasa a Activa.</p>
+  <div class="flow-wrap">
+  <svg class="flow" viewBox="0 0 960 360" role="img" aria-labelledby="flow-title flow-desc">
+    <title id="flow-title">Flujo de estados del registro y de la restricción</title>
+    <desc id="flow-desc">Registro: Recibido pasa a Validado o a Por subsanar. Restricción: Inactiva pasa a Activa cuando el registro queda Validado, y a Cumplida automáticamente un día después del fin de vigencia.</desc>
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+      <marker id="ahx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah-x" d="M0 0L10 5L0 10z"/></marker>
+    </defs>
+    <rect class="lane" x="12" y="12" width="936" height="160" rx="12"/>
+    <text class="lane-t" x="30" y="38">ESTADO DEL REGISTRO Y SEGUIMIENTO · CAMPO 54</text>
+    <rect class="nd nd-reg" x="40" y="82" width="170" height="52" rx="26"/><text class="nt" x="125" y="113">Recibido</text>
+    <rect class="nd nd-ps" x="380" y="52" width="170" height="44" rx="22"/><text class="nt" x="465" y="79">Por subsanar</text>
+    <rect class="nd nd-reg" x="380" y="112" width="170" height="44" rx="22"/><text class="nt" x="465" y="139">Validado</text>
+    <path class="ar" d="M210 100 C290 100 300 74 376 74" marker-end="url(#ah)"/>
+    <path class="ar" d="M210 118 C290 118 300 134 376 134" marker-end="url(#ah)"/>
+    <text class="lbl" x="366" y="58" text-anchor="end">faltan datos o soporte</text>
+    <text class="lbl" x="366" y="166" text-anchor="end">validación documental formal</text>
+    <text class="lbl" x="580" y="79">la devolución es un trámite externo</text>
+    <text class="lbl" x="580" y="97">(la HU no define el regreso a Recibido)</text>
+
+    <rect class="lane" x="12" y="188" width="936" height="160" rx="12"/>
+    <text class="lane-t" x="30" y="214">ESTADO DE LA RESTRICCIÓN · CAMPO 47</text>
+    <rect class="nd nd-in" x="40" y="262" width="170" height="52" rx="26"/><text class="nt" x="125" y="293">Inactiva</text>
+    <rect class="nd nd-ac" x="380" y="262" width="170" height="52" rx="26"/><text class="nt" x="465" y="293">Activa</text>
+    <rect class="nd nd-cu" x="740" y="262" width="170" height="52" rx="26"/><text class="nt" x="825" y="293">Cumplida</text>
+    <path class="ar" d="M210 288 L376 288" marker-end="url(#ah)"/>
+    <path class="ar" d="M550 288 L736 288" marker-end="url(#ah)"/>
+    <text class="lbl" x="40" y="336">mientras el registro está Recibido o Por subsanar</text>
+    <text class="lbl" x="643" y="260" text-anchor="middle">automática:</text><text class="lbl" x="643" y="277" text-anchor="middle">fin de vigencia + 1 día</text>
+    <text class="lbl" x="740" y="336">no se elimina; queda en la ficha</text>
+
+    <path class="ar-x" d="M465 156 L465 258" marker-end="url(#ahx)"/>
+    <rect x="476" y="196" width="244" height="26" rx="6" fill="var(--bg)" stroke="var(--ac)"/>
+    <text x="486" y="214" style="fill:var(--ac);font-weight:700;font-size:13px">Validado ⇒ la restricción se activa</text>
+  </svg>
+  </div>
+  <p class="hint-scroll">Desliza el diagrama a los lados para verlo completo.</p>
+  <div class="flow-notes">
+    <div><b>Registro (campo 54)</b>Recibido → Validado, o Recibido → Por subsanar. Es el trámite del funcionario y tiene historial.</div>
+    <div><b>Restricción (campo 47)</b>Inactiva mientras el registro está Recibido o Por subsanar; Activa cuando queda Validado; Cumplida sola, un día después del «Fin de vigencia de la prohibición de ingreso» (campo 45).</div>
+    <div><b>En la demo</b>Ambos estados se ven por separado en la ficha única (<code>#/control-acceso/infractores/&lt;id&gt;</code>), punto 5 del mapa.</div>
+  </div>
+</section>
+
+<section id="campos" aria-labelledby="campos-t">
+  <h2 id="campos-t">Campos del diccionario</h2>
+  <p class="lead">55 campos tomados tal cual de la hoja «Diccionario de Datos» del xlsx de sancionatorios (91 filas). Todos viven en la pantalla <b>Registrar infractor</b>, en las secciones B a F; la fecha de registro la genera el sistema y se muestra al pie. Las filas <code>10.x</code> y <code>26.x</code> son subcampos de la dirección estructurada; las <code>9.x</code> y <code>25.x</code>, los de la zona rural. Por eso hay más filas que campos.</p>
+  <div class="ftools">
+    <div class="seg" id="segs" role="group" aria-label="Filtrar por sección"></div>
+    <label class="search"><span class="vh">Buscar en los campos</span><input id="q" type="search" placeholder="Buscar campo, regla o norma…" autocomplete="off"></label>
+  </div>
+  <div class="fcount"><span id="fcount" aria-live="polite"></span><button class="btn" id="expall" type="button">Expandir todo</button></div>
+  <ul class="flist" id="flist"></ul>
+</section>
+
+<section id="alcance" aria-labelledby="alcance-t">
+  <h2 id="alcance-t">Fuera de alcance y apagado</h2>
+  <div class="two">
+    <div class="panel">
+      <h3>Lo que la HU excluye</h3>
+      <ul class="excl" id="excl"></ul>
+    </div>
+    <div class="panel">
+      <h3>Apagado en la demo</h3>
+      <p class="sm mu" style="margin-top:0">Interruptores solo ilustrativos. Para encender un bloque se cambia su bandera a <code>true</code> en <code>suid/app.html</code>.</p>
+      <ul class="flags">
+        <li><span class="sw" aria-hidden="true"></span><div><b>Eventos</b>Escenarios, backoffice y auditoría de eventos (<code>ev-*</code>).<div class="st"><span class="chip st-x">Apagado</span><code>SUID_EVENTOS = false</code></div></div></li>
+        <li><span class="sw" aria-hidden="true"></span><div><b>Solicitudes</b>Reportes de clubes e inspecciones (<code>gi-solicitudes.js</code>) y la pestaña «Expedientes por tramitar».<div class="st"><span class="chip st-x">Apagado</span><code>SUID_SOLICITUDES = false</code></div></div></li>
+        <li><span class="sw" aria-hidden="true"></span><div><b>Perfil y afinidad · foto y huella</b>Señal inferida de perfil, y foto y huella en ficha y búsqueda. En «Recientes» la foto se reemplaza por las iniciales.<div class="st"><span class="chip st-x">Apagado</span><code>SUID_PERFIL = false</code></div></div></li>
+        <li><span class="sw none" aria-hidden="true"></span><div><b>Superficies 2 a 9 del SVN</b>Carpeta <code>svn/</code>: fuera del recorrido del IVC.<div class="st"><span class="chip st-sl">Sin bandera</span></div></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="conexiones" aria-labelledby="conexiones-t">
+  <h2 id="conexiones-t">Conexiones abiertas</h2>
+  <p class="lead"><b>La fase 1 no tiene conexión con la Policía ni con otras entidades</b> (decisión del 10-nov-2026): el registro es individual o masivo. La HU solo nombra el registro «por integración»; el resto son propuestas nuestras, sin validar con el IVC, y quedan como puntos abiertos, no como requisito.</p>
+  <div class="hub">
+    <div class="hub-core"><b>Gestión de sanciones · SUID</b><span>Fase 1: registro individual y masivo, sin conexiones externas</span></div>
+    <div class="hub-stem" aria-hidden="true"></div>
+    <ul class="spokes" id="spokes"></ul>
+  </div>
+</section>
+
+<section id="mapeo" aria-labelledby="mapeo-t">
+  <h2 id="mapeo-t">Mapeo detallado contra la demo</h2>
+  <p class="lead">Dónde está cada exigencia en el código de <code>suid/</code>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Exigencia de la HU</th><th>Estado</th><th>Dónde</th></tr></thead>
+    <tbody id="mapeo-body"></tbody>
+  </table></div>
+</section>
+
+<footer>Generado desde el «Diccionario de Datos» de <code>BASE DE DATOS SANCIONATORIOS_30092026_VF.xlsx</code> y <code>img/pines.json</code>. Capturas de la demo a 1360 × 820.</footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+var FIELDS = [{"n": "1", "c": "Fecha de Registro", "t": "Fecha", "r": "Al crear un nuevo registro, el campo de fecha debe diligenciarse automáticamente con la fecha actual del sistema, utilizando el formato DD/MM/AAAA. No se debe requerir ingreso manual por parte del usuario.", "s": "", "g": "control"}, {"n": "2", "c": "Tipo de Identificación", "t": "Lista / resultado controlado", "r": "Seleccionar de lista desplegable", "s": "Decreto 079 de 2012, artículo 7: exige la identificación del infractor. Decreto 1622 de 2022, artículo 2.17.4, numeral 3: define los documentos válidos de identificación.", "g": "infractor"}, {"n": "3", "c": "Número de Identificación", "t": "Número", "r": "En el caso de cédula de ciudadanía, cedula de extranjería y tarjeta de identidad permitir solo datos numéricos, en caso diferente habilitar para alfanumérico.", "s": "Decreto 079 de 2012, artículo 7: exige la identificación del infractor. Decreto 1622 de 2022, artículo 2.17.3, numeral 3: define los documentos válidos de identificación.", "g": "infractor"}, {"n": "4", "c": "Nombre(s)", "t": "Texto", "r": "Campo abierto", "s": "Decreto 079 de 2012, artículo 7: la decisión debe contener el nombre del infractor.", "g": "infractor"}, {"n": "5", "c": "Apellido(s)", "t": "Texto", "r": "Campo abierto", "s": "Decreto 079 de 2012, artículo 7: la decisión debe contener el nombre del infractor.", "g": "infractor"}, {"n": "6", "c": "País de Residencia", "t": "Lista / resultado controlado", "r": "Configurar el campo \"País\" para que cargue por defecto la opción \"Colombia\" al abrir el formulario. No obstante, la lista desplegable debe contener el catálogo completo de países a nivel mundial, permitiendo al usuario seleccionar un país diferente cuando sea necesario.", "s": "", "g": "infractor"}, {"n": "7", "c": "Departamento de Residencia", "t": "Lista / resultado controlado", "r": "El campo debe mostrar el listado oficial de departamentos de Colombia cuando el país seleccionado sea Colombia. Si se selecciona un país diferente, el campo Departamento deberá bloquearse automáticamente (inhabilitado) y no permitirá la selección o edición de información.", "s": "", "g": "infractor"}, {"n": "8", "c": "Ciudad o Municipio de Residencia", "t": "Lista / resultado controlado", "r": "El campo debe mostrar el listado oficial de la Ciudad y/o Municipios de Colombia dependiendo de la selección del Departamento. Si se selecciona un país diferente, el campo Ciudad y/o Municipio deberá bloquearse automáticamente (inhabilitado) y no permitirá la selección o edición de información.", "s": "", "g": "infractor"}, {"n": "9.1", "c": "¿Es zona rural?", "t": "Caja de Selección", "r": "Se solicita implementar una caja de selección (check list) obligatoria para validar la respuesta a la pregunta correspondiente. Cuando el país seleccionado sea diferente a Colombia, este campo no deberá visualizarse ni requerirse para el registro.", "s": "", "g": "infractor"}, {"n": "9.2", "c": "Tipo de Vía", "t": "Lista / resultado controlado", "r": "Este campo deberá habilitarse únicamente cuando la respuesta al campo “¿Es zona rural?” sea “Sí”. La selección se realizará desde una lista desplegable previamente parametrizada y su diligenciamiento será obligatorio para continuar con el registro.", "s": "", "g": "infractor"}, {"n": "9.3", "c": "Información Adicional", "t": "Texto", "r": "Campo abierto para el registro de información complementaria.", "s": "", "g": "infractor"}, {"n": "10", "c": "Dirección de Residencia", "t": "Texto", "r": "Campo de consolidación de dirección bloqueado: La información deberá consolidarse automáticamente según el país seleccionado. Si el país es diferente a Colombia, se habilitará una caja de texto libre para el ingreso de la dirección. En caso contrario, el sistema deberá generar y consolidar automáticamente la dirección con base en la información diligenciada entre los numerales 9.1 al 9.10. Adicionalmente debe consolidarse con las abreviaturas según del tipo de vía.", "s": "", "g": "infractor"}, {"n": "10.1", "c": "Vía Principal", "t": "Lista / resultado controlado", "r": "Este campo deberá habilitarse únicamente cuando la respuesta al campo “¿Es zona rural?” sea “No”. La selección se realizará desde una lista desplegable previamente parametrizada y su diligenciamiento será obligatorio para continuar con el registro.", "s": "", "g": "infractor"}, {"n": "10.2", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "infractor"}, {"n": "10.3", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.4", "c": "Bis", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.5", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.6", "c": "Sentido", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.7", "c": "#", "t": "", "r": "Campo bloqueado, configurado con el carácter especial numeral (#) de forma predeterminada, sin permitir su edición por parte del usuario. Este campo tendrá como finalidad realizar la separación de los componentes de la dirección y garantizar la estandarización y normalización de la información al momento de consolidar automáticamente la dirección.", "s": "", "g": "infractor"}, {"n": "10.8", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "infractor"}, {"n": "10.9", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.10", "c": "Bis", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.11", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "infractor"}, {"n": "10.12", "c": "-", "t": "", "r": "Campo bloqueado, configurado con el carácter especial guion (-) de forma predeterminada, sin permitir su edición por parte del usuario. Este campo tendrá como finalidad realizar la separación de los componentes de la dirección y garantizar la estandarización y normalización de la información al momento de consolidar automáticamente la dirección.", "s": "", "g": "infractor"}, {"n": "10.13", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "infractor"}, {"n": "10.14", "c": "Sentido", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria. \r\nPor último al momento de guardar debe realizarse con la abreviatura correspondiente.", "s": "", "g": "infractor"}, {"n": "10.15", "c": "Información Adicional", "t": "Lista / resultado controlado", "r": "Este campo deberá permanecer bloqueado e inhabilitado por defecto y únicamente se activará cuando exista información registrada en el numeral 9.11.\r\nAdicionalmente, se deberá disponer de una opción “Adicionar” que permita agregar hasta cinco (5) registros adicionales, según sea necesario. Cada registro agregado deberá conservar las mismas validaciones y obligatoriedad definidas para el campo principal. Si el numeral 9.11 no se encuentra diligenciado, el campo y la opción de adición deberán permanecer bloqueados.\r\nDejar el campo habilitado unicamente y bloquedos los campos del 10.1 al 10.15 cuando la selección sea diferente a Colombia.", "s": "", "g": "infractor"}, {"n": "10.16", "c": "Indicación", "t": "Texto", "r": "Su habilitación y comportamiento estarán condicionados a la opción seleccionada en el campo precedente. Una vez activado, permitirá el ingreso de información complementaria asociada al valor seleccionado. Si el campo anterior no ha sido diligenciado o la opción seleccionada no requiere información adicional, este campo deberá permanecer bloqueado e inhabilitado para edición.", "s": "", "g": "infractor"}, {"n": "11", "c": "Indicativo País", "t": "Texto", "r": "Configurar automaticamente de acuerdo con el país seleccionado.", "s": "", "g": "infractor"}, {"n": "12", "c": "Número de Teléfono", "t": "Número", "r": "Con un máximo 10 caracteres.", "s": "", "g": "infractor"}, {"n": "13", "c": "Correo Electrónico", "t": "Texto", "r": "Validaciones lógicas para el correo establecidas en el registro de usuarios", "s": "", "g": "infractor"}, {"n": "14", "c": "Fecha de Nacimiento", "t": "Fecha", "r": "El campo debe permitir la selección de la fecha mediante calendario o el ingreso manual utilizando el formato DD/MM/AAAA.", "s": "", "g": "infractor"}, {"n": "15", "c": "Edad", "t": "Edad", "r": "Campo calculado automáticamente por el sistema a partir de la fecha registrada en el campo \"Fecha de Nacimiento del Infractor\". En consecuencia, este campo no deberá permitir la edición manual por parte del usuario y deberá permanecer bloqueado de forma automática. La edad se actualizará dinámicamente en años cumplidos, conforme a la fecha de nacimiento ingresada.", "s": "", "g": "infractor"}, {"n": "16", "c": "Sexo", "t": "Lista / resultado controlado", "r": "Seleccionar de lista desplegable.", "s": "", "g": "infractor"}, {"n": "17", "c": "¿Es menor de edad?", "t": "Lista / resultado controlado", "r": "La identificación se realiza de conformidad con el cálculo automático, correspondiente a la fecha correspondiente con los hechos.", "s": "", "g": "infractor"}, {"n": "18", "c": "Tipo de Identificación", "t": "Lista / resultado controlado", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Tipo de identificación del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del tipo de identificación sean consistentes.", "s": "", "g": "representante"}, {"n": "19", "c": "Número de Identificación", "t": "Número", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Número de identificación del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del número de identificación sean consistentes.", "s": "", "g": "representante"}, {"n": "20", "c": "Nombre(s)", "t": "Texto", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Nombre(s) del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del nombre(s) sean consistentes.", "s": "", "g": "representante"}, {"n": "21", "c": "Apellido(s)", "t": "Texto", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Apellido(s) del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del apellido(s) sean consistentes.", "s": "", "g": "representante"}, {"n": "22", "c": "País de Residencia", "t": "Lista / resultado controlado", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"País de Residencia del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del país de residencia sean consistentes.", "s": "", "g": "representante"}, {"n": "23", "c": "Departamento de Residencia", "t": "Lista / resultado controlado", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Departamento de Residencia del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del departamento consistentes.", "s": "", "g": "representante"}, {"n": "24", "c": "Ciudad o Municipio de Residencia", "t": "Lista / resultado controlado", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Ciudad o Municipio de Residencia del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato de la ciudad o municipio consistentes.", "s": "", "g": "representante"}, {"n": "25", "c": "¿Es zona rural?", "t": "Caja de Selección", "r": "Se solicita implementar una caja de selección (check list) obligatoria para validar la respuesta a la pregunta correspondiente. Cuando el país seleccionado sea diferente a Colombia, este campo no deberá visualizarse ni requerirse para el registro.", "s": "", "g": "representante"}, {"n": "25.1", "c": "Tipo de Vía", "t": "Lista / resultado controlado", "r": "Este campo deberá habilitarse únicamente cuando la respuesta al campo “¿Es zona rural?” sea “Sí”. La selección se realizará desde una lista desplegable previamente parametrizada y su diligenciamiento será obligatorio para continuar con el registro.", "s": "", "g": "representante"}, {"n": "25.2", "c": "Información Adicional", "t": "Texto", "r": "Campo abierto para el registro de información complementaria.", "s": "", "g": "representante"}, {"n": "26", "c": "Dirección de Residencia", "t": "Texto", "r": "Campo de consolidación de dirección bloqueado: La información deberá consolidarse automáticamente según el país seleccionado. Si el país es diferente a Colombia, se habilitará una caja de texto libre para el ingreso de la dirección. En caso contrario, el sistema deberá generar y consolidar automáticamente la dirección con base en la información diligenciada entre los numerales 9.1 al 9.10. Adicionalmente debe consolidarse con las abreviaturas según del tipo de vía.", "s": "", "g": "representante"}, {"n": "26.1", "c": "Vía Principal", "t": "Lista / resultado controlado", "r": "Este campo deberá habilitarse únicamente cuando la respuesta al campo “¿Es zona rural?” sea “No”. La selección se realizará desde una lista desplegable previamente parametrizada y su diligenciamiento será obligatorio para continuar con el registro.", "s": "", "g": "representante"}, {"n": "26.2", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "representante"}, {"n": "26.3", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.4", "c": "Bis", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.5", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.6", "c": "Sentido", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.7", "c": "#", "t": "", "r": "Campo bloqueado, configurado con el carácter especial numeral (#) de forma predeterminada, sin permitir su edición por parte del usuario. Este campo tendrá como finalidad realizar la separación de los componentes de la dirección y garantizar la estandarización y normalización de la información al momento de consolidar automáticamente la dirección.", "s": "", "g": "representante"}, {"n": "26.8", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "representante"}, {"n": "26.9", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.10", "c": "Bis", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.11", "c": "Letra", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.12", "c": "-", "t": "", "r": "Campo bloqueado, configurado con el carácter especial guion (-) de forma predeterminada, sin permitir su edición por parte del usuario. Este campo tendrá como finalidad realizar la separación de los componentes de la dirección y garantizar la estandarización y normalización de la información al momento de consolidar automáticamente la dirección.", "s": "", "g": "representante"}, {"n": "26.13", "c": "Número", "t": "Número entero", "r": "Campo abierto de diligenciamiento numérico, que permitirá únicamente el ingreso de valores numéricos con un máximo de tres (3) dígitos. El sistema deberá validar que no se registren caracteres alfabéticos, especiales ni una longitud superior a la permitida.", "s": "", "g": "representante"}, {"n": "26.14", "c": "Sentido", "t": "Lista / resultado controlado", "r": "El campo deberá permitir la selección de un valor previamente parametrizado desde una lista desplegable. Su diligenciamiento será opcional, por lo que el usuario podrá dejarlo sin seleccionar y continuar con el registro sin que se genere una validación obligatoria.", "s": "", "g": "representante"}, {"n": "26.15", "c": "Información Adicional", "t": "Lista / resultado controlado", "r": "Este campo deberá permanecer bloqueado e inhabilitado por defecto y únicamente se activará cuando exista información registrada en el numeral 9.11.\r\nAdicionalmente, se deberá disponer de una opción “Adicionar” que permita agregar hasta cinco (5) registros adicionales, según sea necesario. Cada registro agregado deberá conservar las mismas validaciones y obligatoriedad definidas para el campo principal. Si el numeral 9.11 no se encuentra diligenciado, el campo y la opción de adición deberán permanecer bloqueados.\r\nPor último al momento de guardar debe realizarse con la abreviatura correspondiente.", "s": "", "g": "representante"}, {"n": "26.16", "c": "Indicación", "t": "Texto", "r": "Su habilitación y comportamiento estarán condicionados a la opción seleccionada en el campo precedente. Una vez activado, permitirá el ingreso de información complementaria asociada al valor seleccionado. Si el campo anterior no ha sido diligenciado o la opción seleccionada no requiere información adicional, este campo deberá permanecer bloqueado e inhabilitado para edición.\r\nDejar el campo habilitado unicamente y bloquedos los campos del 26.1 al 26.15 cuando la selección sea diferente a Colombia.", "s": "", "g": "representante"}, {"n": "27", "c": "Indicativo País", "t": "Texto", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nConfigurar automaticamente de acuerdo con el país selccionado.", "s": "", "g": "representante"}, {"n": "28", "c": "Número de Teléfono", "t": "Número", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Número de teléfono del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del número de teléfono consistentes.", "s": "", "g": "representante"}, {"n": "29", "c": "Correo Electrónico", "t": "Texto", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Correo electrónico del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del correo eletrónico consistentes.", "s": "", "g": "representante"}, {"n": "30", "c": "Fecha de Nacimiento", "t": "Fecha", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Fecha de Nacimiento del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del correo eletrónico consistentes.", "s": "", "g": "representante"}, {"n": "31", "c": "Edad", "t": "Edad", "r": "Campo calculado automáticamente por el sistema a partir de la fecha registrada en el campo \"Fecha de Nacimiento del Infractor\". En consecuencia, este campo no deberá permitir la edición manual por parte del usuario y deberá permanecer bloqueado de forma automática. La edad se actualizará dinámicamente en años cumplidos, conforme a la fecha de nacimiento ingresada.", "s": "", "g": "representante"}, {"n": "32", "c": "Sexo", "t": "Lista / resultado controlado", "r": "Dato que se despliega si la respuesta del campo ¿Es menor de edad? corresponde a \"SI\".\r\nAsí mismo, se deberá aplicar la regla de negocio y las validaciones definidas para el campo \"Sexo del Infractor\", garantizando que los valores permitidos, la obligatoriedad, la longitud y el formato del correo eletrónico consistentes.", "s": "", "g": "representante"}, {"n": "33", "c": "Fecha de los Hechos", "t": "Fecha", "r": "El campo debe permitir la selección de la fecha mediante calendario o el ingreso manual utilizando el formato DD/MM/AAAA. Adicionalmente, se debe validar que no sea posible registrar fecha actual o futuras. Al momento de guardar el registro, la fecha ingresada deberá ser anterior a la fecha de expedición del acto administrativo asociado; por lo tanto, no podrá ser igual ni posterior a esta fecha.", "s": "Decreto 079 de 2012, artículo 7: la decisión debe indicar las circunstancias de tiempo, modo y lugar en que ocurrieron los hechos.", "g": "hechos"}, {"n": "34", "c": "Competición", "t": "Lista / resultado controlado", "r": "Selección de la lista desplegable.\r\nAl seleccionar la opción \"Otro\" habilite las opciones \"Copa Libertadores\", \"Copa Sudamericana\" y \"Otro\" (Al seleccionar esta última despliegue un campo en blanco en el que se pueda ingresar información manualmente.", "s": "Decreto 079 de 2012, artículo 7: la decisión debe indicar las circunstancias de tiempo, modo y lugar en que ocurrieron los hechos.", "g": "hechos"}, {"n": "35", "c": "Evento Deportivo (Equipo Local)", "t": "Lista / resultado controlado", "r": "El campo debe permitir la selección del equipo que actuará como local. El listado de equipos deberá filtrarse de acuerdo con la competición previamente seleccionada.\r\nPermita seleccionar cualquiera de los 36 equipos afiliados a DIMAYOR independiente de la Competencia, y en caso de seleccionar la opción \"Otro\" en el campo 34, permita seleccionar una opción \"Otro\" y hacer el registro manual de dicho campo (Esto entendiendo que se puede presentar para estos clubes extranjeros).", "s": "Decreto 079 de 2012, artículo 7: la decisión debe indicar las circunstancias de tiempo, modo y lugar en que ocurrieron los hechos.", "g": "hechos"}, {"n": "36", "c": "Evento Deportivo (Equipo Visitante)", "t": "Lista / resultado controlado", "r": "El campo debe permitir la selección del equipo que actuará como visitante. El listado de equipos deberá filtrarse de acuerdo con la competición previamente seleccionada. Adicionalmente, el sistema debe validar que el equipo elegido como visitante sea diferente al equipo seleccionado como local, por lo que este último no deberá aparecer como opción disponible en la lista de selección.\r\nPermita seleccionar cualquiera de los 36 equipos afiliados a DIMAYOR independiente de la Competencia, y en caso de seleccionar la opción \"Otro\" en el campo 34, permita seleccionar una opción \"Otro\" y hacer el registro manual de dicho campo (Esto entendiendo que se puede presentar para estos clubes extranjeros).", "s": "Decreto 079 de 2012, artículo 7: la decisión debe indicar las circunstancias de tiempo, modo y lugar en que ocurrieron los hechos.", "g": "hechos"}, {"n": "37", "c": "Ciudad de los Hechos", "t": "Lista / resultado controlado", "r": "Listado de ciudades y/o municipios", "s": "Decreto 079 de 2012, artículo 7: la decisión debe indicar las circunstancias de tiempo, modo y lugar en que ocurrieron los hechos.", "g": "hechos"}, {"n": "38", "c": "Origen De La Obligación (Ley 1453 De 2011)", "t": "Lista / resultado controlado", "r": "Lista desplegable que permita la selección de uno o varios registros. Adicionalmente, este campo deberá ser de carácter obligatorio, por lo que el sistema no permitirá guardar el formulario mientras no se haya seleccionado al menos una opción válida.", "s": "Decreto 079 de 2012, artículo 7: la decisión debe expresar su fundamento. Ley 1445 de 2011, artículos 14 y 15, modificados por los artículos 97 y 98 de la Ley 1453 de 2011: establecen las conductas sancionables.\r\nDecreto 1007 de 2012, artículo 17: la información sobre aficionados excluidos debe indicar la causal.", "g": "hechos"}, {"n": "39", "c": "Agravantes de las Conductas", "t": "Lista / resultado controlado", "r": "Lista desplegable que permita la selección de uno o varios registros. Adicionalmente, este campo NO deberá ser de carácter obligatorio, por lo que el sistema permitirá guardar el formulario sin ninguna opción seleccionada.", "s": "Decreto 079 de 2012, artículo 7: la decisión debe expresar su fundamento. Ley 1445 de 2011, artículos 14 y 15, modificados por los artículos 97 y 98 de la Ley 1453 de 2011: establecen las conductas sancionables.\r\nDecreto 1007 de 2012, artículo 17: la información sobre aficionados excluidos debe indicar la causal.", "g": "hechos"}, {"n": "40", "c": "Descripción Breve de la Conducta", "t": "Texto", "r": "campo abierto", "s": "Decreto 079 de 2012, artículo 7: exige incluir la descripción de la conducta.\r\nDecreto 1007 de 2012, artículo 17: la información sobre aficionados excluidos debe indicar la causal.", "g": "hechos"}, {"n": "41", "c": "Fecha Acto Administrativo", "t": "Fecha", "r": "El campo debe permitir la selección de la fecha mediante calendario o el ingreso manual utilizando el formato DD/MM/AAAA. Debe ser validado al momento de guardar la información porque debe ser inferior al campo \"Fecha de constancia de ejecutoria\".", "s": "Decreto 079 de 2012, artículos 6 y 7: la medida se impone mediante una decisión motivada y, una vez en firme, se remite copia de la resolución.", "g": "sancion"}, {"n": "42", "c": "No. Acto Administrativo", "t": "Texto", "r": "Campo alfanumérico (Máximo 20 caracteres).", "s": "Decreto 079 de 2012, artículos 6 y 7: la medida se impone mediante una decisión motivada y, una vez en firme, se remite copia de la resolución.", "g": "sancion"}, {"n": "43", "c": "Fecha de Constancia de Ejecutoria", "t": "Fecha", "r": "El campo debe permitir la selección de la fecha mediante calendario o el ingreso manual utilizando el formato DD/MM/AAAA. Debe ser validado al momento de guardar la información porque debe ser superior al campo \"Fecha Acto administrativo o resolucion\".", "s": "Decreto 079 de 2012, artículos 6 y 7: la medida se impone mediante una decisión motivada y, una vez en firme, se remite copia de la resolución.\r\nDecreto 079 de 2012, artículo 6, parágrafo 4: la prohibición empieza a contabilizarse al día siguiente de la ejecutoria. Además, solo después de quedar en firme se remite la resolución para registrar al infractor.", "g": "sancion"}, {"n": "44", "c": "Tiempo de Sanción en Meses", "t": "Número entero", "r": "Campo abierto para configurar en meses, de acuerdo con los rango sin embargo solo dejarlo validado para un minimo de tiempo de 6 meses.", "s": "DECRETO 0079 DE 2012\r\n Artículo 6°. Iniciación del Procedimiento.\r\n6. Cumplimiento de la medida correctiva consistente en multa. Una vez ejecutoriada la medida correctiva consistente en multa, esta se cumplirá en un término máximo de cinco (5) días.\r\nParágrafo 4°. Para el cumplimiento de la medida de prohibición de acudir a escenarios deportivos, el término comenzará a contabilizarse a partir del día siguiente a la ejecutoría de la misma y regirá en todos los escenarios deportivos del territorio nacional en los cuales se lleven a cabo espectáculos deportivos de carácter profesional, con asistencia de público.", "g": "sancion"}, {"n": "45", "c": "Fin de Vigencia de la Prohibición de Ingreso", "t": "Fecha", "r": "Campo bloqueado y su resultado es el calculado a partir del día siguiente a la fecha de constancia de ejecutoría y según el tiempo de la sanción sumarlo para obtener el resultado.\r\nTener en cuenta que el cálculo se debe realizar en meses.", "s": "Ley 1445 de 2011, artículos 14 y 15, modificados por los artículos 97 y 98 de la Ley 1453 de 2011: fijan los periodos de prohibición según la conducta.", "g": "sancion"}, {"n": "46", "c": "Valor de la Sanción", "t": "Moneda", "r": "a diligenciar con separadores de miles", "s": "Ley 1445 de 2011, artículos 14 y 15, modificados por los artículos 97 y 98 de la Ley 1453 de 2011: establecen los rangos de las multa", "g": "sancion"}, {"n": "47", "c": "Estado de la Restricción", "t": "Lista / resultado controlado", "r": "El estado de la restricción se encuentra Inactiva, cuando el estado de registro y seguimiento corresponda a \"Recibido\" o \"Por Subsanar\".\r\nEl estado de la restricción pasa a Activa, en el momento que el estado del registro sea Validado.\r\nEl estado de la restricción pasa a Cumplida, un día posterior al vencimiento de la restricción correspondiente al campo \"Fin de Vigencia de la Prohibición de Ingreso\", configurarse para realizarse automaticamente.", "s": "", "g": "sancion"}, {"n": "48", "c": "Fecha de Radicado de Entrada", "t": "Fecha", "r": "El campo debe permitir la selección de la fecha mediante calendario o el ingreso manual utilizando el formato DD/MM/AAAA. Debe ser validado al momento de guardar la información porque debe ser superior al campo \"Fecha de constancia de ejecutoria\". A futuro Según GesDoc", "s": "", "g": "interna"}, {"n": "49", "c": "Radicado de Entrada en Mindeporte", "t": "Texto", "r": "Según GESDOC", "s": "", "g": "interna"}, {"n": "50", "c": "Respuesta al Radicado", "t": "Texto", "r": "Según GESDOC", "s": "", "g": "interna"}, {"n": "51", "c": "Radicado Contabilidad", "t": "Texto", "r": "Según GESDOC", "s": "", "g": "interna"}, {"n": "52", "c": "Radicado Jurídica", "t": "Texto", "r": "Según GESDOC", "s": "", "g": "interna"}, {"n": "53", "c": "Profesional Responsable IVC", "t": "Texto", "r": "Creación de lista a medida que se vaya diligenciando", "s": "", "g": "interna"}, {"n": "54", "c": "Estado de Registro y Seguimiento", "t": "Lista / resultado controlado", "r": "Lista correspondiente al catálogo.", "s": "", "g": "interna"}, {"n": "55", "c": "Observaciones del Procedimiento IVC", "t": "Texto", "r": "Campo abierto", "s": "", "g": "interna"}];
+var PINES = {"login": [{"cap": "c1", "label": "Autenticación con el SUID", "x": 51.84, "y": 33.83, "w": 33.6, "h": 28.89}], "bandeja": [{"cap": "c2", "label": "Registrar infractores", "x": 82.13, "y": 14.15, "w": 15.51, "h": 4.88}, {"cap": "c4", "label": "Por integración (propuesta)", "x": 65, "y": 14.15, "w": 16.4, "h": 4.88}, {"cap": "c6", "label": "Lista y consulta de registros", "x": 22.5, "y": 24.22, "w": 75.15, "h": 6.1}], "registro": [{"cap": "c2", "label": "Cinco secciones del registro (campos 1 a 55)", "x": 22.5, "y": 31.78, "w": 75.15, "h": 52.62}, {"cap": "c3", "label": "Entrada a la carga masiva", "x": 85.47, "y": 21.71, "w": 12.17, "h": 4.88}], "carga-masiva": [{"cap": "c3", "label": "Asistente de carga masiva", "x": 32.13, "y": 35.43, "w": 55.88, "h": 35.61}], "ficha": [{"cap": "c5", "label": "Estados del registro y de la restricción", "x": 72.65, "y": 31.78, "w": 25, "h": 30.27}, {"cap": "c5", "label": "Historial de cambios", "x": 72.65, "y": 64, "w": 25, "h": 27.48}, {"cap": "c2", "label": "Datos del infractor", "x": 22.5, "y": 31.78, "w": 48.68, "h": 31.68}], "consulta": [{"cap": "c6", "label": "Búsqueda y filtros", "x": 23.75, "y": 32.57, "w": 16.18, "h": 5.85}, {"cap": "c6", "label": "Personas con medida", "x": 22.5, "y": 57.08, "w": 75.15, "h": 42.92}], "calidad": [{"cap": "c7", "label": "Hallazgos de calidad", "x": 22.5, "y": 36.41, "w": 75.15, "h": 9.49}, {"cap": "c7", "label": "Detalle de hallazgos", "x": 22.5, "y": 61.51, "w": 75.15, "h": 10.37}], "trazabilidad": [{"cap": "c8", "label": "Bitácora de cambios de estado", "x": 22.5, "y": 45.93, "w": 75.15, "h": 54.07}]};
+
+var ST = {
+  ok:{t:'Cubierto',g:'✓'}, pa:{t:'Parcial',g:'◐'}, sl:{t:'Slot abierto',g:'○'}, nw:{t:'Nuevo',g:'★'}
+};
+var CAPS = [
+  {id:'c1',hu:'Acceso a módulo',nm:'Acceso por login del SUID',st:'pa',scr:'login',
+   rutas:['login.html'],code:'login.html',
+   que:'Autenticación con los servicios del SUID. El login existe en la demo; falta validar el privilegio de acceso al módulo.'},
+  {id:'c2',hu:'Registro de sanciones',nm:'Registro individual',st:'ok',scr:'registro',
+   rutas:['#/control-acceso/infractores/nuevo'],code:'gi-form.js',
+   que:'Formulario «Registrar infractor» en 5 secciones (B a F) con los campos del diccionario. El bloque del representante o tutor aparece solo si el infractor es menor de edad.'},
+  {id:'c3',hu:'Registro de sanciones',nm:'Registro masivo',st:'ok',sim:true,scr:'carga-masiva',
+   rutas:['#/control-acceso/infractores/carga-masiva'],code:'gi-bulk.js',
+   que:'Plantilla de la base de sancionatorios, validación de estructura y reporte de inconsistencias en un asistente de 6 pasos. Simulado con 12 filas de ejemplo.'},
+  {id:'c4',hu:'Registro de sanciones',nm:'Registro por integración',st:'sl',scr:'bandeja',
+   rutas:['#/control-acceso/infractores'],code:'botón deshabilitado en la bandeja',
+   que:'Botón deshabilitado «Por integración · Propuesta». La HU no define entidad, formato ni contrato: propuesta pendiente de validar con el IVC.'},
+  {id:'c5',hu:'Administración de restricciones',nm:'Restricciones, estados e historial',st:'ok',scr:'ficha',
+   rutas:['#/control-acceso/infractores/<id>'],code:'gi-data.js, gi-expediente.js',
+   que:'ID único por registro, varias restricciones por persona sin duplicados (persona + acto + vigencia), estados del registro y de la restricción, cumplidas que no se eliminan y ficha única con el historial completo.'},
+  {id:'c6',hu:'De la historia: «consultar»',nm:'Consulta',st:'ok',scr:'consulta',
+   rutas:['#/control-acceso/infractores','#/control-acceso/consulta'],code:'gi-consulta.js',
+   que:'Lista de registros en la bandeja y búsqueda avanzada por documento, nombre, estado de la medida y fechas.'},
+  {id:'c7',hu:'Calidad, vigencia y auditoría',nm:'Calidad de los datos',st:'nw',scr:'calidad',
+   rutas:['#/control-acceso/calidad'],code:'gi-calidad.js',
+   que:'Hallazgos de registros incompletos, duplicados y fechas incoherentes. El «acceso restringido» es solo visual: la demo no tiene roles.'},
+  {id:'c8',hu:'Calidad, vigencia y auditoría',nm:'Trazabilidad y auditoría',st:'ok',scr:'trazabilidad',
+   rutas:['#/control-acceso/calidad'],code:'gi-calidad.js, historial de cada ficha',
+   que:'Bitácora de cada cambio de estado con usuario, fecha, hora, estado anterior y nuevo. Pestaña «Trazabilidad» de Calidad y auditoría.'}
+];
+var SCREENS = [
+  {id:'login',t:'Inicio de sesión del SUID',r:'login.html',href:'../suid/login.html',d:'Puerta de entrada al módulo con las credenciales del SUID.'},
+  {id:'bandeja',t:'Gestión de infractores · bandeja',r:'#/control-acceso/infractores',href:'../suid/app.html#/control-acceso/infractores',d:'Punto de entrada del módulo: indicadores, lista de registros y las vías de registro.'},
+  {id:'registro',t:'Registrar infractor',r:'#/control-acceso/infractores/nuevo',href:'../suid/app.html#/control-acceso/infractores/nuevo',d:'Registro individual en 5 secciones (B a F) con los campos 1 a 55.'},
+  {id:'carga-masiva',t:'Carga masiva',r:'#/control-acceso/infractores/carga-masiva',href:'../suid/app.html#/control-acceso/infractores/carga-masiva',d:'Plantilla, validación de estructura y reporte de inconsistencias (simulado).'},
+  {id:'ficha',t:'Ficha única del infractor',r:'#/control-acceso/infractores/INF-2026-0001',href:'../suid/app.html#/control-acceso/infractores/INF-2026-0001',d:'ID único, los dos estados por separado y el historial completo.'},
+  {id:'consulta',t:'Búsqueda avanzada',r:'#/control-acceso/consulta',href:'../suid/app.html#/control-acceso/consulta',d:'Consulta por documento, nombre, estado de la medida y fechas.'},
+  {id:'calidad',t:'Calidad y auditoría · Calidad',r:'#/control-acceso/calidad',href:'../suid/app.html#/control-acceso/calidad',d:'Hallazgos: incompletos, duplicados y fechas incoherentes. Sin hallazgos con los datos de ejemplo actuales.'},
+  {id:'trazabilidad',t:'Calidad y auditoría · Trazabilidad',r:'#/control-acceso/calidad (pestaña Trazabilidad)',href:'../suid/app.html#/control-acceso/calidad',d:'Bitácora de cambios de estado: usuario, fecha, hora, estado anterior y nuevo.'}
+];
+var capById = {}, scrById = {};
+CAPS.forEach(function(c,i){ c.n = i+1; capById[c.id] = c; });
+SCREENS.forEach(function(s){ scrById[s.id] = s; s.pins = PINES[s.id] || []; });
+/* "También en" sale de pines.json para no contradecir lo que se ve resaltado. */
+CAPS.forEach(function(c){
+  c.screens = SCREENS.filter(function(s){ return s.pins.some(function(p){ return p.cap === c.id; }); }).map(function(s){ return s.id; });
+  if (c.screens.indexOf(c.scr) < 0) c.screens.unshift(c.scr);
+});
+
+function esc(s){ return String(s).replace(/[&<>"]/g,function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]; }); }
+function stTxt(c){ return ST[c.st].t + (c.sim ? ' (simulado)' : ''); }
+function chip(c){ return '<span class="chip st-'+c.st+'"><span class="g" aria-hidden="true">'+ST[c.st].g+'</span>'+stTxt(c)+'</span>'; }
+var $ = function(id){ return document.getElementById(id); };
+
+var state = { cap:'c1', scr:'login' };
+
+/* Lista de capacidades agrupada por la capacidad de la HU de la que sale */
+var groups = [];
+CAPS.forEach(function(c){
+  var g = groups.filter(function(x){ return x.hu === c.hu; })[0];
+  if (!g) { g = {hu:c.hu, items:[]}; groups.push(g); }
+  g.items.push(c);
+});
+$('caps').innerHTML = groups.map(function(g){
+  return '<div class="cg"><h3>'+esc(g.hu)+'</h3><ul>'+g.items.map(function(c){
+    return '<li><button type="button" class="cap" data-cap="'+c.id+'" aria-pressed="false" tabindex="-1">'+
+      '<span class="num n-'+c.st+'" aria-hidden="true">'+c.n+'</span>'+
+      '<span class="nm">'+c.n+'. '+esc(c.nm)+'</span>'+
+      '<span class="meta">'+chip(c)+'<span class="here">● en esta pantalla</span></span></button></li>';
+  }).join('')+'</ul></div>';
+}).join('');
+var capBtns = Array.prototype.slice.call(document.querySelectorAll('.cap'));
+
+$('thumbs').innerHTML = SCREENS.map(function(s){
+  var caps = []; s.pins.forEach(function(p){ if (caps.indexOf(p.cap) < 0) caps.push(p.cap); });
+  return '<button type="button" class="thumb" role="tab" id="tab-'+s.id+'" data-scr="'+s.id+'" aria-selected="false" aria-controls="stage" tabindex="-1">'+
+    '<img src="img/'+s.id+'.jpg" alt="" loading="lazy" width="1360" height="820"><span>'+esc(s.t)+'</span>'+
+    '<small class="dots"><span class="vh">Capacidades: </span>'+caps.map(function(id){ var c = capById[id]; return '<i class="n-'+c.st+'" title="'+esc(c.nm)+'">'+c.n+'</i>'; }).join('')+'</small></button>';
+}).join('');
+var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+
+function render(){
+  var s = scrById[state.scr], c = state.cap ? capById[state.cap] : null;
+  var img = $('shot');
+  if (img.getAttribute('src') !== 'img/'+s.id+'.jpg') img.setAttribute('src','img/'+s.id+'.jpg');
+  img.alt = 'Captura de la pantalla «'+s.t+'» de la demo';
+  $('scr-title').textContent = s.t;
+  $('scr-route').textContent = s.r;
+  $('scr-open').href = s.href;
+  $('scr-desc').textContent = s.d;
+  $('stage').classList.toggle('has-cap', !!c && s.pins.some(function(p){ return p.cap === c.id; }));
+
+  var frame = $('frame');
+  Array.prototype.slice.call(frame.querySelectorAll('.pin')).forEach(function(n){ n.remove(); });
+  s.pins.forEach(function(p,i){
+    var pc = capById[p.cap], b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pin p-'+pc.st + (c && c.id === pc.id ? ' on' : '');
+    b.style.left = p.x+'%'; b.style.top = p.y+'%'; b.style.width = p.w+'%'; b.style.height = p.h+'%';
+    b.dataset.cap = pc.id;
+    b.setAttribute('aria-label','Pin '+pc.n+': '+p.label+'. Capacidad «'+pc.nm+'», '+stTxt(pc)+'.');
+    b.setAttribute('aria-pressed', c && c.id === pc.id ? 'true' : 'false');
+    b.innerHTML = '<span class="badge" aria-hidden="true">'+pc.n+' '+ST[pc.st].g+'</span>';
+    frame.appendChild(b);
+  });
+
+  $('pinlist').innerHTML = s.pins.map(function(p){
+    var pc = capById[p.cap];
+    return '<li><button type="button" data-cap="'+pc.id+'" aria-pressed="'+(c && c.id === pc.id)+'"><span class="num n-'+pc.st+'" aria-hidden="true">'+pc.n+' '+ST[pc.st].g+'</span>'+esc(p.label)+'</button></li>';
+  }).join('') || '<li class="sm mu">Sin pines marcados.</li>';
+
+  var here = {}; s.pins.forEach(function(p){ here[p.cap] = 1; });
+  capBtns.forEach(function(b){
+    var on = !!c && b.dataset.cap === c.id;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.classList.toggle('is-here', !!here[b.dataset.cap]);
+  });
+  var focusCap = c ? c.id : (s.pins[0] && s.pins[0].cap) || 'c1';
+  capBtns.forEach(function(b){ b.tabIndex = b.dataset.cap === focusCap ? 0 : -1; });
+  tabBtns.forEach(function(b){
+    var on = b.dataset.scr === s.id;
+    b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
+  });
+
+  var det = $('detail');
+  if (!c) {
+    var ids = Object.keys(here);
+    det.innerHTML = '<h4>'+esc(s.t)+'</h4><p class="sm" style="margin:0">'+(ids.length ? 'Aquí viven '+ids.length+(ids.length>1?' capacidades':' capacidad')+': '+ids.map(function(id){ var x = capById[id]; return x.n+'. '+esc(x.nm)+' ('+stTxt(x).toLowerCase()+')'; }).join(' · ')+'. Toca un pin o una capacidad para ver el detalle.' : 'Ninguna capacidad marcada en esta pantalla.')+'</p>';
+    return;
+  }
+  var also = c.screens.filter(function(id){ return id !== s.id; });
+  var onThis = s.pins.some(function(p){ return p.cap === c.id; });
+  det.innerHTML = '<h4><span class="num n-'+c.st+'" style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;color:#fff;font-size:13px" aria-hidden="true">'+c.n+'</span>'+esc(c.nm)+' '+chip(c)+'</h4>'+
+    (onThis ? '' : '<p class="sm mu" style="margin:0">No está marcada en esta pantalla.</p>')+
+    '<dl><dt>Qué hace</dt><dd>'+esc(c.que)+'</dd>'+
+    '<dt>Viene de</dt><dd>'+esc(c.hu)+'</dd>'+
+    '<dt>Ruta</dt><dd>'+c.rutas.map(function(r){ return '<code>'+esc(r)+'</code>'; }).join(' · ')+'</dd>'+
+    '<dt>Código</dt><dd><code>'+esc(c.code)+'</code></dd>'+
+    (also.length ? '<dt>Pantallas</dt><dd class="also">'+c.screens.map(function(id){ return '<button type="button" data-goto="'+id+'"'+(id===s.id?' aria-current="true" disabled':'')+'>'+esc(scrById[id].t)+'</button>'; }).join('')+'</dd>' : '')+
+    '</dl>';
+}
+
+function selectCap(id, jump){
+  state.cap = id;
+  if (jump) state.scr = capById[id].scr;
+  render();
+}
+function selectScr(id){ state.scr = id; state.cap = null; render(); }
+
+/* En pantallas angostas el visor queda arriba: se lleva a la vista al elegir */
+function revealStage(){
+  if (!window.matchMedia('(max-width:820px)').matches) return;
+  var r = $('stage').getBoundingClientRect();
+  if (r.top < 0 || r.bottom > window.innerHeight) $('stage').scrollIntoView({block:'start', behavior: window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth'});
+}
+
+$('caps').addEventListener('click', function(e){
+  var b = e.target.closest('.cap'); if (!b) return;
+  selectCap(b.dataset.cap, true); revealStage();
+});
+$('caps').addEventListener('keydown', function(e){
+  var i = capBtns.indexOf(document.activeElement); if (i < 0) return;
+  var j = {ArrowDown:i+1, ArrowRight:i+1, ArrowUp:i-1, ArrowLeft:i-1, Home:0, End:capBtns.length-1}[e.key];
+  if (j === undefined) return;
+  e.preventDefault(); j = (j + capBtns.length) % capBtns.length;
+  selectCap(capBtns[j].dataset.cap, true); capBtns[j].focus();
+});
+/* El pin elige la capacidad sin saltar de pantalla: si no, el pin 2 de la bandeja llevaría al formulario. */
+$('frame').addEventListener('click', function(e){
+  var b = e.target.closest('.pin'); if (!b) return;
+  selectCap(b.dataset.cap, false);
+  var again = $('frame').querySelector('.pin[data-cap="'+b.dataset.cap+'"]'); if (again) again.focus();
+});
+$('pinlist').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  selectCap(b.dataset.cap, false);
+  var again = $('pinlist').querySelector('button[data-cap="'+b.dataset.cap+'"]'); if (again) again.focus();
+});
+$('detail').addEventListener('click', function(e){
+  var b = e.target.closest('[data-goto]'); if (!b) return;
+  state.scr = b.dataset.goto; render();
+});
+$('thumbs').addEventListener('click', function(e){
+  var b = e.target.closest('.thumb'); if (!b) return;
+  selectScr(b.dataset.scr); revealStage();
+});
+$('thumbs').addEventListener('keydown', function(e){
+  var i = tabBtns.indexOf(document.activeElement); if (i < 0) return;
+  var j = {ArrowRight:i+1, ArrowDown:i+1, ArrowLeft:i-1, ArrowUp:i-1, Home:0, End:tabBtns.length-1}[e.key];
+  if (j === undefined) return;
+  e.preventDefault(); j = (j + tabBtns.length) % tabBtns.length;
+  selectScr(tabBtns[j].dataset.scr); tabBtns[j].focus();
+});
+render();
+
+/* ---- Diccionario ---- */
+var SEC = {
+  control:{t:'Control',l:'',w:'Registrar infractor · pie del formulario (la genera el sistema)'},
+  infractor:{t:'Infractor',l:'B',w:'Registrar infractor · sección B Infractor'},
+  representante:{t:'Representante o tutor',l:'C',w:'Registrar infractor · sección C Representante o tutor (solo si es menor)'},
+  hechos:{t:'Hechos y conducta',l:'D',w:'Registrar infractor · sección D Hechos y conducta'},
+  sancion:{t:'Sanción',l:'E',w:'Registrar infractor · sección E Sobre la sanción'},
+  interna:{t:'Gestión interna',l:'F',w:'Registrar infractor · sección F Gestión interna'}
+};
+var fstate = { g:'all', q:'' };
+var counts = {all:FIELDS.length}; FIELDS.forEach(function(f){ counts[f.g] = (counts[f.g]||0)+1; });
+$('segs').innerHTML = [['all','Todas']].concat(Object.keys(SEC).map(function(k){ return [k,SEC[k].t]; })).map(function(x){
+  return '<button type="button" data-g="'+x[0]+'" aria-pressed="'+(x[0]==='all')+'">'+esc(x[1])+'<em>'+counts[x[0]]+'</em></button>';
+}).join('');
+function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+FIELDS.forEach(function(f){ f.k = norm([f.n,f.c,f.t,f.r,f.s,SEC[f.g].t].join(' ')); });
+function isSub(f){ return f.n.indexOf('.') > 0; }
+function secCell(f){ var s = SEC[f.g]; return '<span class="secg">'+(s.l ? '<i aria-hidden="true">'+s.l+'</i>' : '<i aria-hidden="true">·</i>')+esc(s.t)+'</span>'; }
+
+function renderFields(){
+  var q = norm(fstate.q.trim());
+  var list = FIELDS.filter(function(f){ return (fstate.g === 'all' || f.g === fstate.g) && (!q || f.k.indexOf(q) >= 0); });
+  $('flist').innerHTML = list.map(function(f,i){
+    var id = 'fd-'+f.n.replace('.','-');
+    return '<li><button type="button" class="frow" aria-expanded="false" aria-controls="'+id+'">'+
+      '<span class="fn">'+esc(f.n)+'</span>'+
+      '<span class="fc">'+esc(f.c)+(isSub(f) ? '<span class="sub">subcampo de dirección</span>' : '')+'</span>'+
+      '<span class="ft">'+esc(f.t || 'Sin tipo (separador fijo)')+'</span>'+
+      '<span class="fs">'+secCell(f)+'</span><span class="car" aria-hidden="true"></span></button>'+
+      '<div class="fdet" id="'+id+'" hidden>'+
+      '<div><h5>Regla o validación</h5><p>'+esc(f.r || '—')+'</p></div>'+
+      '<div><h5>Soporte normativo</h5><p>'+(f.s ? esc(f.s) : '<span class="mu">El archivo no cita soporte normativo para este campo.</span>')+'</p></div>'+
+      '<div><h5>Dónde en la demo</h5><p>'+esc(SEC[f.g].w)+'<br><code>#/control-acceso/infractores/nuevo</code></p></div>'+
+      '</div></li>';
+  }).join('') || '<li class="empty">Ningún campo coincide con la búsqueda.</li>';
+  var ints = {}; list.forEach(function(f){ ints[f.n.split('.')[0]] = 1; });
+  $('fcount').textContent = 'Mostrando '+list.length+' de '+FIELDS.length+' filas · '+Object.keys(ints).length+' campos';
+  $('expall').textContent = 'Expandir todo';
+}
+$('segs').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  fstate.g = b.dataset.g;
+  Array.prototype.forEach.call($('segs').children, function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+  renderFields();
+});
+$('q').addEventListener('input', function(e){ fstate.q = e.target.value; renderFields(); });
+$('flist').addEventListener('click', function(e){
+  var b = e.target.closest('.frow'); if (!b) return;
+  var open = b.getAttribute('aria-expanded') !== 'true';
+  b.setAttribute('aria-expanded', open); $(b.getAttribute('aria-controls')).hidden = !open;
+});
+$('expall').addEventListener('click', function(){
+  var open = this.textContent === 'Expandir todo';
+  Array.prototype.forEach.call(document.querySelectorAll('.frow'), function(b){ b.setAttribute('aria-expanded', open); $(b.getAttribute('aria-controls')).hidden = !open; });
+  this.textContent = open ? 'Contraer todo' : 'Expandir todo';
+});
+renderFields();
+
+/* ---- Exclusiones, conexiones y mapeo ---- */
+var NO = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>';
+$('excl').innerHTML = [
+  'No impone comparendos ni medidas correctivas',
+  'No adelanta audiencias ni decide recursos',
+  'No crea el Formulario Único de Comparendo',
+  'No administra el cobro ni la contabilidad de las multas',
+  'No vende ni emite boletería',
+  'No valida el ingreso físico al estadio'
+].map(function(t){ return '<li>'+NO+'<span>'+t+'</span></li>'; }).join('');
+
+var FUERA = '<span class="chip st-x">Fuera de la fase 1</span>';
+$('spokes').innerHTML = [
+  {n:'Registro por integración',tags:'<span class="chip st-sl"><span class="g" aria-hidden="true">○</span>En la HU · sin contrato</span>'+FUERA,p:'Tercera vía de registro que nombra la HU (punto 4 del mapa).',q:'Quién envía, formato y contrato de datos.'},
+  {n:'Policía e inspecciones',tags:'<span class="chip st-pa">Propuesta</span>'+FUERA,p:'Origen de las decisiones en firme y destino de los expedientes «Por subsanar».',q:'Canal de entrada y de devolución. Hoy «Por subsanar» solo cambia el estado; la devolución es un trámite externo.'},
+  {n:'Reportes de clubes y entidades deportivas',tags:'<span class="chip st-pa">Propuesta</span>'+FUERA,p:'Alimentaban la bandeja de Solicitudes (apagada).',q:'Si el IVC los quiere y con qué contrato.'},
+  {n:'ANI',tags:'<span class="chip st-pa">Propuesta</span>'+FUERA,p:'Verificar la identidad al registrar.',q:'Si el dato se trae solo o lo escribe el funcionario.'},
+  {n:'GESDOC',tags:'<span class="chip st-pa">Propuesta</span>'+FUERA,p:'Radicados de entrada, respuesta, contabilidad y jurídica (campos 49 a 52).',q:'Si se consultan o se digitan.'}
+].map(function(x){ return '<li><div class="tags">'+x.tags+'</div><b>'+esc(x.n)+'</b>'+esc(x.p)+'<div class="q"><b style="display:inline;font-size:14px">Por definir:</b> '+esc(x.q)+'</div></li>'; }).join('');
+
+var M = [
+  ['Los 55 campos del registro','ok','Presentes','Numerados en <code>gi-form.js</code>, en 5 secciones. <b>Falta cotejar cada regla contra la columna «Regla o validación».</b>'],
+  ['Acceso por login del SUID con privilegio del módulo','pa','Parcial','<code>login.html</code> existe; no hay chequeo de privilegio.'],
+  ['Registro individual, con representante si es menor','ok','Cubierto','<code>gi-form.js</code>'],
+  ['Registro masivo con reporte de inconsistencias','ok','Cubierto (simulado)','<code>gi-bulk.js</code>, asistente de 6 pasos'],
+  ['Registro por integración','sl','Slot abierto','Botón deshabilitado «Por integración · Propuesta» en la bandeja. Sin contrato: la HU no define entidad ni formato.'],
+  ['ID único, sin duplicados, varias restricciones por persona','ok','Cubierto','<code>GI.duplicado</code> en <code>gi-data.js</code>'],
+  ['Estados del registro y de la restricción; cumplida automática','ok','Cubierto','<code>gi-data.js</code>, <code>gi-expediente.js</code>'],
+  ['Ficha única con historial','ok','Cubierto','<code>gi-expediente.js</code>'],
+  ['Consulta','ok','Cubierto','<code>gi-consulta.js</code>'],
+  ['Registrar usuario, fecha, hora, estado anterior y nuevo','ok','Cubierto','Historial de cada ficha y pestaña «Trazabilidad»'],
+  ['Reportes de calidad y trazabilidad con acceso restringido','nw','Nuevo','<code>gi-calidad.js</code>, ruta <code>#/control-acceso/calidad</code>. Hallazgos: incompletos, duplicados, fechas incoherentes. <b>El acceso restringido es solo visual: no hay roles.</b>'],
+  ['Criterio de aceptación 01','ok','Cubierto','Formulario + estados']
+];
+$('mapeo-body').innerHTML = M.map(function(r){ return '<tr><td>'+esc(r[0])+'</td><td><span class="chip st-'+r[1]+'"><span class="g" aria-hidden="true">'+ST[r[1]].g+'</span>'+r[2]+'</span></td><td>'+r[3]+'</td></tr>'; }).join('');
+
+/* ---- Tema: automático, claro u oscuro; la preferencia es solo de este navegador ---- */
+var MODES = ['auto','light','dark'], NAMES = {auto:'automático',light:'claro',dark:'oscuro'};
+var mode = 'auto';
+try { mode = localStorage.getItem('hu263-theme') || 'auto'; } catch (e) {}
+function applyTheme(){
+  if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', mode);
+  $('theme').textContent = 'Tema: '+NAMES[mode];
+}
+$('theme').addEventListener('click', function(){
+  mode = MODES[(MODES.indexOf(mode)+1) % MODES.length]; applyTheme();
+  try { localStorage.setItem('hu263-theme', mode); } catch (e) {}
+});
+applyTheme();
+})();
+</script>
+</body>
+</html>

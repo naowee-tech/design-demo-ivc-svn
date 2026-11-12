@@ -196,7 +196,7 @@
   function recientesHtml() {
     var todos = personas().filter(filtra).sort(porUrgencia).slice(0, MAX_REC);
     /* GIBio.repartir da una foto distinta a cada id y solo hay 15: con más no termina, así que va de a 15. */
-    [0, 15, 30].forEach(function (i) { w.GIBio.repartir(todos.slice(i, i + 15).filter(function (p) { return !p.menor; }).map(function (p) { return p.numId; })); });
+    if (w.SUID_PERFIL !== false) [0, 15, 30].forEach(function (i) { w.GIBio.repartir(todos.slice(i, i + 15).filter(function (p) { return !p.menor; }).map(function (p) { return p.numId; })); });
     var pg = Math.min(Math.max(st.page, 1), Math.max(1, Math.ceil(todos.length / REC_PAG))), ini = (pg - 1) * REC_PAG;
     st.page = pg; pgCfg = { k: 'rec', total: todos.length, page: pg, size: REC_PAG, label: 'Paginación de recientes' };
     return '<div class="gc-headrow">' + GI.tablaHead({ id: 'gcRec', titulo: 'Recientes', total: todos.length, fuera: true }) +
@@ -205,7 +205,7 @@
       (todos.length ? '<div class="gc-grid" id="gcRecG">' : '<p class="gc-count">Ninguna persona coincide con los filtros.</p>') +
       todos.slice(ini, ini + REC_PAG).map(function (p, i) {
         var r = p.res, ag = agregada(p);
-        return '<article class="gc-persona" tabindex="' + (i ? -1 : 0) + '" data-id="' + esc(keyOf(p)) + '" data-k="sel"><div class="gc-persona__foto">' + w.GIBio.foto(p.numId, { menor: p.menor, sin: r.estado === 'En validación' || !p.menor && +String(p.numId).slice(-1) % 4 === 0 }) + '</div>' + estadoBadge(r.estado) +
+        return '<article class="gc-persona" tabindex="' + (i ? -1 : 0) + '" data-id="' + esc(keyOf(p)) + '" data-k="sel"><div class="gc-persona__foto">' + (w.SUID_PERFIL === false ? '<span class="gc-persona__ini" aria-hidden="true">' + (p.menor ? '·' : esc(String(p.nombre).split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase())) + '</span>' : w.GIBio.foto(p.numId, { menor: p.menor, sin: r.estado === 'En validación' || !p.menor && +String(p.numId).slice(-1) % 4 === 0 })) + '</div>' + estadoBadge(r.estado) +
           '<strong' + (cerrado(p) ? '' : ' title="' + esc(p.nombre) + '"') + '>' + lineas(p) + '</strong><small>' + docPersona(p) + '</small>' +
           '<span class="gc-persona__add">' + (ag ? 'Agregado el ' + U.fmt(ag) : 'Sin fecha de registro') + '</span></article>';
       }).join('') + (todos.length ? '</div><nav data-pag></nav>' : '') + '</section>';

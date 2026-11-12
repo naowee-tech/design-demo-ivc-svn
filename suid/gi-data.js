@@ -172,6 +172,19 @@
     });
   }
 
+  /* Defectos a propósito: incompleto, duplicado y fechas incoherentes (alimentan Calidad y auditoría). */
+  function seedCalidad(mk, H) {
+    var b = { tipoId: 'Cédula de Ciudadanía (CC)', sexo: 'Hombre', depto: 'Atlántico', ciudad: 'Soledad', dir: 'KR 20 # 30 - 10', telefono: '3001110099', local: 'JUNIOR F.C.', visitante: 'DEPORTES TOLIMA', ciudadHechos: 'Soledad', origen: [5], estadoRegistro: 'Recibido' };
+    return [
+      mk(Object.assign({}, b, { id: 'INF-2026-0063', fechaRegistro: '2026-10-05', numId: '1010100063', nombres: 'Mateo', apellidos: 'Salcedo Prada', fechaNac: '1995-03-09', fechaHechos: '2026-09-12', descripcion: '', fechaActo: '2026-09-28', numActo: '', fechaEjecutoria: '2026-10-02', meses: 12, fechaRadicado: '2026-10-05', radEntrada: '',
+        historial: [H('2026-10-05', '09:20', '', 'Recibido', 'Expediente radicado con información incompleta.')] })),
+      mk(Object.assign({}, b, { id: 'INF-2026-0064', fechaRegistro: '2026-10-08', numId: '1010100004', nombres: 'Camilo Esteban', apellidos: 'Duarte Quintero', fechaNac: '1988-07-30', fechaHechos: '2026-04-19', descripcion: 'Ingresó bebidas alcohólicas en el estadio.', fechaActo: '2026-04-30', numActo: 'RES-0230-2026', fechaEjecutoria: '2026-05-05', meses: 6, fechaRadicado: '2026-10-08', radEntrada: 'GESDOC-2026-011020',
+        historial: [H('2026-10-08', '10:05', '', 'Recibido', 'Radicado de nuevo el mismo expediente.')] })),
+      mk(Object.assign({}, b, { id: 'INF-2026-0065', fechaRegistro: '2026-10-14', numId: '1010100065', nombres: 'Valeria', apellidos: 'Nieto Cabrera', sexo: 'Mujer', fechaNac: '1992-08-22', fechaHechos: '2026-09-20', descripcion: 'Lanzó objetos al terreno de juego.', fechaActo: '2026-10-06', numActo: 'RES-0388-2026', fechaEjecutoria: '2026-09-30', meses: 6, fechaRadicado: '2026-10-14', radEntrada: 'GESDOC-2026-011190',
+        historial: [H('2026-10-14', '11:40', '', 'Recibido')] }))
+    ];
+  }
+
   function seed() {
     var H = function (f, h, de, a, nota) { return { fecha: f, hora: h, usuario: USER, de: de, a: a, nota: nota || '' }; };
     var base = {
@@ -203,7 +216,7 @@
         historial: [H('2025-02-10', '09:00', '', 'Recibido'), H('2025-02-13', '10:10', 'Recibido', 'Validado'), H('2025-08-08', '00:05', 'Validado', 'Validado', 'La restricción pasó a Cumplida al terminar su vigencia (automático).')] })
     ];
     /* Lo más reciente primero, como la bandeja cuando se registra uno nuevo. */
-    return orig.concat(seedExtra(mk, H), seedSvn(mk, H, 46)).sort(function (a, b) { return a.fechaRegistro < b.fechaRegistro ? 1 : a.fechaRegistro > b.fechaRegistro ? -1 : 0; });
+    return orig.concat(seedExtra(mk, H), seedSvn(mk, H, 46), seedCalidad(mk, H)).sort(function (a, b) { return a.fechaRegistro < b.fechaRegistro ? 1 : a.fechaRegistro > b.fechaRegistro ? -1 : 0; });
   }
 
 
@@ -275,9 +288,15 @@
   }
 
   var cache = null;
+  /* Los 3 registros de Calidad se agregan a lo ya guardado: cambiar la clave rompería el panel de casos (suid.gi.v3). */
+  function conDefectos() {
+    var ids = {}; cache.forEach(function (r) { ids[r.id] = 1; });
+    var falta = seed().filter(function (r) { return /^INF-2026-006[345]$/.test(r.id) && !ids[r.id]; });
+    if (falta.length) { cache = falta.concat(cache); persist(); }
+  }
   function load() {
     if (cache) return cache;
-    try { var raw = localStorage.getItem(KEY); if (raw) { cache = JSON.parse(raw); return cache; } } catch (e) {}
+    try { var raw = localStorage.getItem(KEY); if (raw) { cache = JSON.parse(raw); conDefectos(); return cache; } } catch (e) {}
     cache = seed();
     persist();
     return cache;
