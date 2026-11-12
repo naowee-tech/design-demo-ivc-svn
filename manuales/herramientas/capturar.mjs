@@ -158,11 +158,6 @@ const CAPTURAS = [
   { id: 'svn-pmu-tablero', ruta: 'svn/index.html#/policia',
     prep: async p => { await p.getByLabel('Abrir tablero: Nacional vs. Medellín').click(); await p.waitForTimeout(2000); },
     recorte: '.pp-equipo', marcas: [p => btn(p, 'Asignar').locator('xpath=ancestor::*[contains(@class,"card") or contains(@class,"alerta")][1]'), p => btn(p, 'Asignar')] },
-  { id: 'svn-portal', ruta: 'svn/index.html#/portal',
-    prep: async p => { await p.locator('[data-caso="vigente"]').click(); await p.waitForTimeout(800); await p.getByText('Verificar mi identidad').first().click(); await p.waitForTimeout(2500); },
-    recorte: '.pp-equipo', marcas: [] },
-  { id: 'svn-soporte', ruta: 'svn/index.html#/soporte', recorte: '.pp-demo',
-    marcas: [p => p.locator('button.sp-fila', { hasText: 'R-2026-0173' }).first(), p => btn(p, 'Tomar el caso')] },
 ];
 
 // ---------- servidor propio ----------

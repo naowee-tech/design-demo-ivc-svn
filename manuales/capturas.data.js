@@ -46,6 +46,4 @@ window.MANUALES_CAPTURAS = {
   "svn-puerta-medida": {"src":"img/svn-puerta-medida.webp","w":588,"h":1244,"dpr":2,"marcas":[{"n":1,"x":7.87,"y":3.73,"w":84.25,"h":8.08}]},
   "svn-pmu-lista": {"src":"img/svn-pmu-lista.webp","w":1000,"h":625,"dpr":1,"marcas":[{"n":1,"x":59.19,"y":57.09,"w":3.22,"h":5.16}]},
   "svn-pmu-tablero": {"src":"img/svn-pmu-tablero.webp","w":892,"h":619,"dpr":1,"marcas":[{"n":1,"x":67.6,"y":38.26,"w":29.63,"h":24.83},{"n":2,"x":68.87,"y":54.6,"w":13.57,"h":6.66}]},
-  "svn-portal": {"src":"img/svn-portal.webp","w":588,"h":1244,"dpr":2,"marcas":[]},
-  "svn-soporte": {"src":"img/svn-soporte.webp","w":1000,"h":625,"dpr":1,"marcas":[{"n":1,"x":28.84,"y":38.13,"w":26.08,"h":10.81},{"n":2,"x":55.57,"y":77.56,"w":8.13,"h":4.92}]}
 };
