@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IVC SVN · Entrega de la fase 1</title>
+<style>
+:root{color-scheme:light}
+:root{--bg:#f4f5f9;--pn:#fff;--tx:#1f2330;--mu:#5d6280;--bd:#e3e6f0;--ac:#d74009;--acbg:#fdf0e9;--onac:#fff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+header{display:flex;align-items:stretch;gap:28px;padding:0 24px;background:var(--pn);border-bottom:1px solid var(--bd);box-shadow:0 1px 0 rgba(16,24,40,.02),0 6px 18px -14px rgba(16,24,40,.25);position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:12px;padding:12px 0;white-space:nowrap}
+.brand i{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--ac);color:var(--onac);font:800 12px/1 system-ui,sans-serif;font-style:normal;letter-spacing:.02em}
+.brand b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em}
+.brand small{display:block;margin-top:2px;font-size:12px;color:var(--mu)}
+nav{display:flex;gap:4px;flex:1;overflow-x:auto;padding-left:24px;border-left:1px solid var(--bd)}
+nav a{position:relative;display:flex;align-items:center;gap:8px;padding:0 14px;color:var(--mu);font-weight:650;text-decoration:none;white-space:nowrap}
+nav a span{display:grid;place-items:center;min-width:24px;height:20px;padding:0 5px;border-radius:6px;background:var(--bg);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+nav a:hover{color:var(--tx)}
+nav a[aria-current=page]{color:var(--ac)}
+nav a[aria-current=page] span{background:var(--ac);color:var(--onac)}
+nav a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--ac)}
+.demo{align-self:center;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;background:var(--ac);color:var(--onac);font-weight:700;text-decoration:none;white-space:nowrap}
+.demo:hover{filter:brightness(1.08)}
+a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+iframe{flex:1;width:100%;border:0;background:var(--bg)}
+@media (max-width:860px){header{flex-wrap:wrap;gap:0 16px;padding:0 16px}nav{order:3;flex-basis:100%;padding:0;border:0;border-top:1px solid var(--bd)}nav a{padding:12px 10px}.brand small{display:none}}
+</style></head><body>
+<header><div class="brand"><i aria-hidden="true">IVC</i><div><b>Entrega fase 1</b><small>Sistema de Validación Nacional · HU-26.3</small></div></div>
+<nav id="tabs" aria-label="Vistas de la entrega"></nav>
+<a class="demo" href="../suid/app.html#/control-acceso/infractores">Abrir la demo →</a></header>
+<iframe id="v" title="Vista de la entrega" allow="fullscreen" allowfullscreen></iframe>
+<script>
+(function () {
+  var V = [['trabajos', 'Para qué existe', 'trabajos.html'], ['hu', 'Historias', 'historias.html'], ['roles', 'Roles', 'roles.html'], ['superficie', 'Superficie', 'superficie.html'], ['flujos', 'Flujos', 'flujos.html'], ['datos', 'Datos', 'modelo-datos.html']];
+  var nav = document.getElementById('tabs'), fr = document.getElementById('v');
+  function ir() {
+    var h = (location.hash || '#trabajos').slice(1).split('/'), k = h[0], ancla = h[1] ? '#' + h[1] : '';
+    var v = V.filter(function (x) { return x[0] === k; })[0] || V[0];
+    nav.innerHTML = V.map(function (x, i) {
+      return '<a href="#' + x[0] + '"' + (x === v ? ' aria-current="page"' : '') + '><span>0' + (i + 1) + '</span>' + x[1] + '</a>';
+    }).join('');
+    var dst = v[2] + ancla;
+    if (fr.getAttribute('data-src') !== v[2]) { fr.setAttribute('data-src', v[2]); fr.src = dst; } else if (ancla) { fr.src = dst; }
+    document.title = v[1] + ' · IVC SVN · Entrega de la fase 1';
+  }
+  window.addEventListener('hashchange', ir); ir();
+})();
+</script></body></html>
