@@ -276,7 +276,7 @@
   /* Vistas de la demo; las rutas son relativas a suid/ y svn/, que están al mismo nivel. */
   var VISTAS = [
     ['Acceso', [['Inicio de sesión', 'index.html']]],
-    ['IVC', [['Gestión de sanciones', 'suid/app.html#/control-acceso/infractores'], ['Búsqueda avanzada', 'suid/app.html#/control-acceso/consulta'], ['Solicitudes', 'suid/app.html#/control-acceso/solicitudes'], ['Eventos', 'suid/app.html#/control-acceso/eventos']]],
+    ['IVC', [['Gestión de sanciones', 'suid/app.html#/control-acceso/infractores'], ['Búsqueda avanzada', 'suid/app.html#/control-acceso/consulta'], ['Calidad y auditoría', 'suid/app.html#/control-acceso/calidad']]],
     ['SVN', [['Inicio del SVN', 'svn/index.html#/'], ['Comprar y asignar ingresos', 'svn/index.html#/compra'], ['Acceso en puerta', 'svn/index.html#/puerta'], ['Monitor PMU', 'svn/index.html#/policia'], ['Portal de la persona', 'svn/index.html#/portal'], ['Consola de soporte', 'svn/index.html#/soporte'], ['Entidades y comercializadoras', 'svn/index.html#/entidades'], ['API y portal de integración', 'svn/index.html#/integracion']]]
   ];
 
@@ -479,38 +479,38 @@
   }
   w.DEMO_CONTEXTO = { registrar: registrar, describir: describir, refrescar: refrescar };
 
-  var CSS = '.dcp__rol{display:flex;gap:4px;padding:3px;background:rgba(100,116,139,.15);border-radius:10px}.dcp__rol button{flex:1;padding:7px 4px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}.dcp__rol button[aria-pressed=true]{background:#1d4ed8;color:#fff}.dcp__rolres{margin:8px 0 0;font-size:12px;opacity:.75;line-height:1.4}' + 'html.dcp-prep{position:relative;left:0;transition:left .3s cubic-bezier(.2,.8,.2,1)}html.dcp-abierto{left:calc(-1 * var(--dcp-w,360px))}' +
-    '.dcp{position:fixed;top:0;right:0;bottom:0;width:var(--dcp-w,360px);max-width:100vw;z-index:2147483000;background:#14161c;color:#e8eaf0;font:13px/1.4 system-ui,sans-serif;box-shadow:-8px 0 32px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}.dcp--on{transform:none}' +
+  var CSS = '.dcp__rol{display:flex;gap:2px;margin:0 4px;padding:2px;background:#f6f7fb;border:1px solid #e7e9f3;border-radius:10px}#dcPanel .dcp__rol button{flex:1;font:600 12px Inter,system-ui,sans-serif;color:#646587;background:none;border:0;border-radius:8px;padding:8px}#dcPanel .dcp__rol button:hover{color:#282834}#dcPanel .dcp__rol button[aria-pressed=true]{background:#fff;color:#d74009;font-weight:800;box-shadow:0 1px 3px rgba(20,22,38,.14)}.dcp__rolres{margin:0;padding:8px 10px 0;font-size:11px;line-height:1.4;color:#646587}' + 'html.dcp-prep{position:relative;left:0;transition:left .3s cubic-bezier(.2,.8,.2,1)}html.dcp-abierto{left:calc(-1 * var(--dcp-w,360px))}' +
+    '.dcp{position:fixed;top:0;right:0;bottom:0;width:var(--dcp-w,360px);max-width:100vw;z-index:2147483000;background:#fff;color:#282834;font:13px/1.4 Inter,system-ui,-apple-system,Arial,sans-serif;border-left:1px solid #e7e9f3;box-shadow:-12px 0 32px -18px rgba(20,22,38,.3);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}.dcp--on{transform:none}' +
     '@media (prefers-reduced-motion:reduce){html.dcp-prep,.dcp{transition:none}}' +
-    '.dcp *{box-sizing:border-box}.dcp__h{padding:8px 10px;border-bottom:1px solid #2a2e38;display:flex;align-items:center;gap:8px}.dcp__h b{font-size:14px;flex:1;white-space:nowrap}' +
+    '.dcp *{box-sizing:border-box}.dcp__h{padding:8px 10px;border-bottom:1px solid #e7e9f3;display:flex;align-items:center;gap:8px}.dcp__h b{font-size:14px;flex:1;white-space:nowrap}' +
     /* Una sola columna con scroll: las vistas empujan la tabla hacia abajo (DC-120). */
     '.dcp__cuerpo{flex:1;min-height:0;overflow:auto}' +
-    '.dcp__sec{padding:10px 10px 8px}.dcp__sec+.dcp__sec{border-top:1px solid #2a2e38}' +
-    '.dcp__sec-h{margin:0 0 6px;font:600 11px/1.2 system-ui,sans-serif;color:#8d93a3;text-transform:uppercase;letter-spacing:.04em}' +
+    '.dcp__sec{padding:10px 10px 8px}.dcp__sec+.dcp__sec{border-top:1px solid #e7e9f3}' +
+    '.dcp__sec-h{margin:0 0 6px;font:800 9.5px/1.2 Inter,system-ui,sans-serif;color:#646587;text-transform:uppercase;letter-spacing:.06em}' +
     /* min-height: el SVN le da 36 px a todo h3 y el título se despegaba de su texto; solo aquí, el resto del panel queda igual. */
-    '.dcp__ctx .dcp__sec-h{min-height:0}#dcPanel .dcp__ctx .dcp__sec-h button{all:unset;box-sizing:border-box;display:flex;width:100%;align-items:center;justify-content:space-between;cursor:pointer;text-transform:inherit;letter-spacing:inherit;font:inherit;color:inherit;background:none;border:0;padding:0;min-height:0}.dcp__ctx .dcp__sec-h button:focus-visible{outline:2px solid #8fb4ff;outline-offset:2px;border-radius:4px}.dcp__ctx .dcp__sec-h i{width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin:-3px 2px 0 0;transition:transform .2s}.dcp__ctx .dcp__sec-h button[aria-expanded=true] i{transform:rotate(-135deg);margin:3px 2px 0 0}.dcp__ctx-t{margin-top:6px}.dcp__ctx-t p{margin:0;overflow-wrap:anywhere}.dcp__ctx-d{font-weight:600;line-height:1.35}.dcp__ctx-p{margin-top:4px!important;color:#b9bfce;font-size:12.5px;line-height:1.45}' +
-    '.dcp__tb{width:100%;border-collapse:collapse;font-size:12px}.dcp__tb th{text-align:left;color:#8d93a3;font-weight:500;padding:6px 6px;border-bottom:1px solid #2a2e38}' +
-    '.dcp__tb td{padding:4px 6px;border-bottom:1px solid #23262f;vertical-align:middle}' +
-    '.dcp__cp{cursor:pointer;border-radius:4px}.dcp__cp:hover,.dcp__cp:focus-visible{outline:none;text-decoration:underline}.dcp__cp[data-ok]{color:var(--naotech-primary-color-normal,#8fb4ff)}' +
+    '.dcp__ctx .dcp__sec-h{min-height:0}#dcPanel .dcp__ctx .dcp__sec-h button{all:unset;box-sizing:border-box;display:flex;width:100%;align-items:center;justify-content:space-between;cursor:pointer;text-transform:inherit;letter-spacing:inherit;font:inherit;color:inherit;background:none;border:0;padding:0;min-height:0}.dcp__ctx .dcp__sec-h button:focus-visible{outline:2px solid #d74009;outline-offset:2px;border-radius:4px}.dcp__ctx .dcp__sec-h i{width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin:-3px 2px 0 0;transition:transform .2s}.dcp__ctx .dcp__sec-h button[aria-expanded=true] i{transform:rotate(-135deg);margin:3px 2px 0 0}.dcp__ctx-t{margin-top:6px}.dcp__ctx-t p{margin:0;overflow-wrap:anywhere}.dcp__ctx-d{font-weight:600;line-height:1.35}.dcp__ctx-p{margin-top:4px!important;color:#646587;font-size:12.5px;line-height:1.45}' +
+    '.dcp__tb{width:100%;border-collapse:collapse;font-size:12px}.dcp__tb th{text-align:left;color:#646587;font-weight:500;padding:6px 6px;border-bottom:1px solid #e7e9f3}' +
+    '.dcp__tb td{padding:4px 6px;border-bottom:1px solid #f0f1f7;vertical-align:middle}' +
+    '.dcp__cp{cursor:pointer;border-radius:4px}.dcp__cp:hover,.dcp__cp:focus-visible{outline:none;text-decoration:underline}.dcp__cp[data-ok]{color:var(--naotech-primary-color-normal,#d74009)}' +
     /* Va pegado a la última fila de la tabla (DC-119): sin borde ni hueco propio. */
     '.dcp__pg{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center;padding:4px 0 0}' +
-    '.dcp__vi{display:flex;flex-direction:column;gap:1px}.dcp__grp{margin:6px 0 2px;padding:0 8px;font-size:11px;color:#8d93a3}.dcp__grp:first-child{margin-top:0}' +
+    '.dcp__vi{display:flex;flex-direction:column;gap:1px}.dcp__grp{margin:6px 0 2px;padding:0 8px;font-size:11px;color:#646587}.dcp__grp:first-child{margin-top:0}' +
     /* El botón del sistema trae justify-content:center: text-align no alcanza (DC-147). */
     '#dcPanel .dcp__vi button{width:100%;text-align:left;justify-content:flex-start;background:none;border:0;border-radius:6px;padding:4px 8px}' +
-    '#dcPanel .dcp__vi button:hover:not(:disabled){background:#262a35}' +
-    '.dcp__vi button[aria-current=true]{color:#8fb4ff;font-weight:600}' +
-    '.dcp__acc{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.dcp__logo{margin-left:auto;height:18px;width:auto;filter:brightness(0) invert(1);opacity:.85}' +
-    '#dcPanel .dcp__pg button{min-width:28px;padding:3px 6px;font-variant-numeric:tabular-nums}#dcPanel .dcp__pg button[aria-current=page]{color:#8fb4ff;font-weight:600;border-color:#4a74d4}' +
-    '.dcp__emb{margin-top:8px;border:1px solid #2a2e38;border-radius:9px;overflow:hidden}.dcp__emb[hidden]{display:none}.dcp__emb-h{display:flex;gap:6px;justify-content:flex-end;padding:6px;background:#1c1f27}' +
+    '#dcPanel .dcp__vi button:hover:not(:disabled){background:#f6f7fb}' +
+    '.dcp__vi button[aria-current=true]{color:#d74009;font-weight:600}' +
+    '.dcp__acc{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.dcp__logo{margin-left:auto;height:18px;width:auto;opacity:.9}' +
+    '#dcPanel .dcp__pg button{min-width:28px;padding:3px 6px;font-variant-numeric:tabular-nums}#dcPanel .dcp__pg button[aria-current=page]{color:#d74009;font-weight:600;border-color:#d74009}' +
+    '.dcp__emb{margin-top:8px;border:1px solid #e7e9f3;border-radius:9px;overflow:hidden}.dcp__emb[hidden]{display:none}.dcp__emb-h{display:flex;gap:6px;justify-content:flex-end;padding:6px;background:#f6f7fb}' +
     '.dcp__emb iframe{display:block;width:100%;height:300px;border:0;background:#fff}' +
-    '.dcp__nm{font-weight:600;font-size:12.5px;line-height:1.25}.dcp__num{font-variant-numeric:tabular-nums;color:#8d93a3;font-size:11.5px;line-height:1.25}.dcp__st{white-space:nowrap;color:#b9bfce;text-align:right;width:1%}.dcp__ch{width:1%;padding-left:0!important}#dcPanel .dcp__ch button{width:26px;height:22px;padding:0;line-height:20px;font-size:15px}' +
-    '.dcp__pop{position:fixed;z-index:2147483001;min-width:190px;background:#1c1f27;border:1px solid #3a4050;border-radius:10px;padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.5);color:#e8eaf0;font:13px system-ui}' +
-    '.dcp__pop h5{margin:4px 8px 2px;color:#8d93a3;font:500 11px system-ui;text-transform:uppercase;letter-spacing:.04em}#dcPanel .dcp__pop button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:6px 8px}.dcp__pop button[aria-checked=true]{color:#8fb4ff;font-weight:600}' +
-    '.dcp__sep{height:1px;background:#2a2e38;margin:4px 0}' +
-    '.dcp__dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}.dcp__dot--rojo{background:#ff6b78}.dcp__dot--verde{background:#4fd18b}.dcp__dot--ambar{background:#f2b84b}.dcp__dot--gris{background:#7b8294}' +
+    '.dcp__nm{font-weight:600;font-size:12.5px;line-height:1.25}.dcp__num{font-variant-numeric:tabular-nums;color:#646587;font-size:11.5px;line-height:1.25}.dcp__st{white-space:nowrap;color:#646587;text-align:right;width:1%}.dcp__ch{width:1%;padding-left:0!important}#dcPanel .dcp__ch button{width:26px;height:22px;padding:0;line-height:20px;font-size:15px}' +
+    '.dcp__pop{position:fixed;z-index:2147483001;min-width:190px;background:#f6f7fb;border:1px solid #e7e9f3;border-radius:10px;padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.5);color:#282834;font:13px system-ui}' +
+    '.dcp__pop h5{margin:4px 8px 2px;color:#646587;font:500 11px system-ui;text-transform:uppercase;letter-spacing:.04em}#dcPanel .dcp__pop button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:6px 8px}.dcp__pop button[aria-checked=true]{color:#d74009;font-weight:600}' +
+    '.dcp__sep{height:1px;background:#e7e9f3;margin:4px 0}' +
+    '.dcp__dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}.dcp__dot--rojo{background:#ff6b78}.dcp__dot--verde{background:#4fd18b}.dcp__dot--ambar{background:#f2b84b}.dcp__dot--gris{background:#9a9cb5}' +
     /* Manuales es un <a> que navega la pestaña entera: el reinicio de #dcPanel button no lo alcanza. */
-    '#dcPanel .dcp__man{color:#8fb4ff;font-size:12px;text-decoration:none;white-space:nowrap}#dcPanel .dcp__man:hover,#dcPanel .dcp__man:focus-visible{text-decoration:underline}' +
-    '#dcPanel button{box-sizing:border-box;min-width:0;min-height:0;width:auto;height:auto;margin:0;font:inherit;line-height:1.3;color:#e8eaf0;background:#262a35;border:1px solid #363b49;border-radius:7px;padding:3px 8px;cursor:pointer;box-shadow:none;text-transform:none;letter-spacing:normal}#dcPanel button:hover:not(:disabled){background:#313645}#dcPanel button:disabled{opacity:.35;cursor:default}';
+    '#dcPanel .dcp__man{color:#d74009;font-size:12px;text-decoration:none;white-space:nowrap}#dcPanel .dcp__man:hover,#dcPanel .dcp__man:focus-visible{text-decoration:underline}' +
+    '#dcPanel button{box-sizing:border-box;min-width:0;min-height:0;width:auto;height:auto;margin:0;font:inherit;line-height:1.3;color:#282834;background:#f6f7fb;border:1px solid #e7e9f3;border-radius:7px;padding:3px 8px;cursor:pointer;box-shadow:none;text-transform:none;letter-spacing:normal}#dcPanel button:hover:not(:disabled){background:#313645}#dcPanel button:disabled{opacity:.35;cursor:default}';
 
   function corta(e, p, n) {
     if (e.bloqueado) { return 'Vigente'; }
@@ -571,7 +571,7 @@
     var st = document.createElement('style'); st.textContent = CSS;
     var el = document.createElement('aside'); el.id = 'dcPanel'; el.className = 'dcp'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Casos demo');
     PAG = 1; vistaEmbebida = '';
-    el.innerHTML = '<div class="dcp__h"><b>Casos demo</b><a class="dcp__man" href="' + esc(new URL('manuales/index.html', RAIZ).href) + '">Manuales</a><button type="button" data-x aria-label="Cerrar">✕</button></div>' +
+    el.innerHTML = '<div class="dcp__h"><b>Demo · IVC SVN</b><a class="dcp__man" href="' + esc(new URL('manuales/index.html', RAIZ).href) + '">Manuales</a><button type="button" data-x aria-label="Cerrar">✕</button></div>' +
       '<div class="dcp__cuerpo">' +
       '<section class="dcp__sec dcp__ctx" aria-label="¿Qué estoy viendo?"><h3 class="dcp__sec-h"><button type="button" data-ctx aria-expanded="false" aria-controls="dcpCtx">¿Qué estoy viendo?<i aria-hidden="true"></i></button></h3><div class="dcp__ctx-t" id="dcpCtx" hidden aria-live="polite" aria-atomic="true"></div></section>' +
       (w.SUID_ROLES ? '<section class="dcp__sec" aria-label="Rol"><h3 class="dcp__sec-h">Rol</h3><div class="dcp__rol" role="group" aria-label="Rol">' + Object.keys(w.SUID_ROLES.todos).map(function (k) { return '<button type="button" data-rol="' + k + '" aria-pressed="' + (k === w.SUID_ROLES.actual()) + '">' + esc(w.SUID_ROLES.todos[k].label) + '</button>'; }).join('') + '</div><p class="dcp__rolres">' + esc(w.SUID_ROLES.info().resumen) + '</p></section>' : '') +
