@@ -510,7 +510,7 @@
     '.dcp__dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}.dcp__dot--rojo{background:#ff6b78}.dcp__dot--verde{background:#4fd18b}.dcp__dot--ambar{background:#f2b84b}.dcp__dot--gris{background:#9a9cb5}' +
     /* Manuales es un <a> que navega la pestaña entera: el reinicio de #dcPanel button no lo alcanza. */
     '#dcPanel .dcp__man{color:#d74009;font-size:12px;text-decoration:none;white-space:nowrap}#dcPanel .dcp__man:hover,#dcPanel .dcp__man:focus-visible{text-decoration:underline}' +
-    '#dcPanel button{box-sizing:border-box;min-width:0;min-height:0;width:auto;height:auto;margin:0;font:inherit;line-height:1.3;color:#282834;background:#f6f7fb;border:1px solid #e7e9f3;border-radius:7px;padding:3px 8px;cursor:pointer;box-shadow:none;text-transform:none;letter-spacing:normal}#dcPanel button:hover:not(:disabled){background:#313645}#dcPanel button:disabled{opacity:.35;cursor:default}';
+    '#dcPanel button{box-sizing:border-box;min-width:0;min-height:0;width:auto;height:auto;margin:0;font:inherit;line-height:1.3;color:#282834;background:#f6f7fb;border:1px solid #e7e9f3;border-radius:7px;padding:3px 8px;cursor:pointer;box-shadow:none;text-transform:none;letter-spacing:normal}#dcPanel button:hover:not(:disabled){background:#eceef6}#dcPanel .dcp__ctx .dcp__sec-h button:hover:not(:disabled){background:none;color:#d74009}#dcPanel button:disabled{opacity:.35;cursor:default}';
 
   function corta(e, p, n) {
     if (e.bloqueado) { return 'Vigente'; }

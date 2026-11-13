@@ -157,6 +157,8 @@
   /* quiet: re-pintado tras una acción (sin esqueleto). La navegación sí pasa por el estado de carga. */
   function render(quiet) {
     var r = routeInfo();
+    /* Ruta oculta a la entrega (HTML con pestañas): no tiene ítem en el menú. #/entrega/<pestaña>/<sección> */
+    if (r.path === 'entrega' || r.path.indexOf('entrega/') === 0) { location.replace('../docs/index.html' + (r.path.length > 8 ? '#' + r.path.slice(8) : '')); return; }
     var view = d.getElementById('view');
     var match = null;
     Object.keys(SUID.views).sort(function (a, b) { return b.length - a.length; }).some(function (k) {
