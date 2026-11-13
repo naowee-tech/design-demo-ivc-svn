@@ -1,0 +1,63 @@
+{
+  "fondo": {
+    "titulo": "Que el día del partido se sepa con certeza quién no puede entrar.",
+    "texto": "Para eso, el IVC mantiene una base de sanciones confiable, vigente y con rastro de cada cambio. Todo lo demás de esta entrega sirve a ese trabajo.",
+    "fuente": "HU-26.3 · «Para»"
+  },
+  "trabajos": [
+    {
+      "titulo": "Registrar una sanción en firme una sola vez, y bien",
+      "cuando": "llega una decisión en firme de una autoridad",
+      "quiero": "registrarla uno por uno, con una plantilla o por integración",
+      "para": "que empiece a contar desde ya, sin volver a digitarla",
+      "bien": "Nadie tiene que digitar dos veces lo mismo ni adivinar qué va en un campo, y si algo falta, el sistema lo dice junto al campo.",
+      "fuente": "HU-26.3 · Registro de sanciones",
+      "ir": [["Ver el flujo", "index.html#flujos/registro"], ["Verlo en la demo", "../suid/app.html#/control-acceso/infractores/nuevo"]]
+    },
+    {
+      "titulo": "Revisar que lo registrado esté completo antes de que cuente",
+      "cuando": "alguien termina de registrar una sanción",
+      "quiero": "que quien tiene el rol de cerrar la valide o la devuelva con un motivo",
+      "para": "que en la base solo cuente lo que está completo y correcto",
+      "bien": "Revisar nunca cambia lo que decidió la autoridad: solo confirma que el registro está completo. Quien digita no se valida a sí mismo.",
+      "fuente": "HU-26.3 · «Validar la completitud formal»",
+      "ir": [["Ver el flujo", "index.html#flujos/validacion"], ["Quién cierra", "index.html#roles/quien-cierra-cada-flujo"]]
+    },
+    {
+      "titulo": "Saber rápido si una persona tiene una restricción vigente",
+      "cuando": "necesito confirmar la situación de alguien",
+      "quiero": "buscarlo por documento o por nombre y ver una sola ficha",
+      "para": "responder con certeza, con todo su historial a la vista",
+      "bien": "Una persona es una sola ficha, aunque tenga varias sanciones, y se ve de inmediato si hoy está restringida o no.",
+      "fuente": "HU-26.3 · «Requiero… consultar»",
+      "ir": [["Verlo en la demo", "../suid/app.html#/control-acceso/consulta"]]
+    },
+    {
+      "titulo": "Que la vigencia se cuide sola",
+      "cuando": "una restricción se valida o se le acaba el tiempo",
+      "quiero": "que se active y que pase a cumplida sin que nadie lo haga a mano",
+      "para": "que lo que dice la base coincida siempre con la realidad",
+      "bien": "Ninguna restricción vencida sigue bloqueando a alguien, y ninguna cumplida se borra: queda en el historial.",
+      "fuente": "HU-26.3 · Administración de restricciones",
+      "ir": [["Ver los estados", "index.html#datos/estados"]]
+    },
+    {
+      "titulo": "Poder confiar en la base",
+      "cuando": "alguien usa la información para decidir",
+      "quiero": "que no haya registros duplicados, incompletos ni con fechas que no cuadran, y saber quién cambió qué y cuándo",
+      "para": "respaldar cada decisión ante quien la pregunte",
+      "bien": "Los problemas de calidad aparecen solos para corregirlos, y cada cambio de estado deja quién, cuándo, de qué estado a cuál.",
+      "fuente": "HU-26.3 · Calidad, vigencia y auditoría",
+      "ir": [["Ver el flujo", "index.html#flujos/calidad"], ["Verlo en la demo", "../suid/app.html#/control-acceso/calidad"]]
+    },
+    {
+      "titulo": "Proteger a los menores de edad",
+      "cuando": "el infractor era menor en la fecha de los hechos",
+      "quiero": "registrar también a su representante y cuidar cómo se consultan sus datos",
+      "para": "cumplir la reserva que exige la ley sin frenar el trabajo",
+      "bien": "El representante es obligatorio cuando aplica, y la reserva es igual para todos los roles: nadie ve distinto los datos de un menor.",
+      "fuente": "HU-26.3 · Registro · decisión de diseño (reserva igual para todos)",
+      "ir": [["Ver en Roles", "index.html#roles/menores-de-edad"]]
+    }
+  ]
+}

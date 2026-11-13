@@ -1,0 +1,323 @@
+{
+  "origen": {
+    "hu": "HU-26.3 · Gestión de infractores",
+    "version": "v04 · 22-sep-2026 · aprobada por la Dirección Técnica del IVC",
+    "texto": "Estas historias desglosan la HU-26.3 por quién hace qué: cada una dice qué necesita esa persona, para qué, y cómo se acepta."
+  },
+  "grupos": [
+    {
+      "id": "registrar",
+      "titulo": "Registrar",
+      "sub": "Cómo entra una sanción en firme a la base del IVC.",
+      "historias": [
+        {
+          "id": "HU-01",
+          "titulo": "Registrar un infractor",
+          "rol": "Profesional o coordinador",
+          "trabajo": 1,
+          "como": "profesional del IVC",
+          "quiero": "registrar una decisión en firme con los datos del infractor, los hechos y la sanción",
+          "para": "que quede en la base y pase a revisión",
+          "criterios": [
+            [
+              "llega una decisión en firme completa",
+              "diligencio el formulario y guardo",
+              "el registro queda Recibido y se abre su ficha"
+            ],
+            [
+              "falta un campo obligatorio o las fechas no cuadran (acto antes de ejecutoria y de radicado; hechos antes del acto)",
+              "guardo",
+              "el sistema marca el error junto al campo y no guarda"
+            ],
+            [
+              "ya existe un registro de la misma persona, con el mismo acto y la misma vigencia",
+              "guardo",
+              "el sistema avisa que es un duplicado"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/registro"
+            ],
+            [
+              "Demo",
+              "../suid/app.html#/control-acceso/infractores/nuevo"
+            ],
+            [
+              "Campos",
+              "index.html#datos/campos"
+            ]
+          ],
+          "traza": "Registro de sanciones · Criterio de aceptación 01"
+        },
+        {
+          "id": "HU-02",
+          "titulo": "Registrar al representante de un menor",
+          "rol": "Profesional o coordinador",
+          "trabajo": 6,
+          "como": "profesional del IVC",
+          "quiero": "registrar al representante cuando el infractor era menor en la fecha de los hechos",
+          "para": "cumplir la reserva que exige la ley",
+          "criterios": [
+            [
+              "la fecha de nacimiento indica que era menor en la fecha de los hechos",
+              "diligencio el registro",
+              "el bloque del representante aparece y es obligatorio"
+            ],
+            [
+              "el infractor es menor",
+              "cualquier rol lo busca",
+              "solo se encuentra por documento completo; la reserva es igual para todos los roles"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/registro"
+            ],
+            [
+              "Roles",
+              "index.html#roles/menores-de-edad"
+            ]
+          ],
+          "traza": "Registro de sanciones (representante) · reserva igual para todos: decisión de diseño"
+        },
+        {
+          "id": "HU-03",
+          "titulo": "Cargar varios registros con la plantilla",
+          "rol": "Profesional o coordinador",
+          "trabajo": 1,
+          "como": "profesional del IVC",
+          "quiero": "subir varios registros con la plantilla de la base de sancionatorios",
+          "para": "no digitarlos uno por uno",
+          "criterios": [
+            [
+              "la plantilla trae filas con errores",
+              "la subo",
+              "veo cada fila con su error y la corrijo o la dejo fuera; no puedo confirmar sin decidir todas"
+            ],
+            [
+              "todas las filas están decididas",
+              "confirmo la carga",
+              "las válidas entran como registros y las excluidas quedan en un reporte que puedo descargar"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/masiva"
+            ],
+            [
+              "Demo",
+              "../suid/app.html#/control-acceso/infractores/carga-masiva"
+            ]
+          ],
+          "traza": "Registro masivo con reporte de inconsistencias"
+        },
+        {
+          "id": "HU-04",
+          "titulo": "Recibir registros por integración",
+          "rol": "Sistema externo",
+          "trabajo": 1,
+          "propuesta": true,
+          "como": "IVC",
+          "quiero": "recibir registros desde otro sistema con los mismos datos del formulario",
+          "para": "no volver a digitar lo que otra entidad ya tiene",
+          "criterios": [
+            [
+              "llega un registro con los datos del infractor, los hechos y la sanción",
+              "el sistema lo recibe",
+              "aplica las mismas reglas del formulario y lo deja Recibido"
+            ],
+            [
+              "el registro no cumple una regla",
+              "el sistema lo recibe",
+              "lo rechaza con el detalle por campo"
+            ]
+          ],
+          "ir": [
+            [
+              "Modelo de datos",
+              "index.html#datos/integracion"
+            ]
+          ],
+          "traza": "Registro por integración"
+        }
+      ]
+    },
+    {
+      "id": "revisar",
+      "titulo": "Revisar y corregir",
+      "sub": "Qué pasa antes de que un registro cuente.",
+      "historias": [
+        {
+          "id": "HU-05",
+          "titulo": "Validar o devolver un registro",
+          "rol": "Coordinador o director",
+          "trabajo": 2,
+          "como": "coordinador o director",
+          "quiero": "validar un registro o devolverlo por subsanar con un motivo",
+          "para": "que en la base solo cuente lo completo y correcto",
+          "criterios": [
+            [
+              "un registro Recibido o Por subsanar está completo",
+              "lo valido y confirmo en el modal firmado",
+              "queda Validado y su restricción se activa si está en vigencia"
+            ],
+            [
+              "al registro le falta algo",
+              "lo devuelvo",
+              "el motivo es obligatorio y el registro queda Por subsanar"
+            ],
+            [
+              "valido o devuelvo",
+              "confirmo",
+              "los datos de la decisión no cambian: solo cambia el estado"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/validacion"
+            ],
+            [
+              "Quién cierra",
+              "index.html#roles/quien-cierra-cada-flujo"
+            ]
+          ],
+          "traza": "«Validar la completitud formal» · Criterio 01 · quién cierra: decisión de diseño"
+        },
+        {
+          "id": "HU-06",
+          "titulo": "Corregir un registro",
+          "rol": "Profesional o coordinador",
+          "trabajo": 2,
+          "como": "profesional del IVC",
+          "quiero": "corregir un registro, incluido uno devuelto por subsanar",
+          "para": "que pueda validarse",
+          "criterios": [
+            [
+              "un registro está Por subsanar",
+              "lo edito y guardo en el modal firmado",
+              "se guarda el cambio, el estado no cambia y queda en el historial"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/edicion"
+            ]
+          ],
+          "traza": "«Requiero… actualizar»"
+        }
+      ]
+    },
+    {
+      "id": "consultar",
+      "titulo": "Consultar",
+      "sub": "Cómo se responde si una persona puede entrar.",
+      "historias": [
+        {
+          "id": "HU-07",
+          "titulo": "Buscar a una persona y ver su ficha",
+          "rol": "Todos los roles",
+          "trabajo": 3,
+          "como": "funcionario del IVC",
+          "quiero": "buscar por documento, nombre, estado de la medida o fechas y ver una sola ficha",
+          "para": "responder con certeza si hoy tiene una restricción vigente",
+          "criterios": [
+            [
+              "la persona tiene varias sanciones",
+              "abro su ficha",
+              "las veo todas en una sola ficha, sin confundirlas, con su historial"
+            ],
+            [
+              "la búsqueda no encuentra a nadie",
+              "busco",
+              "veo un estado vacío que dice cómo seguir"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/consulta"
+            ],
+            [
+              "Demo",
+              "../suid/app.html#/control-acceso/consulta"
+            ]
+          ],
+          "traza": "«Requiero… consultar» · ficha única con historial"
+        }
+      ]
+    },
+    {
+      "id": "cuidar",
+      "titulo": "Cuidar la base",
+      "sub": "Lo que mantiene la información confiable y vigente.",
+      "historias": [
+        {
+          "id": "HU-08",
+          "titulo": "Que la vigencia se actualice sola",
+          "rol": "Sistema",
+          "trabajo": 4,
+          "como": "IVC",
+          "quiero": "que la restricción se active y pase a cumplida sin que nadie lo haga a mano",
+          "para": "que la base coincida siempre con la realidad",
+          "criterios": [
+            [
+              "un registro está Validado y la fecha está dentro de la vigencia",
+              "llega ese día",
+              "la restricción queda Activa"
+            ],
+            [
+              "la vigencia terminó",
+              "pasa la fecha final",
+              "la restricción queda Cumplida sola, no se borra y queda en el historial"
+            ]
+          ],
+          "ir": [
+            [
+              "Estados",
+              "index.html#datos/estados"
+            ]
+          ],
+          "traza": "Administración de restricciones · las cumplidas no se eliminan"
+        },
+        {
+          "id": "HU-09",
+          "titulo": "Revisar la calidad y la trazabilidad",
+          "rol": "Coordinador o director",
+          "trabajo": 5,
+          "como": "coordinador o director",
+          "quiero": "ver los registros incompletos, duplicados o con fechas incoherentes, y quién cambió qué",
+          "para": "corregir a tiempo y respaldar cada decisión",
+          "criterios": [
+            [
+              "hay registros con problemas de calidad",
+              "entro a Calidad y auditoría",
+              "los veo agrupados por tipo de problema"
+            ],
+            [
+              "un registro cambia de estado",
+              "consulto su trazabilidad",
+              "veo usuario, fecha, hora, estado anterior y nuevo"
+            ]
+          ],
+          "ir": [
+            [
+              "Flujo",
+              "index.html#flujos/calidad"
+            ],
+            [
+              "Demo",
+              "../suid/app.html#/control-acceso/calidad"
+            ]
+          ],
+          "traza": "Calidad, vigencia y auditoría"
+        }
+      ]
+    }
+  ]
+}

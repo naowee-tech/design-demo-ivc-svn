@@ -1,0 +1,761 @@
+{
+  "menu": {
+    "sec": "Control de acceso",
+    "items": [
+      "Gestión de sanciones",
+      "Búsqueda avanzada",
+      "Calidad y auditoría"
+    ],
+    "resto": [
+      "Gestión",
+      "Configuración",
+      "Operación",
+      "Dirección",
+      "Atención al usuario",
+      "Comunicaciones",
+      "Jurídica"
+    ],
+    "nota": "El módulo entra como una sección nueva del menú del IVC. Ninguna pantalla actual del IVC cambia."
+  },
+  "mapa": [
+    {
+      "entrada": "Gestión de sanciones",
+      "principal": [
+        "indicadores",
+        "registros"
+      ],
+      "abre": [
+        "panel-registro",
+        "registrar",
+        "carga",
+        "ficha"
+      ],
+      "desde_ficha": [
+        "validar",
+        "devolver",
+        "editar",
+        "carga-salir"
+      ]
+    },
+    {
+      "entrada": "Búsqueda avanzada",
+      "principal": [
+        "consulta"
+      ],
+      "abre": [
+        "panel-persona",
+        "ficha"
+      ],
+      "desde_ficha": [
+        "menor-motivo"
+      ]
+    },
+    {
+      "entrada": "Calidad y auditoría",
+      "principal": [
+        "calidad",
+        "trazabilidad"
+      ],
+      "abre": [
+        "ficha"
+      ]
+    }
+  ],
+  "grupos": [
+    {
+      "id": "gestion",
+      "titulo": "Gestión de sanciones",
+      "sub": "Donde se registran, se revisan y se cierran los registros.",
+      "vistas": [
+        "indicadores",
+        "registros",
+        "panel-registro",
+        "registrar",
+        "carga",
+        "carga-salir",
+        "ficha",
+        "validar",
+        "devolver",
+        "editar"
+      ]
+    },
+    {
+      "id": "busqueda",
+      "titulo": "Búsqueda avanzada",
+      "sub": "Donde se responde si una persona tiene una restricción vigente.",
+      "vistas": [
+        "consulta",
+        "panel-persona",
+        "menor-motivo"
+      ]
+    },
+    {
+      "id": "calidad",
+      "titulo": "Calidad y auditoría",
+      "sub": "Donde se cuida la base: hallazgos y rastro de cada cambio.",
+      "vistas": [
+        "calidad",
+        "trazabilidad"
+      ]
+    },
+    {
+      "id": "transversal",
+      "titulo": "En todo el módulo",
+      "sub": "Lo que aparece en varias vistas.",
+      "vistas": [
+        "avisos",
+        "login"
+      ]
+    }
+  ],
+  "vistas": {
+    "indicadores": {
+      "n": "Gestión · Indicadores",
+      "tipo": "Pestaña",
+      "ruta": "#/control-acceso/infractores",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Ver de un vistazo cómo está la base hoy y hacia dónde va.",
+      "contiene": [
+        "Seis indicadores: vencen en 30 días, corren sin bloquear (sin validar), revisión media en días, devueltos a inspección, reincidencia a 3 años y conducta más frecuente; cada uno con su tendencia.",
+        "Gráfica de infractores mes a mes: nuevos contra los que salen por cumplimiento, con selector de periodo y tabla accesible."
+      ],
+      "acciones": [
+        "Registrar infractores (lleva a Registrar)",
+        "Cambiar a la pestaña Registros"
+      ],
+      "estados": [
+        "Sin datos para comparar: «Aún no hay comparación.»",
+        "Nada por vencer: «Ninguna medida vigente termina este mes.»"
+      ],
+      "historias": [
+        "HU-09"
+      ],
+      "imgs": [
+        [
+          "gestion.jpg",
+          "Indicadores y gráfica"
+        ],
+        [
+          "ayuda-indicador.jpg",
+          "Ayuda ⓘ de un indicador"
+        ]
+      ]
+    },
+    "registros": {
+      "n": "Gestión · Registros de infractores",
+      "tipo": "Pestaña",
+      "ruta": "#/control-acceso/infractores",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Encontrar un registro y ver en qué estado está.",
+      "contiene": [
+        "Tabla de registros: número, infractor (con marca de menor), origen de la obligación, acto administrativo, fin de vigencia, estado del registro y estado de la restricción.",
+        "Filtros por estado del registro y de la restricción.",
+        "Paginación."
+      ],
+      "acciones": [
+        "Tocar una fila abre el panel lateral del expediente",
+        "Ver expediente (abre la ficha)",
+        "Registrar infractores"
+      ],
+      "estados": [
+        "Sin resultados con los filtros: invita a quitar filtros."
+      ],
+      "historias": [
+        "HU-07"
+      ],
+      "imgs": [
+        [
+          "registros.jpg",
+          "Tabla de registros"
+        ]
+      ]
+    },
+    "registrar": {
+      "n": "Registrar infractor",
+      "tipo": "Asistente por pasos",
+      "ruta": "#/control-acceso/infractores/nuevo",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "para": "Registrar una decisión en firme, un infractor a la vez.",
+      "contiene": [
+        "Antes de empezar: los bloques Infractor (B), Representante o tutor (C, solo si es menor), Hechos y conducta (D), Sobre la sanción (E) y Gestión interna (F), con su número de campos.",
+        "Asistente por pasos con avance en porcentaje y estado de cada bloque; el bloque del representante aparece como paso solo si el infractor es menor.",
+        "La fecha de registro (A) la pone el sistema.",
+        "Aviso cuando la persona ya tiene una sanción vigente."
+      ],
+      "acciones": [
+        "Comenzar",
+        "Siguiente y Atrás entre pasos",
+        "Guardar registro",
+        "Cancelar",
+        "Ir a Carga masiva"
+      ],
+      "estados": [
+        "Error junto al campo: obligatorio vacío, fechas que no cuadran (acto, ejecutoria, radicado, hechos), mínimo 6 meses de sanción, representante mayor de edad.",
+        "Bloque incompleto: «Este bloque está incompleto.»"
+      ],
+      "historias": [
+        "HU-01",
+        "HU-02"
+      ],
+      "imgs": [
+        [
+          "registrar.jpg",
+          "Antes de empezar"
+        ],
+        [
+          "form-b.jpg",
+          "Paso 1 · Infractor"
+        ],
+        [
+          "form-paso0.jpg",
+          "Paso 2 · Hechos y conducta"
+        ],
+        [
+          "form-paso2.jpg",
+          "Paso 3 · Sobre la sanción"
+        ],
+        [
+          "form-paso4.jpg",
+          "Paso 4 · Gestión interna"
+        ],
+        [
+          "form-paso1.jpg",
+          "Error junto al campo"
+        ]
+      ]
+    },
+    "carga": {
+      "n": "Carga masiva",
+      "tipo": "Asistente de 6 pasos",
+      "ruta": "#/control-acceso/infractores/carga-masiva",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "para": "Subir muchos registros a la vez con la plantilla de la base de sancionatorios.",
+      "contiene": [
+        "1. Descarga la plantilla.",
+        "2. Sube el archivo diligenciado.",
+        "3. Validamos el archivo fila por fila (estructura, obligatoriedad y consistencia).",
+        "4. Corrige o excluye las filas con error.",
+        "5. Confirma la importación con el resumen.",
+        "6. Carga terminada, con el reporte descargable."
+      ],
+      "acciones": [
+        "Continuar / Validar archivo / Importar",
+        "Corregir fila, Excluir fila, Incluir de nuevo",
+        "Descargar el reporte"
+      ],
+      "estados": [
+        "Errores por fila: documento vacío, tipo de documento fuera del catálogo, menos de 6 meses, menor sin representante, duplicado.",
+        "Salir a mitad: «¿Salir de la carga masiva?»"
+      ],
+      "historias": [
+        "HU-03"
+      ],
+      "imgs": [
+        [
+          "carga-1.jpg",
+          "1 · Descarga la plantilla"
+        ],
+        [
+          "carga-2b.jpg",
+          "2 · Sube el archivo"
+        ],
+        [
+          "carga-3.jpg",
+          "3 · Validamos el archivo"
+        ],
+        [
+          "carga-4.jpg",
+          "4 · Corrige o excluye filas"
+        ],
+        [
+          "carga-5.jpg",
+          "5 · Confirma la importación"
+        ],
+        [
+          "carga-6.jpg",
+          "6 · Carga terminada"
+        ]
+      ]
+    },
+    "ficha": {
+      "n": "Ficha del infractor",
+      "tipo": "Pantalla",
+      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Ver todo lo de una persona en un solo lugar y cerrar el registro.",
+      "contiene": [
+        "Encabezado con nombre, número de registro y documento.",
+        "Bloques: Infractor, Representante (si es menor), Hechos y conducta, Sanción y Gestión interna.",
+        "Columna lateral: estado de la restricción con sus pasos, historial de cambios y otras restricciones de la misma persona."
+      ],
+      "acciones": [
+        "Editar (profesional y coordinador)",
+        "Validar registro y Devolver por subsanar (coordinador y director, mientras no esté Validado)"
+      ],
+      "estados": [
+        "Sin movimientos en el historial.",
+        "Sin otras restricciones: «Ninguna»."
+      ],
+      "historias": [
+        "HU-05",
+        "HU-07",
+        "HU-08"
+      ],
+      "imgs": [
+        [
+          "ficha.jpg",
+          "Recibido"
+        ],
+        [
+          "ficha-subsanar.jpg",
+          "Por subsanar"
+        ],
+        [
+          "ficha-validado.jpg",
+          "Validado · sanción activa"
+        ]
+      ]
+    },
+    "validar": {
+      "n": "Validar registro",
+      "tipo": "Ventana de confirmación",
+      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "para": "Cerrar el registro dejando constancia de quién lo validó.",
+      "contiene": [
+        "Firma de quien opera: nombre, cargo, fecha y hora.",
+        "Qué pasa al confirmar: el registro queda Validado y la restricción se activa si su vigencia está corriendo.",
+        "Observación opcional."
+      ],
+      "acciones": [
+        "Confirmar",
+        "Cancelar"
+      ],
+      "estados": [],
+      "historias": [
+        "HU-05"
+      ],
+      "imgs": [
+        [
+          "validar.jpg",
+          "Validar registro"
+        ]
+      ]
+    },
+    "devolver": {
+      "n": "Devolver por subsanar",
+      "tipo": "Ventana de confirmación",
+      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "para": "Devolver un registro incompleto diciendo qué falta.",
+      "contiene": [
+        "Firma de quien opera: nombre, cargo, fecha y hora.",
+        "Motivo obligatorio: qué falta para poder validarlo."
+      ],
+      "acciones": [
+        "Confirmar",
+        "Cancelar"
+      ],
+      "estados": [
+        "Sin motivo no se puede confirmar."
+      ],
+      "historias": [
+        "HU-05"
+      ],
+      "imgs": [
+        [
+          "devolver.jpg",
+          "Devolver por subsanar"
+        ]
+      ]
+    },
+    "editar": {
+      "n": "Editar registro",
+      "tipo": "Confirmación + formulario",
+      "ruta": "#/control-acceso/infractores/INF-2026-0044/editar",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "para": "Corregir un registro, incluido uno devuelto por subsanar.",
+      "contiene": [
+        "Ventana de confirmación firmada antes de abrir la edición.",
+        "El mismo formulario del registro, con los datos cargados."
+      ],
+      "acciones": [
+        "Guardar cambios",
+        "Cancelar"
+      ],
+      "estados": [
+        "Las mismas validaciones del registro; el estado no cambia al guardar y el cambio queda en el historial."
+      ],
+      "historias": [
+        "HU-06"
+      ],
+      "imgs": [
+        [
+          "editar.jpg",
+          "Formulario en edición"
+        ]
+      ]
+    },
+    "consulta": {
+      "n": "Búsqueda avanzada",
+      "tipo": "Pantalla",
+      "ruta": "#/control-acceso/consulta",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Saber si una persona tiene una medida vigente y hasta cuándo.",
+      "contiene": [
+        "Búsqueda por documento completo (mínimo 6 dígitos) o por nombre (al menos 3 letras), con ayuda ⓘ de cómo buscar.",
+        "Filtros: estado de la medida, tipo de documento y ciudad.",
+        "Búsqueda avanzada: persona (rango de edad, nombres, apellidos), medida (motivo, estado, entidad que la impuso) y fechas (impuesta, vence), y «solo las que bloquean hoy».",
+        "Recientes como tarjetas y resultados como tabla ordenada por urgencia.",
+        "Los menores salen enmascarados."
+      ],
+      "acciones": [
+        "Consultar",
+        "Reiniciar filtros",
+        "Activar búsqueda avanzada",
+        "Ver todos",
+        "Tocar una persona abre su panel lateral"
+      ],
+      "estados": [
+        "Sin coincidencias: «Ninguna persona coincide con los criterios.»",
+        "Falta información o hay caracteres no válidos.",
+        "Error al consultar: «No pudimos completar la consulta.»"
+      ],
+      "historias": [
+        "HU-02",
+        "HU-07"
+      ],
+      "imgs": [
+        [
+          "consulta.jpg",
+          "Recientes"
+        ],
+        [
+          "ayuda-consulta.jpg",
+          "Ayuda ⓘ: cómo buscar"
+        ],
+        [
+          "consulta-avanzada.jpg",
+          "Búsqueda avanzada activa"
+        ],
+        [
+          "consulta-resultados.jpg",
+          "Resultados"
+        ],
+        [
+          "consulta-vacia.jpg",
+          "Sin resultados"
+        ]
+      ]
+    },
+    "calidad": {
+      "n": "Calidad y auditoría · Calidad",
+      "tipo": "Pestaña",
+      "ruta": "#/control-acceso/calidad",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "para": "Encontrar los registros que hay que corregir.",
+      "contiene": [
+        "Contadores por tipo de hallazgo: incompleto, duplicado y fechas incoherentes.",
+        "Buscador y tabla con el registro, el hallazgo y el detalle (qué falta o con qué registro se duplica)."
+      ],
+      "acciones": [
+        "Buscar",
+        "Abrir el registro"
+      ],
+      "estados": [
+        "Sin hallazgos."
+      ],
+      "historias": [
+        "HU-09"
+      ],
+      "imgs": [
+        [
+          "calidad.jpg",
+          "Hallazgos"
+        ]
+      ]
+    },
+    "trazabilidad": {
+      "n": "Calidad y auditoría · Trazabilidad",
+      "tipo": "Pestaña",
+      "ruta": "#/control-acceso/calidad",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "para": "Saber quién cambió qué y cuándo.",
+      "contiene": [
+        "Bitácora de cada cambio de estado con fecha y hora, registro, usuario, estado anterior, estado nuevo y nota."
+      ],
+      "acciones": [
+        "Buscar",
+        "Abrir el registro"
+      ],
+      "estados": [
+        "Sin movimientos."
+      ],
+      "historias": [
+        "HU-09"
+      ],
+      "imgs": [
+        [
+          "trazabilidad.jpg",
+          "Bitácora"
+        ]
+      ]
+    },
+    "login": {
+      "n": "Inicio de sesión",
+      "tipo": "Del SUID",
+      "ruta": "login",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Entrar con la cuenta del SUID; el rol define qué ve cada uno.",
+      "contiene": [
+        "Login del SUID. En la demo es simulado."
+      ],
+      "acciones": [
+        "Iniciar sesión"
+      ],
+      "estados": [],
+      "historias": [],
+      "imgs": [
+        [
+          "login.jpg",
+          "Inicio de sesión"
+        ]
+      ]
+    },
+    "panel-registro": {
+      "n": "Panel del expediente",
+      "tipo": "Panel lateral",
+      "imgs": [
+        [
+          "panel-registro.jpg",
+          "Desde la tabla de registros"
+        ]
+      ],
+      "ruta": "#/control-acceso/infractores",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Revisar un registro rápido sin salir de la lista.",
+      "contiene": [
+        "Estado del registro y de la restricción, nombre, documento y marca de menor.",
+        "Franja de la sanción: si bloquea y hasta cuándo, con barra de avance.",
+        "Resumen de la medida (conducta, acto, evento, fecha, lugar, tiempo, valor) y últimos movimientos."
+      ],
+      "acciones": [
+        "Ver expediente (abre la ficha)",
+        "Editar",
+        "Cerrar; tocar otra fila cambia el contenido"
+      ],
+      "estados": [
+        "No tapa la pantalla ni bloquea el resto: es un panel, no un modal."
+      ],
+      "historias": [
+        "HU-07"
+      ]
+    },
+    "carga-salir": {
+      "n": "¿Salir de la carga masiva?",
+      "tipo": "Ventana de confirmación",
+      "imgs": [
+        [
+          "carga-salir.jpg",
+          "Al salir a mitad de la carga"
+        ]
+      ],
+      "ruta": "#/control-acceso/infractores/carga-masiva",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "para": "Evitar perder una carga a medias por error.",
+      "contiene": [
+        "Aviso de que se pierde el archivo, la validación y las correcciones; nada se ha importado todavía.",
+        "Paso en el que va la carga."
+      ],
+      "acciones": [
+        "Seguir aquí",
+        "Salir y descartar"
+      ],
+      "estados": [
+        "Solo aparece si ya hay avance; si no, sale directo."
+      ],
+      "historias": [
+        "HU-03"
+      ]
+    },
+    "panel-persona": {
+      "n": "Panel de la persona",
+      "tipo": "Panel lateral",
+      "imgs": [
+        [
+          "panel-persona.jpg",
+          "Persona mayor de edad"
+        ],
+        [
+          "panel-menor.jpg",
+          "Persona menor de edad · datos reservados"
+        ]
+      ],
+      "ruta": "#/control-acceso/consulta",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Responder en segundos si la persona puede entrar.",
+      "contiene": [
+        "Franja de la medida: «Medida vigente · bloquea en todo el país», hasta cuándo, días que faltan y barra de avance.",
+        "Conducta, acto, evento, fecha, lugar y tiempo de la medida.",
+        "Últimos movimientos del registro.",
+        "Si es menor: nombre y documento ocultos hasta abrir con motivo."
+      ],
+      "acciones": [
+        "Ampliar expediente (abre la ficha)",
+        "Abrir con motivo (si es menor)",
+        "Cerrar"
+      ],
+      "estados": [
+        "Cargando: esqueleto mientras consulta.",
+        "Menor con datos abiertos: aviso de apertura auditada con el motivo, usuario y hora."
+      ],
+      "historias": [
+        "HU-02",
+        "HU-07"
+      ]
+    },
+    "menor-motivo": {
+      "n": "Abrir datos de un menor",
+      "tipo": "Ventana de confirmación",
+      "imgs": [
+        [
+          "menor-motivo.jpg",
+          "Elegir el motivo"
+        ]
+      ],
+      "ruta": "#/control-acceso/consulta",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Ver los datos reservados de un menor dejando constancia de para qué.",
+      "contiene": [
+        "Explicación de la reserva reforzada.",
+        "Motivos para elegir (uno o varios)."
+      ],
+      "acciones": [
+        "Abrir datos",
+        "Cancelar"
+      ],
+      "estados": [
+        "Sin motivo: «Selecciona al menos un motivo para continuar.»",
+        "Al abrir: aviso «Apertura registrada en la auditoría.»"
+      ],
+      "historias": [
+        "HU-02"
+      ]
+    },
+    "avisos": {
+      "n": "Avisos breves",
+      "tipo": "Aviso emergente",
+      "imgs": [],
+      "ruta": "#/control-acceso/infractores",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "para": "Confirmar que una acción salió bien sin interrumpir.",
+      "contiene": [
+        "«Registro INF-… creado en estado Recibido.»",
+        "«Cambios guardados.»",
+        "«Registro validado. La restricción quedó activa / inactiva.»",
+        "«Registro devuelto por subsanar.»",
+        "«Apertura registrada en la auditoría.»",
+        "«Plantilla descargada.» / «Reporte de la carga descargado.» / «N registros cargados en estado Recibido.»"
+      ],
+      "acciones": [
+        "Se cierran solos"
+      ],
+      "estados": [
+        "El de devolución va en tono de advertencia."
+      ],
+      "historias": [
+        "HU-01",
+        "HU-03",
+        "HU-05",
+        "HU-06"
+      ]
+    }
+  },
+  "dependencias": [
+    {
+      "que": "Inicio de sesión",
+      "de": "SUID",
+      "nota": "El módulo no tiene login propio: usa el del SUID."
+    },
+    {
+      "que": "Roles y permisos",
+      "de": "SUID",
+      "nota": "El SUID decide qué rol ve qué; la pestaña Roles dice qué debe mostrar la interfaz."
+    },
+    {
+      "que": "Menú y navegación",
+      "de": "IVC",
+      "nota": "Sección Control de acceso en el menú, con migas de pan."
+    },
+    {
+      "que": "Firma de cada operación",
+      "de": "SUID",
+      "nota": "Validar, devolver y editar llevan el nombre y el cargo de quien opera."
+    },
+    {
+      "que": "Datos y auditoría",
+      "de": "Backend del módulo",
+      "nota": "Guarda los registros con el modelo de la pestaña Datos y cada cambio con usuario, fecha, hora, estado anterior y nuevo."
+    }
+  ]
+}

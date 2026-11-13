@@ -1,0 +1,784 @@
+{
+  "estados": {
+    "registro": {
+      "titulo": "Estado del registro",
+      "nota": "Un registro Por subsanar se corrige y luego se valida; no vuelve a Recibido.",
+      "rutas": [
+        [
+          "Recibido",
+          "Validado"
+        ],
+        [
+          "Recibido",
+          "Por subsanar",
+          "Validado"
+        ]
+      ]
+    },
+    "restriccion": {
+      "titulo": "Estado de la restricción",
+      "nota": "Activa solo con el registro Validado y la fecha dentro de la vigencia. Cumplida sola al vencer.",
+      "rutas": [
+        [
+          "Inactiva",
+          "Activa",
+          "Cumplida"
+        ]
+      ]
+    }
+  },
+  "flujos": [
+    {
+      "id": "registro",
+      "titulo": "Registro individual",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "ruta": "#/control-acceso/infractores/nuevo",
+      "pasos": [
+        "En Gestión, pulsar «Registrar infractores».",
+        "Diligenciar el bloque B: identificación, residencia, dirección, contacto y datos personales.",
+        "Si la persona era menor a la fecha de los hechos, aparece el bloque C del representante.",
+        "Diligenciar hechos (D), sanción (E) y registro interno (F).",
+        "Guardar: el registro queda Recibido y se abre su ficha."
+      ],
+      "errores": [
+        "Campo obligatorio vacío: «<campo> es obligatorio.»",
+        "Ejecutoria no posterior al acto: «La ejecutoria debe ser posterior a la fecha del acto.»",
+        "Radicado no posterior a la ejecutoria: «El radicado debe ser posterior a la ejecutoria.»",
+        "Fecha de los hechos hoy o futura, o posterior al acto."
+      ],
+      "vacios": [
+        "Sin datos previos de la persona: el formulario se llena desde cero."
+      ],
+      "reglas": [
+        "Campos 1 a 55 y su obligatoriedad: pestaña Datos.",
+        "Acto < ejecutoria < radicado; hechos < acto."
+      ],
+      "origen": "HU",
+      "grafo": {
+        "carriles": [
+          [
+            "Profesional o coordinador",
+            0,
+            1
+          ],
+          [
+            "Sistema",
+            2,
+            2
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Pulsa «Registrar infractores» en Gestión"
+          ],
+          [
+            "n2",
+            "paso",
+            0,
+            1,
+            "Diligencia identificación, residencia y contacto (B)"
+          ],
+          [
+            "n3",
+            "decision",
+            0,
+            2,
+            "¿Era menor en la fecha de los hechos?"
+          ],
+          [
+            "n4",
+            "paso",
+            1,
+            3,
+            "Diligencia los datos del representante (C)"
+          ],
+          [
+            "n5",
+            "paso",
+            0,
+            4,
+            "Diligencia hechos, sanción y registro interno (D, E, F)"
+          ],
+          [
+            "n6",
+            "decision",
+            0,
+            5,
+            "Al guardar, ¿pasa las validaciones?"
+          ],
+          [
+            "n7",
+            "error",
+            2,
+            5,
+            "Marca el error junto al campo"
+          ],
+          [
+            "n8",
+            "estado",
+            2,
+            6,
+            "Queda Recibido y se abre su ficha"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n2"
+          ],
+          [
+            "n2",
+            "n3"
+          ],
+          [
+            "n3",
+            "n4",
+            "Sí"
+          ],
+          [
+            "n3",
+            "n5",
+            "No"
+          ],
+          [
+            "n4",
+            "n5"
+          ],
+          [
+            "n5",
+            "n6"
+          ],
+          [
+            "n6",
+            "n7",
+            "No"
+          ],
+          [
+            "n7",
+            "n5",
+            "corrige",
+            "atras"
+          ],
+          [
+            "n6",
+            "n8",
+            "Sí",
+            "h"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "edicion",
+      "titulo": "Edición de un registro",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "ruta": "#/control-acceso/infractores/INF-2026-0003/editar",
+      "pasos": [
+        "Desde la ficha, pulsar «Editar» y confirmar en el modal firmado con nombre y cargo.",
+        "Corregir los campos necesarios.",
+        "Guardar: el cambio queda en el historial con usuario y fecha; el estado no cambia.",
+        "Si el registro estaba Por subsanar, sigue así hasta que el coordinador o el director lo valide."
+      ],
+      "errores": [
+        "Las mismas validaciones del registro."
+      ],
+      "vacios": [],
+      "reglas": [
+        "Cada cambio de estado se audita: usuario, fecha, hora, estado anterior y nuevo."
+      ],
+      "origen": "HU",
+      "grafo": {
+        "carriles": [
+          [
+            "Profesional o coordinador",
+            0,
+            0
+          ],
+          [
+            "Sistema",
+            1,
+            1
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Pulsa «Editar» en la ficha y confirma"
+          ],
+          [
+            "n2",
+            "paso",
+            0,
+            1,
+            "Corrige los campos necesarios"
+          ],
+          [
+            "n3",
+            "decision",
+            0,
+            2,
+            "Al guardar, ¿pasa las validaciones?"
+          ],
+          [
+            "n4",
+            "error",
+            1,
+            2,
+            "Marca el error junto al campo"
+          ],
+          [
+            "n5",
+            "estado",
+            1,
+            3,
+            "Cambio guardado en el historial · el estado no cambia"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n2"
+          ],
+          [
+            "n2",
+            "n3"
+          ],
+          [
+            "n3",
+            "n4",
+            "No"
+          ],
+          [
+            "n4",
+            "n2",
+            "corrige",
+            "atras"
+          ],
+          [
+            "n3",
+            "n5",
+            "Sí",
+            "h"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "validacion",
+      "titulo": "Validación o devolución",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "ruta": "#/control-acceso/infractores",
+      "pasos": [
+        "Abrir la ficha de un registro Recibido o Por subsanar.",
+        "Pulsar «Validar registro» o «Devolver por subsanar».",
+        "Confirmar en el modal, firmado con nombre y cargo de quien opera.",
+        "Validar: el registro pasa a Validado y la restricción se activa si está en vigencia.",
+        "Devolver: se indica qué falta y el registro queda Por subsanar."
+      ],
+      "errores": [
+        "Devolver sin motivo: el modal no deja confirmar."
+      ],
+      "vacios": [
+        "Registro ya Validado: no muestra las acciones de cierre."
+      ],
+      "reglas": [
+        "Quien digita no se valida a sí mismo."
+      ],
+      "origen": "diseño",
+      "grafo": {
+        "carriles": [
+          [
+            "Coordinador o director",
+            0,
+            1
+          ],
+          [
+            "Sistema",
+            2,
+            2
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Abre la ficha de un registro Recibido o Por subsanar"
+          ],
+          [
+            "n2",
+            "decision",
+            0,
+            1,
+            "¿Está completo y correcto?"
+          ],
+          [
+            "n3",
+            "paso",
+            0,
+            2,
+            "Pulsa «Validar registro»"
+          ],
+          [
+            "n5",
+            "paso",
+            0,
+            3,
+            "Confirma en el modal firmado (observación opcional)"
+          ],
+          [
+            "n4",
+            "paso",
+            1,
+            2,
+            "Pulsa «Devolver por subsanar»"
+          ],
+          [
+            "n6",
+            "paso",
+            1,
+            3,
+            "Escribe el motivo y confirma en el modal firmado"
+          ],
+          [
+            "n8",
+            "subsanar",
+            2,
+            3,
+            "Queda Por subsanar · se corrige con «Editar»"
+          ],
+          [
+            "n7",
+            "estado",
+            2,
+            4,
+            "Queda Validado · la restricción se activa si está en vigencia"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n2"
+          ],
+          [
+            "n2",
+            "n3",
+            "Sí"
+          ],
+          [
+            "n2",
+            "n4",
+            "No"
+          ],
+          [
+            "n3",
+            "n5"
+          ],
+          [
+            "n4",
+            "n6"
+          ],
+          [
+            "n5",
+            "n7",
+            "",
+            "h"
+          ],
+          [
+            "n6",
+            "n8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "consulta",
+      "titulo": "Consulta",
+      "roles": [
+        "profesional",
+        "coordinador",
+        "director"
+      ],
+      "ruta": "#/control-acceso/consulta",
+      "pasos": [
+        "Abrir Búsqueda avanzada.",
+        "Buscar por documento, nombre, estado de la medida o fechas.",
+        "Leer el resultado: medida vigente y hasta cuándo.",
+        "Abrir la ficha si hace falta el detalle."
+      ],
+      "errores": [
+        "Si se busca por nombre, los menores no aparecen: solo por documento completo."
+      ],
+      "vacios": [
+        "«Sin medidas registradas»: no hay medidas para ese documento o coincidencias por nombre."
+      ],
+      "reglas": [
+        "Los menores se consultan solo por documento completo, igual para todos los roles."
+      ],
+      "origen": "HU",
+      "grafo": {
+        "carriles": [
+          [
+            "Cualquier rol del IVC",
+            0,
+            1
+          ],
+          [
+            "Sistema",
+            2,
+            2
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Abre Búsqueda avanzada"
+          ],
+          [
+            "n2",
+            "paso",
+            0,
+            1,
+            "Busca por documento, nombre, estado o fechas"
+          ],
+          [
+            "n9",
+            "nota",
+            1,
+            1,
+            "Por nombre no salen menores: solo por documento completo"
+          ],
+          [
+            "n3",
+            "decision",
+            0,
+            2,
+            "¿Hay coincidencias?"
+          ],
+          [
+            "n5",
+            "paso",
+            0,
+            3,
+            "Lee la medida vigente y hasta cuándo"
+          ],
+          [
+            "n6",
+            "paso",
+            0,
+            4,
+            "Abre la ficha si necesita el detalle"
+          ],
+          [
+            "n4",
+            "vacio",
+            2,
+            3,
+            "Muestra «Sin medidas registradas»"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n2"
+          ],
+          [
+            "n2",
+            "n9",
+            "",
+            "nota"
+          ],
+          [
+            "n2",
+            "n3"
+          ],
+          [
+            "n3",
+            "n5",
+            "Sí"
+          ],
+          [
+            "n3",
+            "n4",
+            "No"
+          ],
+          [
+            "n5",
+            "n6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "masiva",
+      "titulo": "Carga masiva",
+      "roles": [
+        "profesional",
+        "coordinador"
+      ],
+      "ruta": "#/control-acceso/infractores/carga-masiva",
+      "pasos": [
+        "Descargar la plantilla.",
+        "Subir el archivo (en la demo es simulado).",
+        "El sistema valida estructura, obligatoriedad y consistencia fila por fila.",
+        "Si hay filas con error: corregir cada una en pantalla o dejarla fuera de la carga.",
+        "Revisar el resumen, marcar la confirmación e importar: las filas importadas entran como Recibido."
+      ],
+      "errores": [
+        "Fila con error: se muestra con su motivo; se corrige ahí mismo o se excluye.",
+        "Sin decidir todas las filas con error no se puede continuar.",
+        "Si no queda ninguna fila para importar, no se puede confirmar."
+      ],
+      "vacios": [
+        "Sin filas con error: pasa directo al resumen.",
+        "Las filas excluidas quedan en el reporte descargable para corregir y volver a subir."
+      ],
+      "reglas": [
+        "Cada registro cargado se valida o devuelve como uno individual."
+      ],
+      "origen": "HU",
+      "grafo": {
+        "carriles": [
+          [
+            "Profesional o coordinador",
+            0,
+            1
+          ],
+          [
+            "Sistema",
+            2,
+            2
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Abre Carga masiva"
+          ],
+          [
+            "n2",
+            "paso",
+            0,
+            1,
+            "Descarga la plantilla y la diligencia"
+          ],
+          [
+            "n3",
+            "paso",
+            0,
+            2,
+            "Sube el archivo (simulado en la demo)"
+          ],
+          [
+            "n4",
+            "decision",
+            0,
+            3,
+            "Al validar, ¿hay filas con error?"
+          ],
+          [
+            "n9",
+            "error",
+            2,
+            4,
+            "Lista cada fila con error y su motivo"
+          ],
+          [
+            "n5",
+            "paso",
+            1,
+            4,
+            "Corrige cada fila aquí o la deja fuera"
+          ],
+          [
+            "n6",
+            "paso",
+            0,
+            5,
+            "Revisa el resumen, confirma e importa"
+          ],
+          [
+            "n7",
+            "estado",
+            2,
+            6,
+            "Las filas importadas entran como Recibido"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n2"
+          ],
+          [
+            "n2",
+            "n3"
+          ],
+          [
+            "n3",
+            "n4"
+          ],
+          [
+            "n4",
+            "n6",
+            "No"
+          ],
+          [
+            "n4",
+            "n9",
+            "Sí"
+          ],
+          [
+            "n9",
+            "n5"
+          ],
+          [
+            "n5",
+            "n6",
+            "",
+            "h"
+          ],
+          [
+            "n6",
+            "n7",
+            "",
+            "h"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "calidad",
+      "titulo": "Calidad y auditoría",
+      "roles": [
+        "coordinador",
+        "director"
+      ],
+      "ruta": "#/control-acceso/calidad",
+      "pasos": [
+        "Abrir Calidad y auditoría desde el menú.",
+        "En Calidad, filtrar por tipo de hallazgo: incompleto, duplicado o fechas incoherentes.",
+        "En Trazabilidad, revisar la bitácora de cada cambio de estado."
+      ],
+      "errores": [],
+      "vacios": [
+        "Sin hallazgos: la pantalla lo dice y no muestra tabla."
+      ],
+      "reglas": [
+        "Es de consulta: no tiene cierre."
+      ],
+      "origen": "HU",
+      "grafo": {
+        "carriles": [
+          [
+            "Coordinador o director",
+            0,
+            0
+          ],
+          [
+            "Sistema",
+            1,
+            1
+          ]
+        ],
+        "nodos": [
+          [
+            "n1",
+            "inicio",
+            0,
+            0,
+            "Abre Calidad y auditoría desde el menú"
+          ],
+          [
+            "n4",
+            "paso",
+            0,
+            1,
+            "Filtra hallazgos: incompletos, duplicados o fechas incoherentes"
+          ],
+          [
+            "n5",
+            "decision",
+            0,
+            2,
+            "¿Hay hallazgos?"
+          ],
+          [
+            "n7",
+            "paso",
+            0,
+            3,
+            "Revisa los registros y corrige con «Editar»"
+          ],
+          [
+            "n8",
+            "paso",
+            0,
+            4,
+            "Abre Trazabilidad: bitácora de cada cambio de estado"
+          ],
+          [
+            "n6",
+            "vacio",
+            1,
+            3,
+            "Muestra «Sin hallazgos», sin tabla"
+          ]
+        ],
+        "aristas": [
+          [
+            "n1",
+            "n4"
+          ],
+          [
+            "n4",
+            "n5"
+          ],
+          [
+            "n5",
+            "n7",
+            "Sí"
+          ],
+          [
+            "n5",
+            "n6",
+            "No"
+          ],
+          [
+            "n7",
+            "n8"
+          ],
+          [
+            "n6",
+            "n8",
+            "",
+            "h"
+          ]
+        ]
+      }
+    }
+  ]
+}

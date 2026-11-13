@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roles · IVC SVN</title>
+<style>
+:root{--bg:#f6f7fb;--pn:#fff;--tx:#282834;--mu:#646587;--bd:#e7e9f3;--ac:#d74009;--okbg:#e3f5e9;--ok:#166534;--wabg:#fdf0dc;--wa:#92400e;--slbg:#eceff4;--sl:#3f4a5c}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--pn:#171b24;--tx:#e8eaf0;--mu:#9aa0b4;--bd:#2a2e38;--ac:#ff8a5c;--okbg:#14301f;--ok:#7ee2a3;--wabg:#3a2810;--wa:#fbc27f;--slbg:#262d3a;--sl:#c3cbd8}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 Inter,system-ui,-apple-system,Arial,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:0 16px 64px}header{padding:32px 0 8px}h1{margin:0 0 6px;font-size:28px}h2{margin:32px 0 6px;font-size:20px}
+.sub,.mu{color:var(--mu)}.sub{margin:0 0 14px}a{color:var(--ac)}a:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:14px;padding:18px 20px;margin:12px 0}
+.seg{display:flex;gap:2px;padding:2px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;max-width:460px}
+.seg button{flex:1;font:600 13px Inter,system-ui,sans-serif;color:var(--mu);background:none;border:0;border-radius:8px;padding:9px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--pn);color:var(--ac);font-weight:800;box-shadow:0 1px 3px rgba(20,22,38,.14)}
+.tw{overflow-x:auto;background:var(--pn);border:1px solid var(--bd);border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bd);font-size:12px;color:var(--mu)}td{padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top}tr:last-child>*{border-bottom:0}
+th small{display:block;font-weight:400;color:var(--mu);font-size:12.5px;margin-top:2px}th[scope=col],td[data-r]{text-align:center;width:110px}
+td.si{color:var(--ok);font-weight:800}td.no{color:var(--mu);opacity:.5}
+.sel td[data-r],.sel th[data-r]{opacity:.35}.sel .on{opacity:1;background:var(--okbg)}.sel th.on{background:var(--wabg);color:var(--wa)}.sel td.on.no{background:none}
+.o{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.o-HU{background:var(--okbg);color:var(--ok)}.o-diseño{background:var(--wabg);color:var(--wa)}
+.pill{display:inline-block;margin:0 4px 2px 0;padding:2px 9px;border-radius:999px;background:var(--slbg);color:var(--sl);font-size:12px;font-weight:700}
+.prop{display:inline-block;padding:2px 10px;border:1px dashed var(--mu);border-radius:999px;font-size:12px;font-weight:700;color:var(--mu)}
+.res{margin:10px 0 0}.go{display:inline-block;margin-top:10px;font-weight:700}.menu{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.menu span{padding:4px 10px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:var(--pn)}.menu .x{opacity:.4;text-decoration:line-through}
+ul{padding-left:20px}
+.rl th{text-align:left!important;width:auto!important;vertical-align:top}.rl th[scope=row]{width:230px!important}.rl th[scope=row] b{display:block;font-size:16px}.rl th[scope=row] small{display:block;margin-top:2px;font-weight:400;color:var(--mu);font-size:13px}.rl .go{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;text-decoration:none}.rl td{min-width:150px}.rl td.res{min-width:240px;font-size:14.5px}.pills{display:flex;flex-wrap:wrap;gap:6px}.pills span{padding:3px 9px;border:1px solid var(--bd);border-radius:8px;font-size:12.5px;background:var(--pn);white-space:nowrap}.ri{display:grid;place-items:center;width:42px;height:42px;margin:0 0 10px;border-radius:12px}.ri-profesional{background:#e8f0fe;color:#1d4ed8}.ri-coordinador{background:#fdf0e9;color:#d74009}.ri-director{background:#f1effc;color:#5b4bb7}.ri.ri-s{width:30px;height:30px;margin:0 auto 6px;border-radius:9px}.ri.ri-s svg{width:16px;height:16px}
+</style><link rel="stylesheet" href="assets/entrega.css"></head><body><main>
+<header><h1>Roles de la fase 1</h1>
+<p class="sub">Quién interviene en la gestión de infractores y qué puede hacer cada uno. Hoy la demo ya los aplica: menú, botones y rutas.</p></header>
+
+<div class="card" data-call="decision" data-call-l="Principio · criterio de diseño">%%PRINCIPIO%%</div>
+
+<h2>Los 3 roles</h2>
+<p class="sub">Quién es cada uno, qué hace y qué ve en el módulo.</p>
+<div class="tw"><table class="rl"><thead><tr><th scope="col">Rol</th><th scope="col">Qué hace</th><th scope="col">Puede</th><th scope="col">Ve en el menú</th></tr></thead><tbody>%%ROLES%%</tbody></table></div>
+
+<h2>Matriz rol × acción</h2>
+<p class="sub">La columna «Origen» dice si la acción sale de la HU-26.3 o es criterio de diseño.</p>
+<div class="tw" id="mx"><table><thead><tr><th scope="col">Acción</th>%%HEAD%%<th scope="col">Origen</th></tr></thead><tbody>%%ROWS%%</tbody></table></div>
+
+<h2>Quién cierra cada flujo</h2>
+<div class="tw"><table><thead><tr><th>Flujo</th><th>Cambio de estado</th><th>Rol que cierra</th><th>Nota</th></tr></thead><tbody>%%CIERRES%%</tbody></table></div>
+
+<h2>Menores de edad</h2>
+<div class="card">%%MENORES%%</div>
+
+<h2>Fuera de la fase 1</h2><div class="card"><ul class="fuera">%%FUERA%%</ul></div>
+</main>
+<script src="assets/entrega.js"></script></body></html>

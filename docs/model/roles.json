@@ -1,0 +1,158 @@
+{
+  "roles": [
+    {
+      "id": "profesional",
+      "label": "Profesional",
+      "cargo": "Profesional del IVC",
+      "resumen": "Digita: registra, edita y consulta, y puede cargar en masa. No cierra el registro.",
+      "origen": "diseño"
+    },
+    {
+      "id": "coordinador",
+      "label": "Coordinador",
+      "cargo": "Coordinador del área",
+      "resumen": "Todo lo del profesional y además cierra: valida o devuelve por subsanar. Ve Calidad y auditoría.",
+      "origen": "diseño"
+    },
+    {
+      "id": "director",
+      "label": "Director",
+      "cargo": "Director Técnico",
+      "resumen": "Aprueba: valida o devuelve por subsanar. Consulta y ve Calidad y auditoría. No digita.",
+      "origen": "diseño"
+    }
+  ],
+  "fuera": [
+    {
+      "label": "Jurídica",
+      "por": "Apelaciones: no está en la HU-26.3."
+    },
+    {
+      "label": "Atención al usuario (ATU)",
+      "por": "Notificaciones: no está en la HU-26.3."
+    },
+    {
+      "label": "Entidades que reportan (usuario externo)",
+      "por": "Reportan por integración o solicitud: propuesta fuera de la fase 1."
+    }
+  ],
+  "acciones": [
+    {
+      "id": "consultar",
+      "label": "Consultar y buscar",
+      "desc": "Gestión (bandeja e indicadores), ficha y Búsqueda avanzada.",
+      "ruta": "#/control-acceso/infractores",
+      "origen": "HU"
+    },
+    {
+      "id": "registrar",
+      "label": "Registrar",
+      "desc": "Alta individual de un infractor (55 campos).",
+      "ruta": "#/control-acceso/infractores/nuevo",
+      "origen": "HU"
+    },
+    {
+      "id": "editar",
+      "label": "Editar",
+      "desc": "Corregir un registro existente, incluido uno devuelto por subsanar.",
+      "ruta": "#/control-acceso/infractores/INF-2026-0001/editar",
+      "origen": "HU"
+    },
+    {
+      "id": "cargar",
+      "label": "Carga masiva",
+      "desc": "Subir varios registros con plantilla y reporte de inconsistencias.",
+      "ruta": "#/control-acceso/infractores/carga-masiva",
+      "origen": "HU"
+    },
+    {
+      "id": "validar",
+      "label": "Validar registro",
+      "desc": "Cierra el registro: lo pasa de Recibido o Por subsanar a Validado y activa la restricción.",
+      "ruta": "#/control-acceso/infractores",
+      "origen": "diseño"
+    },
+    {
+      "id": "devolver",
+      "label": "Devolver por subsanar",
+      "desc": "Cierra la revisión sin validar: el registro queda Por subsanar con el motivo.",
+      "ruta": "#/control-acceso/infractores",
+      "origen": "diseño"
+    },
+    {
+      "id": "calidad",
+      "label": "Calidad y auditoría",
+      "desc": "Hallazgos (incompletos, duplicados, fechas incoherentes) y trazabilidad de cada cambio.",
+      "ruta": "#/control-acceso/calidad",
+      "origen": "HU"
+    }
+  ],
+  "matriz": {
+    "profesional": [
+      "consultar",
+      "registrar",
+      "editar",
+      "cargar"
+    ],
+    "coordinador": [
+      "consultar",
+      "registrar",
+      "editar",
+      "cargar",
+      "validar",
+      "devolver",
+      "calidad"
+    ],
+    "director": [
+      "consultar",
+      "validar",
+      "devolver",
+      "calidad"
+    ]
+  },
+  "cierres": [
+    {
+      "flujo": "Registro de un infractor",
+      "estado": "Recibido → Validado o Por subsanar",
+      "quien": [
+        "coordinador",
+        "director"
+      ],
+      "nota": "Quien digita no se cierra a sí mismo: el profesional deja el registro en Recibido."
+    },
+    {
+      "flujo": "Corrección de un registro devuelto",
+      "estado": "Por subsanar → Validado",
+      "quien": [
+        "coordinador",
+        "director"
+      ],
+      "nota": "El profesional (o el coordinador) corrige con «Editar»; el cierre sigue siendo la validación."
+    },
+    {
+      "flujo": "Carga masiva",
+      "estado": "Registros nuevos en Recibido",
+      "quien": [
+        "coordinador",
+        "director"
+      ],
+      "nota": "Cada registro cargado se valida o devuelve como uno individual."
+    },
+    {
+      "flujo": "Vigencia de la restricción",
+      "estado": "Activa → Cumplida",
+      "quien": [],
+      "nota": "Automática al vencer: no requiere rol."
+    },
+    {
+      "flujo": "Calidad y auditoría",
+      "estado": "Sin cierre",
+      "quien": [],
+      "nota": "Es de consulta."
+    }
+  ],
+  "menores": {
+    "regla": "La reserva sobre menores de edad es igual para todos los roles: ninguno ve distinto los datos de un menor ni de su representante. Se aplica en la búsqueda (solo por documento completo)."
+  },
+  "principio": "Todo se maneja por rol: si un flujo requiere cierre, hay al menos un rol que puede cerrarlo."
+}
