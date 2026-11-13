@@ -4,6 +4,7 @@
   var GI = w.GI, U = GI.util, D = GI.derive, esc = SUID.esc, C = GI.cat;
   var BASE = '#/control-acceso/infractores';
   /* Origen del alta/expediente: el volver regresa a la pantalla (y pestaña) previa, no a una ruta fija. */
+  var R = w.SUID_ROLES;
   var FLUJO = /^#\/control-acceso\/infractores\/(nuevo|carga-masiva|[^\/]+(\/editar)?)$/, origen = null, tabActiva = 'ind', tabPedida = null;
   function hashDe(u) { var i = (u || '').indexOf('#'); return i < 0 ? '' : u.slice(i); }
   w.addEventListener('hashchange', function (e) {
@@ -388,7 +389,7 @@
     view.innerHTML = '<div class="page-inner gi-page gi-page--tabs">' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Gestión de infractores</h1>' +
       '<p class="page-subtitle">Registra, valida y consulta las sanciones en firme de la Ley 1453 de 2011.</p></div>' +
-      '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--mute" disabled title="Propuesta: sin contrato definido. Pendiente de validar con IVC." aria-label="Registrar por integración, propuesta pendiente de validar con IVC">Por integración · Propuesta</button><a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a></div></header>' +
+      '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--mute" disabled title="Propuesta: sin contrato definido. Pendiente de validar con IVC." aria-label="Registrar por integración, propuesta pendiente de validar con IVC">Por integración · Propuesta</button>' + (R.puede('registrar') ? '<a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a>' : '') + '</div></header>' +
       '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión"><button type="button" role="tab" class="gi-tab" id="giTabI" aria-selected="true" aria-controls="giPanI" data-tab="ind">Indicadores</button>' +
       '<button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="false" aria-controls="giPanR" tabindex="-1" data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
       (w.GS ? '<button type="button" role="tab" class="gi-tab" id="giTabS" aria-selected="false" aria-controls="giPanS" tabindex="-1" data-tab="sol">Expedientes por tramitar <span class="gt-count" id="giTabSN">' + (w.GS.lista ? w.GS.lista().length : 0) + '</span></button>' : '') + '</div>' +
@@ -488,15 +489,15 @@
     var menor = D.esMenor(r), X = GI.expediente;
     var acciones = '';
     if (r.estadoRegistro === 'Recibido' || r.estadoRegistro === 'Por Subsanar') {
-      acciones = '<button class="naowee-btn naowee-btn--mute" id="aSub">' + svg('undo') + ' Devolver por subsanar</button>' +
-        '<button class="naowee-btn naowee-btn--loud" id="aVal">' + svg('check') + ' Validar registro</button>';
+      acciones = (R.puede('devolver') ? '<button class="naowee-btn naowee-btn--mute" id="aSub">' + svg('undo') + ' Devolver por subsanar</button>' : '') +
+        (R.puede('validar') ? '<button class="naowee-btn naowee-btn--loud" id="aVal">' + svg('check') + ' Validar registro</button>' : '');
     }
     /* El cuerpo es el expediente interno (mismo componente que el panel); aquí solo van el encabezado y las acciones. */
     view.innerHTML = '<div class="page-inner gi-page">' +
       '<a class="gi-back" href="' + volverA(BASE) + '" aria-label="Volver" title="Volver">' + svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(D.nombreCompleto(r)) + (menor ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">Menor de edad</span>' : '') + '</h1>' +
       '<p class="page-subtitle"><span class="gi-mono">' + r.id + '</span> · ' + esc(r.tipoId) + ' ' + esc(GI.fmtDoc(r.tipoId, r.numId)) + '</p></div>' +
-      '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' + acciones + '</div></header>' +
+      '<div class="gi-head__actions">' + (R.puede('editar') ? '<a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' : '') + acciones + '</div></header>' +
       X.interno(X.deRegistro(r)) + '</div>';
 
     var aVal = d.getElementById('aVal'), aSub = d.getElementById('aSub'), aEdit = d.getElementById('aEdit');
@@ -507,7 +508,7 @@
       /* DC-098: quien opera se ve con avatar, nombre y cargo; el cargo no existe en SUID.user. */
       return '<p class="gi-p">Vas a ' + accion + ' el registro <strong>' + r.id + '</strong>. La operación queda firmada y registrada. Confirma que quieres realizarla.</p>' +
         '<div class="gi-firma"><span class="gi-firma__av" aria-hidden="true">' + esc(u.initials) + '</span>' +
-        '<div class="gi-firma__id"><strong>' + esc(u.name) + '</strong><span>Profesional del IVC · Mindeporte</span></div>' +
+        '<div class="gi-firma__id"><strong>' + esc(u.name) + '</strong><span>' + esc(R.info().cargo) + '</span></div>' +
         '<div class="gi-firma__sello"><span class="gi-firma__trazo">' + esc(u.name) + '</span><span class="gi-firma__fecha">Firma electrónica · ' + fecha + '</span></div></div>';
     }
     if (aEdit) aEdit.addEventListener('click', function (e) {
@@ -547,6 +548,12 @@
   SUID.views['control-acceso/infractores'] = function (view, ctx) {
     var rest = ctx.rest;
     if (!rest.length) return viewList(view, ctx);
+    var need = rest[0] === 'nuevo' ? 'registrar' : rest[0] === 'carga-masiva' ? 'cargar' : rest[1] === 'editar' ? 'editar' : '';
+    if (need && !R.puede(need)) {
+      ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Sin permiso' }];
+      view.innerHTML = '<div class="page-inner suid-ph"><h1 class="page-title">Sin permiso</h1><p class="page-subtitle">El rol ' + esc(R.info().label) + ' no puede hacer esta acción.</p><a class="naowee-btn naowee-btn--loud" href="' + BASE + '">Volver a Gestión</a></div>';
+      return;
+    }
     if (rest[0] === 'nuevo') return w.GIForm.open(view, ctx, null);
     if (rest[0] === 'carga-masiva') return w.GIBulk.open(view, ctx);
     if (rest[1] === 'editar') return w.GIForm.open(view, ctx, rest[0]);

@@ -174,7 +174,7 @@
       '<a class="gi-back" href="' + back + '" aria-label="Volver" title="Volver">' + UI.svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + (editId ? 'Editar registro ' + editId : sol ? 'Registrar medida desde una solicitud' : 'Registrar infractores') + '</h1>' +
       '<p class="page-subtitle">' + (editId ? 'Actualiza los datos de la decisión en firme registrada.' : sol ? 'Es el mismo registro de una decisión en firme, armado con lo que reportó la entidad.' : 'Registra decisiones en firme una por una o con la carga masiva.') + '</p></div>' +
-      (editId || sol ? '' : '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + UI.BASE + '/carga-masiva">' + UI.svg('upload') + ' Carga masiva</a></div>') + '</header>' +
+      (editId || sol || !w.SUID_ROLES.puede('cargar') ? '' : '<div class="gi-head__actions"><a class="naowee-btn naowee-btn--loud" href="' + UI.BASE + '/carga-masiva">' + UI.svg('upload') + ' Carga masiva</a></div>') + '</header>' +
       origenHtml() + '<div class="gi-banner gi-banner--danger" id="errSum" hidden></div>' +
       '<div class="gi-layout"><nav class="gi-steps" aria-label="Bloques del formulario">' +
       '<div class="gf-total"><div class="gf-total__pct"><strong id="gfPct">0 %</strong><span>completo</span></div>' +

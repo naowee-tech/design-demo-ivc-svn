@@ -479,7 +479,7 @@
   }
   w.DEMO_CONTEXTO = { registrar: registrar, describir: describir, refrescar: refrescar };
 
-  var CSS = 'html.dcp-prep{position:relative;left:0;transition:left .3s cubic-bezier(.2,.8,.2,1)}html.dcp-abierto{left:calc(-1 * var(--dcp-w,360px))}' +
+  var CSS = '.dcp__rol{display:flex;gap:4px;padding:3px;background:rgba(100,116,139,.15);border-radius:10px}.dcp__rol button{flex:1;padding:7px 4px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}.dcp__rol button[aria-pressed=true]{background:#1d4ed8;color:#fff}.dcp__rolres{margin:8px 0 0;font-size:12px;opacity:.75;line-height:1.4}' + 'html.dcp-prep{position:relative;left:0;transition:left .3s cubic-bezier(.2,.8,.2,1)}html.dcp-abierto{left:calc(-1 * var(--dcp-w,360px))}' +
     '.dcp{position:fixed;top:0;right:0;bottom:0;width:var(--dcp-w,360px);max-width:100vw;z-index:2147483000;background:#14161c;color:#e8eaf0;font:13px/1.4 system-ui,sans-serif;box-shadow:-8px 0 32px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}.dcp--on{transform:none}' +
     '@media (prefers-reduced-motion:reduce){html.dcp-prep,.dcp{transition:none}}' +
     '.dcp *{box-sizing:border-box}.dcp__h{padding:8px 10px;border-bottom:1px solid #2a2e38;display:flex;align-items:center;gap:8px}.dcp__h b{font-size:14px;flex:1;white-space:nowrap}' +
@@ -534,7 +534,8 @@
   /* Lista visible en el panel, no el desplegable nativo: cada vista es un botón con aria-current (DC-120). */
   function selector() {
     var cur = vistaEmbebida || actual();
-    return '<div class="dcp__vi">' + VISTAS.map(function (g) {
+    var enIvc = /\/suid\//.test(location.pathname), enSvn = /\/svn\//.test(location.pathname);
+    return '<div class="dcp__vi">' + VISTAS.filter(function (g) { return !((enIvc && g[0] === 'SVN') || (enSvn && g[0] === 'IVC')); }).map(function (g) {
       return '<p class="dcp__grp">' + esc(g[0]) + '</p>' + g[1].map(function (v) {
         return '<button type="button" data-ruta="' + esc(v[1]) + '"' + (v[1] === cur ? ' aria-current="true"' : '') + '>' + esc(v[0]) + '</button>';
       }).join('');
@@ -568,11 +569,12 @@
   function abrir() {
     if (document.getElementById('dcPanel')) { return; }
     var st = document.createElement('style'); st.textContent = CSS;
-    var el = document.createElement('aside'); el.id = 'dcPanel'; el.className = 'dcp'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Casos de prueba');
+    var el = document.createElement('aside'); el.id = 'dcPanel'; el.className = 'dcp'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Casos demo');
     PAG = 1; vistaEmbebida = '';
-    el.innerHTML = '<div class="dcp__h"><b>Casos de prueba</b><a class="dcp__man" href="' + esc(new URL('manuales/index.html', RAIZ).href) + '">Manuales</a><button type="button" data-x aria-label="Cerrar">✕</button></div>' +
+    el.innerHTML = '<div class="dcp__h"><b>Casos demo</b><a class="dcp__man" href="' + esc(new URL('manuales/index.html', RAIZ).href) + '">Manuales</a><button type="button" data-x aria-label="Cerrar">✕</button></div>' +
       '<div class="dcp__cuerpo">' +
       '<section class="dcp__sec dcp__ctx" aria-label="¿Qué estoy viendo?"><h3 class="dcp__sec-h"><button type="button" data-ctx aria-expanded="false" aria-controls="dcpCtx">¿Qué estoy viendo?<i aria-hidden="true"></i></button></h3><div class="dcp__ctx-t" id="dcpCtx" hidden aria-live="polite" aria-atomic="true"></div></section>' +
+      (w.SUID_ROLES ? '<section class="dcp__sec" aria-label="Rol"><h3 class="dcp__sec-h">Rol</h3><div class="dcp__rol" role="group" aria-label="Rol">' + Object.keys(w.SUID_ROLES.todos).map(function (k) { return '<button type="button" data-rol="' + k + '" aria-pressed="' + (k === w.SUID_ROLES.actual()) + '">' + esc(w.SUID_ROLES.todos[k].label) + '</button>'; }).join('') + '</div><p class="dcp__rolres">' + esc(w.SUID_ROLES.info().resumen) + '</p></section>' : '') +
       '<section class="dcp__sec" aria-label="Vistas"><h3 class="dcp__sec-h">Vistas</h3><div class="dcp__selw">' + selector() + '</div>' +
       '<div class="dcp__emb" hidden><div class="dcp__emb-h"><button type="button" data-completa>Abrir completa</button><button type="button" data-cerrar-vista>Cerrar vista</button></div><iframe title="Vista embebida" data-vista></iframe></div></section>' +
       '<section class="dcp__sec" aria-label="Personas"><h3 class="dcp__sec-h">Personas</h3><div class="dcp__l"></div></section>' +
@@ -615,6 +617,8 @@
     el.addEventListener('click', function (e) {
       var cx = e.target.closest('[data-ctx]');
       if (cx) { var ab = cx.getAttribute('aria-expanded') !== 'true'; cx.setAttribute('aria-expanded', String(ab)); el.querySelector('.dcp__ctx-t').hidden = !ab; return; }
+      var rl = e.target.closest('[data-rol]');
+      if (rl) { try { sessionStorage.setItem(PANEL, '1'); } catch (er) { /* sin almacenamiento */ } w.location.search = '?rol=' + rl.getAttribute('data-rol'); return; }
       var ruta = e.target.closest('[data-ruta]');
       if (ruta) { mostrarYContar(ruta.getAttribute('data-ruta')); marcarVista(); return; }
       var st = e.target.closest('[data-st]');

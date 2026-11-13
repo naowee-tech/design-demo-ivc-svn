@@ -42,7 +42,7 @@
       { id: 'infractores', label: 'Gestión de sanciones', icon: img('icon-acceso'), href: '#/control-acceso/infractores' },
       { id: 'consulta', label: 'Búsqueda avanzada', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
       w.SUID_SOLICITUDES === false ? null : { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
-      { id: 'calidad', label: 'Calidad y auditoría', icon: img('icon-busqueda'), href: '#/control-acceso/calidad' },
+      w.SUID_ROLES.puede('calidad') ? { id: 'calidad', label: 'Calidad y auditoría', icon: img('icon-busqueda'), href: '#/control-acceso/calidad' } : null,
       w.SUID_EVENTOS === false ? null : { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
     ] },
     { sec: 'Configuración', items: [{ id: 'equipo-coord', label: 'Usuarios y áreas', icon: img('icon-equipo'), ph: 1 }] },
@@ -58,7 +58,7 @@
 
   var SUID = w.SUID = {
     views: {},
-    user: { name: 'Marcela Ortiz', initials: 'MO', role: 'IVC' },
+    user: Object.assign({ role: 'IVC' }, w.SUID_ROLES.info().user),
     open: {},
     esc: function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); },
     icons: I
@@ -129,9 +129,7 @@
         '<div class="suid-user">' +
           '<button class="suid-avatar" type="button" aria-haspopup="menu" aria-expanded="false"><span class="suid-avatar__ring">' + SUID.user.initials + '</span>' + I.chevD + '</button>' +
           '<div class="suid-user__menu" role="menu" hidden>' +
-            '<a role="menuitem" href="../svn/index.html">Ir a SVN · Platform</a>' +
-            '<hr class="suid-user__sep" role="separator">' +
-            '<a role="menuitem" href="#" data-demo-panel>Panel de casos de prueba</a>' +
+            '<a role="menuitem" href="#" data-demo-panel>Panel demo</a>' +
             '<a role="menuitem" href="../manuales/index.html">Manuales</a>' +
             '<hr class="suid-user__sep" role="separator">' +
             '<a role="menuitem" href="../index.html">Cerrar sesión</a>' +
@@ -175,6 +173,9 @@
       if (inicio) {
         view.innerHTML = '<div class="suid-home"><h1 class="sk-sr">Inicio</h1><span class="suid-home__wm" aria-hidden="true">IVC</span></div>';
         ctx.crumbs = [{ label: 'Inicio' }];
+      } else if (match === 'control-acceso/calidad' && !w.SUID_ROLES.puede('calidad')) {
+        view.innerHTML = '<div class="page-inner suid-ph"><h1 class="page-title">Sin permiso</h1><p class="page-subtitle">Calidad y auditoría no está disponible para el rol ' + SUID.esc(w.SUID_ROLES.info().label) + '.</p><a class="naowee-btn naowee-btn--loud" href="#/control-acceso/infractores">Ir a Gestión</a></div>';
+        ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Sin permiso' }];
       } else if (match) {
         SUID.views[match](view, ctx);
       } else {
