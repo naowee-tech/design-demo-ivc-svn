@@ -1,0 +1,33 @@
+{
+  "grupos": [
+    {
+      "id": "insumos",
+      "titulo": "Insumos del IVC",
+      "sub": "La fuente original que entregó el IVC, versión del 30-sep-2026. Todo lo demás sale de aquí.",
+      "items": [
+        ["HU-26.3 · Gestión de infractores", "La historia de usuario aprobada por la Dirección Técnica del IVC (v04).", "spec/insumos/HU-26.3-GESTIÓN DE INFRACTORES_30092026_VF.docx", "PROD-45", 36607],
+        ["Base de datos de sancionatorios", "Hoja «Diccionario de Datos»: el origen de los 55 campos que se registran de cada infractor.", "spec/insumos/BASE DE DATOS SANCIONATORIOS_30092026_VF.xlsx", "PROD-45", 36606],
+        ["Prototipo de formulario SVN", "El boceto del formulario de registro que entregó el IVC.", "spec/insumos/Prototipo_Formulario_SVN_30092026_VF.xlsx", "PROD-45", 36608]
+      ]
+    },
+    {
+      "id": "specs",
+      "titulo": "Specs de la entrega",
+      "sub": "El contenido de cada pestaña en markdown, para quien construye. Cada uno está adjunto en su tarea.",
+      "items": [
+        ["Empezar aquí", "La guía de entrada: qué es el módulo, en qué orden leerlo y cómo se cruzan documentos, tareas y demo.", "spec/index.md", "PROD-45", null],
+        ["Historias de usuario", "Las 9 historias con sus criterios de aceptación.", "spec/historias.md", "PROD-73", 36623],
+        ["Roles", "Los 3 roles, la matriz rol × acción y quién cierra cada flujo.", "spec/roles.md", "PROD-72", 36618],
+        ["Superficie", "Las 17 vistas del módulo, con sus paneles y modales.", "spec/superficie.md", "PROD-74", 36620],
+        ["Flujos", "El paso a paso de cada recorrido.", "spec/flujos.md", "PROD-71", 36617],
+        ["Modelo de datos", "Los 55 campos por bloque, catálogos, estados, reglas e integración.", "spec/modelo-datos.md", "PROD-71", 36627]
+      ]
+    }
+  ],
+  "enlaces": [
+    ["Demo", "https://naowee-tech.github.io/design-demo-ivc-svn/", "Entra con cualquier dato en el login."],
+    ["Épica en Jira", "https://naowee.atlassian.net/browse/PROD-45", "PROD-45 · IVC Sistema Validación Nacional"],
+    ["Entrega de la demo", "https://naowee.atlassian.net/browse/PROD-70", "PROD-70"],
+    ["Repositorio", "https://github.com/naowee-tech/design-demo-ivc-svn", "naowee-tech/design-demo-ivc-svn"]
+  ]
+}
