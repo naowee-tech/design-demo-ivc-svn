@@ -153,3 +153,30 @@ window.addEventListener('hashchange',hash);hash()})();
 out = (HTML.replace('NAV', nav).replace('BLOQUES', bloques).replace('CATS', cats).replace('EJEMPLO', e(EJEMPLO)))
 open(R + '/docs/modelo-datos.html', 'w', encoding='utf-8').write(out)
 print('ok', len(out), conteo)
+
+# ── spec markdown ──
+def celda(s): return (s or '—').replace('|', '\\|').replace('\n', ' ')
+md = ['# Modelo de datos · Gestión de infractores (IVC SVN, fase 1)', '',
+      'Qué se guarda de cada registro, con qué reglas, y qué se espera recibir si un registro entra por integración.',
+      'Fuente: hoja «Diccionario de Datos» de la base de sancionatorios del IVC (adjunta en PROD-45) y el formulario de la demo.', '',
+      '## Resumen', '',
+      '- **55 campos** en 6 bloques (A a F); dirección y representante se despliegan en subcampos (%d filas).' % len(F),
+      '- **Una sola entidad lógica:** el registro de sanción. Infractor y representante viven dentro del registro.',
+      '- **Nombres de datos en inglés** (snake_case, como el contrato del back); textos para el usuario en español.',
+      '- **Obligatoriedad:** Obligatorio, Opcional, Condicional (obligatorio solo si otro campo lo activa) y Automático (lo calcula el sistema).', '']
+for g, t, d in BLOQ:
+    md += ['## %s' % t, '', d, '', '| N.º | Campo | Dato | Tipo | Obligatoriedad | Regla del diccionario |', '|---|---|---|---|---|---|']
+    md += ['| %s | %s | `%s` | %s | %s | %s |' % (f['n'], celda(f['c']), EN[f['g'] + '|' + f['n']], celda(f['t']), oblig(f)[0], celda(f['r'] + (' ' + f['s'] if f['s'] else ''))) for f in F if f['g'] == g]
+    md += ['']
+md += ['## Catálogos', '', 'Listas parametrizadas del formulario (hoja «Catálogos»).', '', '| Catálogo | Valores |', '|---|---|'] + ['| `%s` | %s |' % (k, v) for k, v in cat.items()]
+md += ['', '## Estados', '',
+       '**Del registro** (`record_status`): `received` (Recibido) → `validated` (Validado), o `received` → `to_correct` (Por subsanar) → `validated`. Un registro Por subsanar se corrige y luego se valida; no vuelve a Recibido.', '',
+       '**De la restricción** (`restriction_status`): `inactive` (Inactiva) → `active` (Activa) → `fulfilled` (Cumplida). Solo bloquea con el registro Validado y la fecha dentro de la vigencia; pasa a Cumplida sola al vencer y no se borra.', '',
+       '## Reglas entre campos', '', '- Fecha del acto < ejecutoria < radicado de entrada.', '- Fecha de los hechos anterior al acto, y nunca hoy ni futura.', '- Representante obligatorio si el infractor era menor en la fecha de los hechos.', '- Sin duplicados equivalentes: misma persona, mismo acto y misma vigencia.', '',
+       '## Integración (propuesta de diseño)', '',
+       '- **Qué llegaría:** bloques B a E (infractor, representante si es menor, hechos y sanción), más el identificador de la entidad que reporta y la referencia de su reporte.',
+       '- **Qué completa el IVC:** bloque A (fecha de registro, automática), bloque F (radicados, profesional responsable y observaciones) y el estado del registro, que entra como Recibido.',
+       '- **Al recibirlo:** se aplican las mismas reglas del formulario; si falla alguna, se rechaza con el detalle de cada campo; si pasa, sigue el flujo normal de validación del IVC.', '',
+       '### Ejemplo de mensaje', '', '```json', EJEMPLO, '```', '']
+open(R + '/docs/spec/modelo-datos.md', 'w', encoding='utf-8').write('\n'.join(md))
+print('ok spec/modelo-datos.md')

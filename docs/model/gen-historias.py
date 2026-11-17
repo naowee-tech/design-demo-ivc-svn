@@ -63,3 +63,17 @@ html = ('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="
         '%s</main><script src="assets/entrega.js"></script></body></html>') % (CSS, n, body)
 open(R + '/docs/historias.html', 'w', encoding='utf-8').write(html)
 print('ok historias.html ·', n, 'historias')
+
+# ── spec markdown ──
+md = ['# Historias de usuario · Gestión de infractores (IVC SVN, fase 1)', '',
+      '%d historias que desglosan la HU-26.3 «%s» (%s) por quién hace qué. La HU original está adjunta en PROD-45.' % (n, O['hu'].split(' · ')[-1], O['version']), '',
+      '| Historia | Título | Rol | Trabajo | De la HU-26.3 |', '|---|---|---|---|---|']
+md += ['| %s | %s%s | %s | %d · %s | %s |' % (h['id'], h['titulo'], ' (modelo propuesto)' if h.get('propuesta') else '', h['rol'], h['trabajo'], TRAB[h['trabajo'] - 1], h['traza']) for g in J['grupos'] for h in g['historias']]
+for g in J['grupos']:
+    md += ['', '## %s' % g['titulo'], '', g['sub']]
+    for h in g['historias']:
+        md += ['', '### %s · %s' % (h['id'], h['titulo']), '', '- **Rol:** %s' % h['rol'] + (' · modelo propuesto' if h.get('propuesta') else ''),
+               '- **De la HU-26.3:** %s' % h['traza'], '', '> Como %s, quiero %s, para %s.' % (h['como'], h['quiero'], h['para']), '', '**Criterios de aceptación**', '']
+        md += ['%d. **Dado** %s, **cuando** %s, **entonces** %s.' % (i + 1, c[0], c[1], c[2]) for i, c in enumerate(h['criterios'])]
+open(R + '/docs/spec/historias.md', 'w', encoding='utf-8').write('\n'.join(md) + '\n')
+print('ok spec/historias.md')
