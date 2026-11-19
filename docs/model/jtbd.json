@@ -19,7 +19,7 @@
       "cuando": "alguien termina de registrar una sanción",
       "quiero": "que quien tiene el rol de cerrar la valide o la devuelva con un motivo",
       "para": "que en la base solo cuente lo que está completo y correcto",
-      "bien": "Revisar nunca cambia lo que decidió la autoridad: solo confirma que el registro está completo. Quien digita no se valida a sí mismo.",
+      "bien": "Revisar nunca cambia lo que decidió la autoridad: solo confirma que el registro está completo. Si quien digita puede validar su propio registro está por confirmar con el IVC.",
       "fuente": "HU-26.3 · «Validar la completitud formal»",
       "ir": [["Ver el flujo", "index.html#flujos/validacion"], ["Quién cierra", "index.html#roles/quien-cierra-cada-flujo"]]
     },
@@ -46,9 +46,9 @@
       "cuando": "alguien usa la información para decidir",
       "quiero": "que no haya registros duplicados, incompletos ni con fechas que no cuadran, y saber quién cambió qué y cuándo",
       "para": "respaldar cada decisión ante quien la pregunte",
-      "bien": "Los problemas de calidad aparecen solos para corregirlos, y cada cambio de estado deja quién, cuándo, de qué estado a cuál.",
-      "fuente": "HU-26.3 · Calidad, vigencia y auditoría",
-      "ir": [["Ver el flujo", "index.html#flujos/calidad"], ["Verlo en la demo", "../suid/app.html#/control-acceso/calidad"]]
+      "bien": "Las reglas no dejan guardar registros incompletos, duplicados ni con fechas que no cuadran, y cada cambio deja quién, cuándo, de qué a qué y por qué.",
+      "fuente": "HU-26.3 · Calidad, vigencia y auditoría (el tablero de Calidad y auditoría sale de la fase 1)",
+      "ir": [["Ver el flujo de edición", "index.html#flujos/edicion"], ["Verlo en la demo", "../suid/app.html#/control-acceso/infractores/INF-2026-0045"]]
     },
     {
       "titulo": "Proteger a los menores de edad",

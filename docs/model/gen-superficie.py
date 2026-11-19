@@ -9,6 +9,10 @@ R = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SU = json.load(open(R + '/docs/model/superficie.json', encoding='utf-8'))
 V = SU['vistas']
 IN = json.load(open(R + '/docs/model/indicadores.json', encoding='utf-8'))
+# Grupos con «fuera» quedan como referencia: no cuentan en las vistas de la fase 1 ni enlazan a la demo.
+FUERA = {i for g in SU['grupos'] if g.get('fuera') for i in g['vistas']}
+N1 = sum(len(g['vistas']) for g in SU['grupos'] if not g.get('fuera'))
+NUM = {1: 'una', 2: 'dos', 3: 'tres', 4: 'cuatro'}
 ROL = {'profesional': 'Profesional', 'coordinador': 'Coordinador', 'director': 'Director'}
 SV = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>'
 ICON = {'profesional': SV % '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
@@ -73,7 +77,8 @@ dialog.lb button{position:absolute;right:12px;top:12px;padding:8px 12px;border:0
 </style>'''
 
 M = SU['menu']
-where = '<div class="where"><figure class="side-img"><img src="img/superficie/menu.jpg" alt="Menú real del IVC en la demo, con la sección Control de acceso y sus tres entradas" width="274"><figcaption>Menú del IVC en la demo</figcaption></figure><div><p>%s</p><p>Las %d vistas del módulo se llegan desde estas tres entradas del menú. El resto del IVC sigue igual.</p></div></div>' % (e(M['nota']), len(V))
+ENT = NUM[len(M['items'])] + ' entradas'
+where = '<div class="where"><figure class="side-img"><img src="img/superficie/menu.jpg" alt="Menú real del IVC en la demo, con la sección Control de acceso y sus %s" width="274"><figcaption>Menú del IVC en la demo</figcaption></figure><div><p>%s</p><p>Las %d vistas del módulo se llegan desde estas %s del menú. El resto del IVC sigue igual.</p></div></div>' % (ENT, e(M['nota']), N1, ENT)
 
 
 def chips(ids): return ''.join('<a href="#v-%s">%s</a>' % (i, e(V[i]['n'].split(' · ')[-1])) for i in ids)
@@ -98,16 +103,16 @@ def vista(i):
     return ('<li class="v%s" id="v-%s">%s'
             '<div class="v-b"><div class="v-top"><span class="tp">%s</span>%s</div><h3>%s</h3><p class="v-para">%s</p>'
             '<div class="v-cols"><div><p>Qué tiene</p>%s</div><div><p>Qué se puede hacer</p>%s</div><div><p>Estados y errores</p>%s</div></div>'
-            '<div class="v-pie">%s<a class="go" href="%s" target="_blank" rel="noopener">Abrir en la demo →</a></div></div></li>') % (
+            '<div class="v-pie">%s%s</div></div></li>') % (
         '' if im else ' sin-img', i, gal, e(v['tipo']),
         ''.join('<span class="rl rl-%s">%s%s</span>' % (r, ICON[r], ROL[r]) for r in v['roles']),
-        e(v['n']), e(v['para']), lst(v['contiene']), lst(v['acciones']), lst(v['estados']), hus, e(demo(v)))
+        e(v['n']), e(v['para']), lst(v['contiene']), lst(v['acciones']), lst(v['estados']), hus, '' if i in FUERA else '<a class="go" href="%s" target="_blank" rel="noopener">Abrir en la demo →</a>' % e(demo(v)))
 
 
 dep = ''.join('<tr><td><b>%s</b></td><td><span class="pill">%s</span></td><td>%s</td></tr>' % (e(d['que']), e(d['de']), e(d['nota'])) for d in SU['dependencias'])
-body = ('<h2>Dónde vive en el IVC</h2><p class="sub">Una sección nueva del menú, con tres entradas.</p>%s'
-        '<h2>Mapa de vistas</h2><p class="sub">Desde cada entrada del menú, a qué vista se llega. Toca una para ir a su detalle.</p>%s') % (where, mapa)
-body += ''.join('<section id="%s"><h2>%s</h2><p class="sub">%s</p><ol class="vs">%s</ol></section>' % (g['id'], e(g['titulo']), e(g['sub']), ''.join(vista(i) for i in g['vistas'])) for g in SU['grupos'])
+body = ('<h2>Dónde vive en el IVC</h2><p class="sub">Una sección nueva del menú, con %s.</p>%s'
+        '<h2>Mapa de vistas</h2><p class="sub">Desde cada entrada del menú, a qué vista se llega. Toca una para ir a su detalle.</p>%s') % (ENT, where, mapa)
+body += ''.join('<section id="%s"><h2>%s</h2><p class="sub">%s</p><ol class="vs">%s</ol></section>' % (g['id'], e(g['titulo']) + (' · fuera de la fase 1' if g.get('fuera') else ''), e(g['sub']), ''.join(vista(i) for i in g['vistas'])) for g in SU['grupos'])
 ind = ''.join('<li id="ind-%s"><h3>%s</h3><p class="q">%s</p><dl><dt>Cifra</dt><dd>%s</dd><dt>Fórmula</dt><dd><code>%s</code></dd><dt>Ventana</dt><dd>%s</dd>'
               '<dt>Etiqueta</dt><dd><ul class="et">%s</ul></dd><dt>En el ⓘ</dt><dd>%s</dd><dt>Datos</dt><dd>%s</dd><dt>Por confirmar</dt><dd class="pc">%s</dd></dl></li>' % (
     x['id'], e(x['n']), e(x['pregunta']), e(x['cifra']), e(x['formula']), e(x['ventana']),
@@ -127,20 +132,20 @@ document.getElementById('lbx').addEventListener('click',function(){d.close()});d
 html = ('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>Superficie · IVC SVN</title>%s<link rel="stylesheet" href="assets/entrega.css"></head><body class="wide"><main>'
         '<header><h1>Superficie del módulo</h1><p class="sub">Las %d vistas que conforman Gestión de infractores: dónde viven en el IVC, cómo se llega a cada una, quién la ve, qué tiene y qué se puede hacer.</p></header>'
-        '%s</main>%s<script src="assets/entrega.js"></script></body></html>') % (CSS, len(V), body, js)
+        '%s</main>%s<script src="assets/entrega.js"></script></body></html>') % (CSS, N1, body, js)
 open(R + '/docs/superficie.html', 'w', encoding='utf-8').write(html)
 
 # ── spec markdown ──
 md = ['# Superficie · Gestión de infractores (IVC SVN, fase 1)', '',
-      'Inventario de las %d vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.' % len(V), '',
-      '## Dónde vive', '', M['nota'], '', 'Sección **%s** en el menú del IVC, con tres entradas: %s.' % (M['sec'], ', '.join(M['items'])), '',
+      'Inventario de las %d vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.' % N1, '',
+      '## Dónde vive', '', M['nota'], '', 'Sección **%s** en el menú del IVC, con %s: %s.' % (M['sec'], ENT, ', '.join(M['items'])), '',
       '## Mapa de navegación', '', '| Entrada del menú | Abre | Desde ahí | Ventanas de confirmación |', '|---|---|---|---|']
 nm = lambda ids: ', '.join(V[i]['n'] for i in ids) or '—'
 md += ['| %s | %s | %s | %s |' % (m['entrada'], nm(m['principal']), nm(m['abre']), nm(m.get('desde_ficha', []))) for m in SU['mapa']]
 md += ['', '## Resumen de vistas', '', '| Vista | Tipo | Ruta | Quién la ve | Historias |', '|---|---|---|---|---|']
-md += ['| %s | %s | `%s` | %s | %s |' % (V[i]['n'], V[i]['tipo'], V[i]['ruta'], ', '.join(ROL[r] for r in V[i]['roles']), ', '.join(V[i]['historias']) or '—') for g in SU['grupos'] for i in g['vistas']]
+md += ['| %s | %s | `%s` | %s | %s |' % (V[i]['n'] + (' (fuera de la fase 1)' if i in FUERA else ''), V[i]['tipo'], V[i]['ruta'], ', '.join(ROL[r] for r in V[i]['roles']), ', '.join(V[i]['historias']) or '—') for g in SU['grupos'] for i in g['vistas']]
 for g in SU['grupos']:
-    md += ['', '## %s' % g['titulo'], '', g['sub']]
+    md += ['', '## %s' % (g['titulo'] + (' · fuera de la fase 1' if g.get('fuera') else '')), '', g['sub']]
     for i in g['vistas']:
         v = V[i]
         md += ['', '### %s' % v['n'], '', '- **Tipo:** %s' % v['tipo'], '- **Ruta:** `%s`' % v['ruta'], '- **Quién la ve:** %s' % ', '.join(ROL[r] for r in v['roles']),
@@ -149,7 +154,7 @@ for g in SU['grupos']:
         if v['estados']: md += ['', '**Estados y errores**', ''] + ['- ' + x for x in v['estados']]
 md += ['', '## Dependencias', '', '| Qué | De quién | Nota |', '|---|---|---|'] + ['| %s | %s | %s |' % (d['que'], d['de'], d['nota']) for d in SU['dependencias']]
 md += ['', '## Criterios de aceptación', '',
-       '- [ ] Las %d vistas existen con el contenido, las acciones y los estados descritos.' % len(V),
+       '- [ ] Las %d vistas existen con el contenido, las acciones y los estados descritos.' % N1,
        '- [ ] Cada vista se muestra solo a los roles indicados; las acciones respetan la matriz de Roles.',
        '- [ ] La navegación sigue el mapa: menú → vista → ficha → confirmaciones.',
        '- [ ] Ninguna pantalla actual del IVC cambia; el módulo entra como sección nueva del menú.', '']

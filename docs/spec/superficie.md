@@ -1,12 +1,12 @@
 # Superficie · Gestión de infractores (IVC SVN, fase 1)
 
-Inventario de las 17 vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.
+Inventario de las 15 vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.
 
 ## Dónde vive
 
 El módulo entra como una sección nueva del menú del IVC. Ninguna pantalla actual del IVC cambia.
 
-Sección **Control de acceso** en el menú del IVC, con tres entradas: Gestión de sanciones, Búsqueda avanzada, Calidad y auditoría.
+Sección **Control de acceso** en el menú del IVC, con dos entradas: Gestión de sanciones, Búsqueda avanzada.
 
 ## Mapa de navegación
 
@@ -14,7 +14,6 @@ Sección **Control de acceso** en el menú del IVC, con tres entradas: Gestión 
 |---|---|---|---|
 | Gestión de sanciones | Gestión · Indicadores, Gestión · Registros de infractores | Panel del expediente, Registrar infractor, Carga masiva, Ficha del infractor | Validar registro, Devolver por subsanar, Editar registro, ¿Salir de la carga masiva? |
 | Búsqueda avanzada | Búsqueda avanzada | Panel de la persona, Ficha del infractor | Abrir datos de un menor |
-| Calidad y auditoría | Calidad y auditoría · Calidad, Calidad y auditoría · Trazabilidad | Ficha del infractor | — |
 
 ## Resumen de vistas
 
@@ -26,15 +25,15 @@ Sección **Control de acceso** en el menú del IVC, con tres entradas: Gestión 
 | Registrar infractor | Asistente por pasos | `#/control-acceso/infractores/nuevo` | Profesional, Coordinador | HU-01, HU-02 |
 | Carga masiva | Asistente de 6 pasos | `#/control-acceso/infractores/carga-masiva` | Profesional, Coordinador | HU-03 |
 | ¿Salir de la carga masiva? | Ventana de confirmación | `#/control-acceso/infractores/carga-masiva` | Profesional, Coordinador | HU-03 |
-| Ficha del infractor | Pantalla | `#/control-acceso/infractores/INF-2026-0065` | Profesional, Coordinador, Director | HU-05, HU-07, HU-08 |
-| Validar registro | Ventana de confirmación | `#/control-acceso/infractores/INF-2026-0065` | Coordinador, Director | HU-05 |
-| Devolver por subsanar | Ventana de confirmación | `#/control-acceso/infractores/INF-2026-0065` | Coordinador, Director | HU-05 |
+| Ficha del infractor | Pantalla | `#/control-acceso/infractores/INF-2026-0045` | Profesional, Coordinador, Director | HU-05, HU-07, HU-08 |
+| Validar registro | Ventana de confirmación | `#/control-acceso/infractores/INF-2026-0045` | Coordinador, Director | HU-05 |
+| Devolver por subsanar | Ventana de confirmación | `#/control-acceso/infractores/INF-2026-0045` | Coordinador, Director | HU-05 |
 | Editar registro | Confirmación + formulario | `#/control-acceso/infractores/INF-2026-0044/editar` | Profesional, Coordinador | HU-06 |
 | Búsqueda avanzada | Pantalla | `#/control-acceso/consulta` | Profesional, Coordinador, Director | HU-02, HU-07 |
 | Panel de la persona | Panel lateral | `#/control-acceso/consulta` | Profesional, Coordinador, Director | HU-02, HU-07 |
 | Abrir datos de un menor | Ventana de confirmación | `#/control-acceso/consulta` | Profesional, Coordinador, Director | HU-02 |
-| Calidad y auditoría · Calidad | Pestaña | `#/control-acceso/calidad` | Coordinador, Director | HU-09 |
-| Calidad y auditoría · Trazabilidad | Pestaña | `#/control-acceso/calidad` | Coordinador, Director | HU-09 |
+| Calidad y auditoría · Calidad (fuera de la fase 1) | Pestaña | `#/control-acceso/calidad` | Coordinador, Director | HU-09 |
+| Calidad y auditoría · Trazabilidad (fuera de la fase 1) | Pestaña | `#/control-acceso/calidad` | Coordinador, Director | HU-09 |
 | Avisos breves | Aviso emergente | `#/control-acceso/infractores` | Profesional, Coordinador, Director | HU-01, HU-03, HU-05, HU-06 |
 | Inicio de sesión | Del SUID | `login` | Profesional, Coordinador, Director | — |
 
@@ -109,7 +108,7 @@ Donde se registran, se revisan y se cierran los registros.
 **Acciones**
 
 - Ver expediente (abre la ficha)
-- Editar
+- Editar (un Validado: solo coordinador)
 - Cerrar; tocar otra fila cambia el contenido
 
 **Estados y errores**
@@ -200,7 +199,7 @@ Donde se registran, se revisan y se cierran los registros.
 ### Ficha del infractor
 
 - **Tipo:** Pantalla
-- **Ruta:** `#/control-acceso/infractores/INF-2026-0065`
+- **Ruta:** `#/control-acceso/infractores/INF-2026-0045`
 - **Quién la ve:** Profesional, Coordinador, Director
 - **Para qué:** Ver todo lo de una persona en un solo lugar y cerrar el registro.
 - **Capturas:** Recibido, Por subsanar, Validado · sanción activa
@@ -214,7 +213,7 @@ Donde se registran, se revisan y se cierran los registros.
 
 **Acciones**
 
-- Editar (profesional y coordinador)
+- Editar (profesional y coordinador; un Validado: solo coordinador, con motivo)
 - Validar registro y Devolver por subsanar (coordinador y director, mientras no esté Validado)
 
 **Estados y errores**
@@ -225,7 +224,7 @@ Donde se registran, se revisan y se cierran los registros.
 ### Validar registro
 
 - **Tipo:** Ventana de confirmación
-- **Ruta:** `#/control-acceso/infractores/INF-2026-0065`
+- **Ruta:** `#/control-acceso/infractores/INF-2026-0045`
 - **Quién la ve:** Coordinador, Director
 - **Para qué:** Cerrar el registro dejando constancia de quién lo validó.
 - **Capturas:** Validar registro
@@ -245,7 +244,7 @@ Donde se registran, se revisan y se cierran los registros.
 ### Devolver por subsanar
 
 - **Tipo:** Ventana de confirmación
-- **Ruta:** `#/control-acceso/infractores/INF-2026-0065`
+- **Ruta:** `#/control-acceso/infractores/INF-2026-0045`
 - **Quién la ve:** Coordinador, Director
 - **Para qué:** Devolver un registro incompleto diciendo qué falta.
 - **Capturas:** Devolver por subsanar
@@ -278,6 +277,7 @@ Donde se registran, se revisan y se cierran los registros.
 
 - Ventana de confirmación firmada antes de abrir la edición.
 - El mismo formulario del registro, con los datos cargados.
+- Si el registro está Validado: solo el coordinador lo edita y al guardar pide el motivo, obligatorio; el cambio aplica de inmediato.
 
 **Acciones**
 
@@ -287,6 +287,7 @@ Donde se registran, se revisan y se cierran los registros.
 **Estados y errores**
 
 - Las mismas validaciones del registro; el estado no cambia al guardar y el cambio queda en el historial.
+- Guardar un Validado sin motivo: no deja confirmar.
 
 ## Búsqueda avanzada
 
@@ -374,9 +375,9 @@ Donde se responde si una persona tiene una restricción vigente.
 - Sin motivo: «Selecciona al menos un motivo para continuar.»
 - Al abrir: aviso «Apertura registrada en la auditoría.»
 
-## Calidad y auditoría
+## Calidad y auditoría · fuera de la fase 1
 
-Donde se cuida la base: hallazgos y rastro de cada cambio.
+Sale de la fase 1: queda para integraciones futuras (HU-09). Se conserva como referencia.
 
 ### Calidad y auditoría · Calidad
 
@@ -482,7 +483,7 @@ Lo que aparece en varias vistas.
 
 ## Criterios de aceptación
 
-- [ ] Las 17 vistas existen con el contenido, las acciones y los estados descritos.
+- [ ] Las 15 vistas existen con el contenido, las acciones y los estados descritos.
 - [ ] Cada vista se muestra solo a los roles indicados; las acciones respetan la matriz de Roles.
 - [ ] La navegación sigue el mapa: menú → vista → ficha → confirmaciones.
 - [ ] Ninguna pantalla actual del IVC cambia; el módulo entra como sección nueva del menú.

@@ -3,8 +3,7 @@
     "sec": "Control de acceso",
     "items": [
       "Gestión de sanciones",
-      "Búsqueda avanzada",
-      "Calidad y auditoría"
+      "Búsqueda avanzada"
     ],
     "resto": [
       "Gestión",
@@ -49,16 +48,6 @@
       "desde_ficha": [
         "menor-motivo"
       ]
-    },
-    {
-      "entrada": "Calidad y auditoría",
-      "principal": [
-        "calidad",
-        "trazabilidad"
-      ],
-      "abre": [
-        "ficha"
-      ]
     }
   ],
   "grupos": [
@@ -92,7 +81,8 @@
     {
       "id": "calidad",
       "titulo": "Calidad y auditoría",
-      "sub": "Donde se cuida la base: hallazgos y rastro de cada cambio.",
+      "sub": "Sale de la fase 1: queda para integraciones futuras (HU-09). Se conserva como referencia.",
+      "fuera": "Sale de la fase 1: queda para integraciones futuras (HU-09). Se conserva como referencia.",
       "vistas": [
         "calidad",
         "trazabilidad"
@@ -294,7 +284,7 @@
     "ficha": {
       "n": "Ficha del infractor",
       "tipo": "Pantalla",
-      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "ruta": "#/control-acceso/infractores/INF-2026-0045",
       "roles": [
         "profesional",
         "coordinador",
@@ -307,7 +297,7 @@
         "Columna lateral: estado de la restricción con sus pasos, historial de cambios y otras restricciones de la misma persona."
       ],
       "acciones": [
-        "Editar (profesional y coordinador)",
+        "Editar (profesional y coordinador; un Validado: solo coordinador, con motivo)",
         "Validar registro y Devolver por subsanar (coordinador y director, mientras no esté Validado)"
       ],
       "estados": [
@@ -337,7 +327,7 @@
     "validar": {
       "n": "Validar registro",
       "tipo": "Ventana de confirmación",
-      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "ruta": "#/control-acceso/infractores/INF-2026-0045",
       "roles": [
         "coordinador",
         "director"
@@ -366,7 +356,7 @@
     "devolver": {
       "n": "Devolver por subsanar",
       "tipo": "Ventana de confirmación",
-      "ruta": "#/control-acceso/infractores/INF-2026-0065",
+      "ruta": "#/control-acceso/infractores/INF-2026-0045",
       "roles": [
         "coordinador",
         "director"
@@ -404,14 +394,16 @@
       "para": "Corregir un registro, incluido uno devuelto por subsanar.",
       "contiene": [
         "Ventana de confirmación firmada antes de abrir la edición.",
-        "El mismo formulario del registro, con los datos cargados."
+        "El mismo formulario del registro, con los datos cargados.",
+        "Si el registro está Validado: solo el coordinador lo edita y al guardar pide el motivo, obligatorio; el cambio aplica de inmediato."
       ],
       "acciones": [
         "Guardar cambios",
         "Cancelar"
       ],
       "estados": [
-        "Las mismas validaciones del registro; el estado no cambia al guardar y el cambio queda en el historial."
+        "Las mismas validaciones del registro; el estado no cambia al guardar y el cambio queda en el historial.",
+        "Guardar un Validado sin motivo: no deja confirmar."
       ],
       "historias": [
         "HU-06"
@@ -586,7 +578,7 @@
       ],
       "acciones": [
         "Ver expediente (abre la ficha)",
-        "Editar",
+        "Editar (un Validado: solo coordinador)",
         "Cerrar; tocar otra fila cambia el contenido"
       ],
       "estados": [

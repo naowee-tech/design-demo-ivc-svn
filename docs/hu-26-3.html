@@ -57,7 +57,7 @@ nav.toc a:hover{background:var(--sf)}
 .st-pa{color:var(--wa);background:var(--wabg);border-color:color-mix(in srgb,var(--wa) 35%,transparent)}
 .st-sl{color:var(--sl);background:var(--slbg);border:1px dashed var(--sl)}
 .st-nw{color:var(--nw);background:var(--nwbg);border-color:color-mix(in srgb,var(--nw) 35%,transparent)}
-.st-x{color:var(--ng);background:var(--ngbg)}
+.st-x{color:var(--ng);background:var(--ngbg)}.b-x{background:var(--ng)}
 
 /* Resumen */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:22px 0 0}
@@ -103,7 +103,7 @@ nav.toc a:hover{background:var(--sf)}
 .cap .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .cap .here{font-size:12px;color:var(--mu);display:none}
 .cap.is-here .here{display:inline}
-.n-ok{background:#166534}.n-pa{background:#a64b06}.n-sl{background:#475569;outline:2px dashed #475569;outline-offset:2px}.n-nw{background:#6d28d9}
+.n-ok{background:#166534}.n-pa{background:#a64b06}.n-sl{background:#475569;outline:2px dashed #475569;outline-offset:2px}.n-nw{background:#6d28d9}.n-x{background:#9f1239}
 .viewer{min-width:0;display:flex;flex-direction:column;gap:12px}
 .stage{position:relative;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:var(--sf);box-shadow:var(--shadow)}
 .frame{position:relative;aspect-ratio:1360/820;width:100%}
@@ -275,8 +275,8 @@ footer{margin-top:48px;font-size:13px;color:var(--mu)}
   <div class="kpi"><b>8</b><span>pantallas capturadas</span></div>
   <div class="kpi wide">
     <span>8 puntos verificables contra la demo</span>
-    <div class="bar" aria-hidden="true"><i class="b-ok" style="flex:8"></i></div>
-    <div class="legend"><span class="chip st-ok"><span class="g" aria-hidden="true">✓</span>8 cubiertos</span></div>
+    <div class="bar" aria-hidden="true"><i class="b-ok" style="flex:6"></i><i class="b-pa" style="flex:1"></i><i class="b-x" style="flex:1"></i></div>
+    <div class="legend"><span class="chip st-ok"><span class="g" aria-hidden="true">✓</span>6 cubiertos</span><span class="chip st-pa"><span class="g" aria-hidden="true">◐</span>1 parcial</span><span class="chip st-x"><span class="g" aria-hidden="true">–</span>1 fuera de la fase 1</span></div>
   </div>
 </div>
 <p class="warn">Las reglas de los 55 campos no están cotejadas una a una contra la columna «Regla o validación» del diccionario. Los campos existen en el formulario; que cada regla se cumpla está por verificar.</p>
@@ -415,6 +415,7 @@ footer{margin-top:48px;font-size:13px;color:var(--mu)}
         <li><span class="sw" aria-hidden="true"></span><div><b>Eventos</b>Escenarios, backoffice y auditoría de eventos (<code>ev-*</code>).<div class="st"><span class="chip st-x">Apagado</span><code>SUID_EVENTOS = false</code></div></div></li>
         <li><span class="sw" aria-hidden="true"></span><div><b>Solicitudes</b>Reportes de clubes e inspecciones (<code>gi-solicitudes.js</code>) y la pestaña «Expedientes por tramitar».<div class="st"><span class="chip st-x">Apagado</span><code>SUID_SOLICITUDES = false</code></div></div></li>
         <li><span class="sw" aria-hidden="true"></span><div><b>Perfil y afinidad · foto y huella</b>Señal inferida de perfil, y foto y huella en ficha y búsqueda. En «Recientes» la foto se reemplaza por las iniciales.<div class="st"><span class="chip st-x">Apagado</span><code>SUID_PERFIL = false</code></div></div></li>
+        <li><span class="sw" aria-hidden="true"></span><div><b>Calidad y auditoría</b>Hallazgos y trazabilidad (<code>gi-calidad.js</code>): fuera de la fase 1. La bitácora de cada registro sigue en su ficha.<div class="st"><span class="chip st-x">Apagado</span><code>SUID_CALIDAD = false</code></div></div></li>
         <li><span class="sw none" aria-hidden="true"></span><div><b>Superficies 2 a 9 del SVN</b>Carpeta <code>svn/</code>: fuera del recorrido del IVC.<div class="st"><span class="chip st-sl">Sin bandera</span></div></div></li>
       </ul>
     </div>
@@ -450,7 +451,7 @@ var FIELDS = [{"n": "1", "c": "Fecha de Registro", "t": "Fecha", "r": "Al crear 
 var PINES = {"login": [{"cap": "c1", "label": "Autenticación con el SUID", "x": 51.84, "y": 33.83, "w": 33.6, "h": 28.89}], "bandeja": [{"cap": "c2", "label": "Registrar infractores", "x": 82.13, "y": 14.15, "w": 15.51, "h": 4.88}, {"cap": "c4", "label": "Por integración (propuesta)", "x": 65, "y": 14.15, "w": 16.4, "h": 4.88}, {"cap": "c6", "label": "Lista y consulta de registros", "x": 22.5, "y": 24.22, "w": 75.15, "h": 6.1}], "registro": [{"cap": "c2", "label": "Cinco secciones del registro (campos 1 a 55)", "x": 22.5, "y": 31.78, "w": 75.15, "h": 52.62}, {"cap": "c3", "label": "Entrada a la carga masiva", "x": 85.47, "y": 21.71, "w": 12.17, "h": 4.88}], "carga-masiva": [{"cap": "c3", "label": "Asistente de carga masiva", "x": 32.13, "y": 35.43, "w": 55.88, "h": 35.61}], "ficha": [{"cap": "c5", "label": "Estados del registro y de la restricción", "x": 72.65, "y": 31.78, "w": 25, "h": 30.27}, {"cap": "c5", "label": "Historial de cambios", "x": 72.65, "y": 64, "w": 25, "h": 27.48}, {"cap": "c2", "label": "Datos del infractor", "x": 22.5, "y": 31.78, "w": 48.68, "h": 31.68}], "consulta": [{"cap": "c6", "label": "Búsqueda y filtros", "x": 23.75, "y": 32.57, "w": 16.18, "h": 5.85}, {"cap": "c6", "label": "Personas con medida", "x": 22.5, "y": 57.08, "w": 75.15, "h": 42.92}], "calidad": [{"cap": "c7", "label": "Hallazgos de calidad", "x": 22.5, "y": 36.41, "w": 75.15, "h": 9.49}, {"cap": "c7", "label": "Detalle de hallazgos", "x": 22.5, "y": 61.51, "w": 75.15, "h": 10.37}], "trazabilidad": [{"cap": "c8", "label": "Bitácora de cambios de estado", "x": 22.5, "y": 45.93, "w": 75.15, "h": 54.07}]};
 
 var ST = {
-  ok:{t:'Cubierto',g:'✓'}, pa:{t:'Parcial',g:'◐'}, sl:{t:'Slot abierto',g:'○'}, nw:{t:'Nuevo',g:'★'}
+  ok:{t:'Cubierto',g:'✓'}, pa:{t:'Parcial',g:'◐'}, sl:{t:'Slot abierto',g:'○'}, nw:{t:'Nuevo',g:'★'}, x:{t:'Fuera de la fase 1',g:'–'}
 };
 var CAPS = [
   {id:'c1',hu:'Acceso a módulo',nm:'Acceso por login del SUID',st:'ok',scr:'login',
@@ -471,12 +472,12 @@ var CAPS = [
   {id:'c6',hu:'De la historia: «consultar»',nm:'Consulta',st:'ok',scr:'consulta',
    rutas:['#/control-acceso/infractores','#/control-acceso/consulta'],code:'gi-consulta.js',
    que:'Lista de registros en la bandeja y búsqueda avanzada por documento, nombre, estado de la medida y fechas.'},
-  {id:'c7',hu:'Calidad, vigencia y auditoría',nm:'Calidad de los datos',st:'ok',scr:'calidad',
+  {id:'c7',hu:'Calidad, vigencia y auditoría',nm:'Calidad de los datos',st:'x',scr:'calidad',
    rutas:['#/control-acceso/calidad'],code:'gi-calidad.js',
-   que:'Hallazgos de registros incompletos, duplicados y fechas incoherentes. El acceso va por rol: el profesional no lo ve; coordinador y director sí.'},
-  {id:'c8',hu:'Calidad, vigencia y auditoría',nm:'Trazabilidad y auditoría',st:'ok',scr:'trazabilidad',
+   que:'Sale de la fase 1: queda para integraciones futuras. Las reglas estrictas no dejan guardar incompletos, duplicados ni fechas incoherentes.'},
+  {id:'c8',hu:'Calidad, vigencia y auditoría',nm:'Trazabilidad y auditoría',st:'pa',scr:'trazabilidad',
    rutas:['#/control-acceso/calidad'],code:'gi-calidad.js, historial de cada ficha',
-   que:'Bitácora de cada cambio de estado con usuario, fecha, hora, estado anterior y nuevo. Pestaña «Trazabilidad» de Calidad y auditoría.'}
+   que:'La bitácora de cada cambio (usuario, fecha, hora, estado anterior y nuevo, motivo) se ve en el historial de la ficha. La pestaña «Trazabilidad» sale de la fase 1.'}
 ];
 var SCREENS = [
   {id:'login',t:'Inicio de sesión del SUID',r:'login.html',href:'../suid/login.html',d:'Puerta de entrada al módulo con las credenciales del SUID.'},
@@ -485,8 +486,8 @@ var SCREENS = [
   {id:'carga-masiva',t:'Carga masiva',r:'#/control-acceso/infractores/carga-masiva',href:'../suid/app.html#/control-acceso/infractores/carga-masiva',d:'Plantilla, validación de estructura y reporte de inconsistencias (simulado).'},
   {id:'ficha',t:'Ficha única del infractor',r:'#/control-acceso/infractores/INF-2026-0001',href:'../suid/app.html#/control-acceso/infractores/INF-2026-0001',d:'ID único, los dos estados por separado y el historial completo.'},
   {id:'consulta',t:'Búsqueda avanzada',r:'#/control-acceso/consulta',href:'../suid/app.html#/control-acceso/consulta',d:'Consulta por documento, nombre, estado de la medida y fechas.'},
-  {id:'calidad',t:'Calidad y auditoría · Calidad',r:'#/control-acceso/calidad',href:'../suid/app.html#/control-acceso/calidad',d:'Hallazgos: incompletos, duplicados y fechas incoherentes. Sin hallazgos con los datos de ejemplo actuales.'},
-  {id:'trazabilidad',t:'Calidad y auditoría · Trazabilidad',r:'#/control-acceso/calidad (pestaña Trazabilidad)',href:'../suid/app.html#/control-acceso/calidad',d:'Bitácora de cambios de estado: usuario, fecha, hora, estado anterior y nuevo.'}
+  {id:'calidad',t:'Calidad y auditoría · Calidad',r:'#/control-acceso/calidad',href:'../suid/app.html#/control-acceso/calidad',d:'Hallazgos: incompletos, duplicados y fechas incoherentes. Sin hallazgos con los datos de ejemplo actuales. Fuera de la fase 1: apagada en la demo.'},
+  {id:'trazabilidad',t:'Calidad y auditoría · Trazabilidad',r:'#/control-acceso/calidad (pestaña Trazabilidad)',href:'../suid/app.html#/control-acceso/calidad',d:'Bitácora de cambios de estado: usuario, fecha, hora, estado anterior y nuevo. Fuera de la fase 1: apagada en la demo.'}
 ];
 var capById = {}, scrById = {};
 CAPS.forEach(function(c,i){ c.n = i+1; capById[c.id] = c; });
@@ -728,8 +729,8 @@ var M = [
   ['Estados del registro y de la restricción; cumplida automática','ok','Cubierto','<code>gi-data.js</code>, <code>gi-expediente.js</code>'],
   ['Ficha única con historial','ok','Cubierto','<code>gi-expediente.js</code>'],
   ['Consulta','ok','Cubierto','<code>gi-consulta.js</code>'],
-  ['Registrar usuario, fecha, hora, estado anterior y nuevo','ok','Cubierto','Historial de cada ficha y pestaña «Trazabilidad»'],
-  ['Reportes de calidad y trazabilidad con acceso restringido','ok','Cubierto','<code>gi-calidad.js</code>, ruta <code>#/control-acceso/calidad</code>. Hallazgos: incompletos, duplicados, fechas incoherentes. <b>El acceso va por rol: profesional no, coordinador y director sí.</b>'],
+  ['Registrar usuario, fecha, hora, estado anterior y nuevo','ok','Cubierto','Historial de cada ficha'],
+  ['Reportes de calidad y trazabilidad con acceso restringido','x','Fuera de la fase 1','<code>gi-calidad.js</code> apagado con <code>SUID_CALIDAD = false</code>. Las reglas estrictas impiden guardar incompletos, duplicados y fechas incoherentes.'],
   ['Criterio de aceptación 01','ok','Cubierto','Formulario + estados']
 ];
 $('mapeo-body').innerHTML = M.map(function(r){ return '<tr><td>'+esc(r[0])+'</td><td><span class="chip st-'+r[1]+'"><span class="g" aria-hidden="true">'+ST[r[1]].g+'</span>'+r[2]+'</span></td><td>'+r[3]+'</td></tr>'; }).join('');

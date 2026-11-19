@@ -22,7 +22,7 @@ nav a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10p
 .demo:hover{filter:brightness(1.08)}
 a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 iframe{flex:1;width:100%;border:0;background:var(--bg)}
-@media (max-width:1320px){.brand small{display:none}nav a{padding:0 8px}}
+@media (max-width:1600px){.brand small{display:none}nav a{padding:0 8px}}
 @media (max-width:860px){header{flex-wrap:wrap;gap:0 16px;padding:0 16px}nav{order:3;flex-basis:100%;padding:0;border:0;border-top:1px solid var(--bd)}nav a{padding:12px 10px}.brand small{display:none}}
 </style></head><body>
 <header><div class="brand"><i aria-hidden="true">IVC</i><div><b>Entrega fase 1</b><small>Sistema de Validación Nacional · HU-26.3</small></div></div>
@@ -31,7 +31,7 @@ iframe{flex:1;width:100%;border:0;background:var(--bg)}
 <iframe id="v" title="Vista de la entrega" allow="fullscreen" allowfullscreen></iframe>
 <script>
 (function () {
-  var V = [['trabajos', 'Para qué existe', 'trabajos.html'], ['hu', 'Historias', 'historias.html'], ['roles', 'Roles', 'roles.html'], ['superficie', 'Superficie', 'superficie.html'], ['flujos', 'Flujos', 'flujos.html'], ['datos', 'Datos', 'modelo-datos.html'], ['anexos', 'Anexos', 'anexos.html'], ['responsive', 'Responsive', 'responsive.html']];
+  var V = [['trabajos', 'Para qué existe', 'trabajos.html'], ['hu', 'Historias', 'historias.html'], ['roles', 'Roles', 'roles.html'], ['superficie', 'Superficie', 'superficie.html'], ['flujos', 'Flujos', 'flujos.html'], ['datos', 'Datos', 'modelo-datos.html'], ['arquitectura', 'Base técnica', 'arquitectura.html'], ['anexos', 'Anexos', 'anexos.html'], ['responsive', 'Responsive', 'responsive.html']];
   var nav = document.getElementById('tabs'), fr = document.getElementById('v');
   function ir() {
     var h = (location.hash || '#trabajos').slice(1).split('/'), k = h[0], ancla = h[1] ? '#' + h[1] : '';

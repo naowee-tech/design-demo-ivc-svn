@@ -9,8 +9,9 @@
     'roles.html': { n: '03', t: 'Roles', meta: [['Tarea en Jira', J + 'PROD-72', 'PROD-72']] },
     'modelo-datos.html': { n: '06', t: 'Modelo de datos', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45']] },
     'superficie.html': { n: '04', t: 'Superficie', meta: [['Tarea en Jira', J + 'PROD-74', 'PROD-74']] },
-    'anexos.html': { n: '07', t: 'Anexos', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45']] },
-    'responsive.html': { n: '08', t: 'Responsive', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45']] }
+    'arquitectura.html': { n: '07', t: 'Base técnica', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45'], ['Fases siguientes', 'recorrido-ingreso.html', 'Recorrido animado']] },
+    'anexos.html': { n: '08', t: 'Anexos', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45']] },
+    'responsive.html': { n: '09', t: 'Responsive', meta: [['Épica en Jira', J + 'PROD-45', 'PROD-45']] }
   };
   var main = document.querySelector('main');
   if (!main) return;

@@ -6,13 +6,14 @@ Esta guía es la puerta de entrada al módulo. Explica qué es, en qué orden le
 
 Es un módulo nuevo del SUID que vive dentro del IVC. Sirve para saber con certeza, el día del partido, quién no puede entrar. Se registran las sanciones en firme, se validan, se consultan y su vigencia se lleva sola.
 
-En el menú del IVC aparece como **Control de acceso**, con tres entradas:
+En el menú del IVC aparece como **Control de acceso**, con dos entradas:
 
 | Entrada | Qué hace |
 |---|---|
 | Gestión de sanciones | Registrar, cargar en masa, revisar y validar o devolver |
 | Búsqueda avanzada | Saber si una persona tiene una restricción vigente |
-| Calidad y auditoría | Hallazgos de calidad y trazabilidad de cada cambio |
+
+Calidad y auditoría (HU-09) quedó fuera de la fase 1: queda para integraciones futuras.
 
 - **Del SUID** toma el login, los roles y la firma de cada operación.
 - **Del IVC** toma el menú. Ninguna pantalla actual del IVC cambia.
@@ -38,7 +39,8 @@ Documento completo: https://naowee-tech.github.io/design-demo-ivc-svn/entrega/
 | 04 | [Superficie](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#superficie) | Las 17 vistas, paneles y modales | [superficie.md](superficie.md) · [indicadores.md](indicadores.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) | Todas |
 | 05 | [Flujos](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#flujos) | Paso a paso de cada recorrido | [flujos.md](flujos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) | — |
 | 06 | [Datos](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#datos) | Los 55 campos, catálogos, estados e integración | [modelo-datos.md](modelo-datos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) | Formulario «Registrar infractor» |
-| 08 | [Responsive](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#responsive) | Cómo se ve cada vista en celular, tablet y escritorio, y qué cambia de forma | [responsive.md](responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) | Todas, a 375 / 768 / 1280 px |
+| 07 | [Base técnica](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#arquitectura) | Cómo construir la fase 1 en ivc-ms, public-gateway y suite-web-ivc | [arquitectura.md](arquitectura.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) | [Recorrido animado](https://naowee-tech.github.io/design-demo-ivc-svn/docs/recorrido-ingreso.html) |
+| 09 | [Responsive](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#responsive) | Cómo se ve cada vista en celular, tablet y escritorio, y qué cambia de forma | [responsive.md](responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) | Todas, a 375 / 768 / 1280 px |
 
 La entrega de la demo como tal es [PROD-70 · Entrega de demo IVC SVN](https://naowee.atlassian.net/browse/PROD-70).
 
@@ -62,8 +64,8 @@ Abre en el login del SUID. Es de demostración: entra con cualquier dato, inclus
 **Entrar con un rol**
 
 - [Profesional](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html?rol=profesional#/control-acceso/infractores): registra, corrige y carga en masa. No cierra registros.
-- [Coordinador](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html?rol=coordinador#/control-acceso/infractores): todo lo del profesional, más validar o devolver y ver Calidad y auditoría.
-- [Director](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html?rol=director#/control-acceso/infractores): valida o devuelve, consulta y ve Calidad y auditoría. No digita.
+- [Coordinador](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html?rol=coordinador#/control-acceso/infractores): todo lo del profesional, más validar o devolver. Edita registros validados, con motivo.
+- [Director](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html?rol=director#/control-acceso/infractores): valida o devuelve y consulta. No digita.
 
 **Pantallas directas**
 
@@ -73,7 +75,6 @@ Abre en el login del SUID. Es de demostración: entra con cualquier dato, inclus
 | Registrar infractor | [#/control-acceso/infractores/nuevo](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html#/control-acceso/infractores/nuevo) |
 | Carga masiva | [#/control-acceso/infractores/carga-masiva](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html#/control-acceso/infractores/carga-masiva) |
 | Búsqueda avanzada | [#/control-acceso/consulta](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html#/control-acceso/consulta) |
-| Calidad y auditoría | [#/control-acceso/calidad](https://naowee-tech.github.io/design-demo-ivc-svn/suid/app.html#/control-acceso/calidad) |
 
 **Atajos**
 
@@ -110,13 +111,14 @@ Cada archivo está en dos lados: **Jira** descarga el adjunto de la tarea (pide 
 | indicadores.md | Superficie (sección «Cómo se calculan los indicadores») | [Repo](indicadores.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) |
 | flujos.md | Flujos | [Jira](https://naowee.atlassian.net/secure/attachment/36617/flujos.md) · [Repo](flujos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
 | modelo-datos.md | Datos | [Jira](https://naowee.atlassian.net/secure/attachment/36627/modelo-datos.md) · [Repo](modelo-datos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
+| arquitectura.md | Base técnica | [Repo](arquitectura.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) |
 | responsive.md | Responsive | [Repo](responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) |
 
 **Enlaces**
 
 | Qué | Enlace |
 |---|---|
-| Documento de la entrega (8 pestañas) | https://naowee-tech.github.io/design-demo-ivc-svn/entrega/ |
+| Documento de la entrega (9 pestañas) | https://naowee-tech.github.io/design-demo-ivc-svn/entrega/ |
 | Demo | https://naowee-tech.github.io/design-demo-ivc-svn/ |
 | Repositorio | https://github.com/naowee-tech/design-demo-ivc-svn |
 | Épica en Jira | https://naowee.atlassian.net/browse/PROD-45 |
@@ -133,4 +135,5 @@ Cada pestaña se genera con un script en `docs/model/` desde un JSON. Para cambi
 | Superficie | `superficie.json` + `indicadores.json` (cálculo de los indicadores, también escribe `indicadores.md`) | `gen-superficie.py` |
 | Flujos | `flujos.json` | `gen-flujos-superficie.py` |
 | Datos | `hu-26-3.html` + `campos-en.json` + `obligatoriedad.json` + `suid/gi-catalogos.js` | `gen-modelo-datos.py` |
+| Base técnica | `arquitectura.json` | `gen-arquitectura.py` |
 | Responsive | `responsive.json` + `responsive-medicion.json` (la escribe `medir-responsive.mjs`, con capturas en `docs/img/responsive/`) | `gen-responsive.py` |

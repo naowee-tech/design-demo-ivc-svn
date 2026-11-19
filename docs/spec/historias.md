@@ -12,7 +12,7 @@
 | HU-06 | Corregir un registro | Profesional o coordinador | 2 · Revisar que lo registrado esté completo antes de que cuente | «Requiero… actualizar» |
 | HU-07 | Buscar a una persona y ver su ficha | Todos los roles | 3 · Saber rápido si una persona tiene una restricción vigente | «Requiero… consultar» · ficha única con historial |
 | HU-08 | Que la vigencia se actualice sola | Sistema | 4 · Que la vigencia se cuide sola | Administración de restricciones · las cumplidas no se eliminan |
-| HU-09 | Revisar la calidad y la trazabilidad | Coordinador o director | 5 · Poder confiar en la base | Calidad, vigencia y auditoría |
+| HU-09 | Revisar la calidad y la trazabilidad (fuera de la fase 1) | Coordinador o director | 5 · Poder confiar en la base | Calidad, vigencia y auditoría |
 
 ## Registrar
 
@@ -94,6 +94,7 @@ Qué pasa antes de que un registro cuente.
 **Criterios de aceptación**
 
 1. **Dado** un registro está Por subsanar, **cuando** lo edito y guardo en el modal firmado, **entonces** se guarda el cambio, el estado no cambia y queda en el historial.
+2. **Dado** el registro está Validado, **cuando** el coordinador lo edita y escribe el motivo, **entonces** el cambio aplica de inmediato y queda en el historial con el motivo.
 
 ## Consultar
 
@@ -129,7 +130,8 @@ Lo que mantiene la información confiable y vigente.
 
 ### HU-09 · Revisar la calidad y la trazabilidad
 
-- **Rol:** Coordinador o director
+- **Rol:** Coordinador o director · fuera de la fase 1
+- **Fase:** Sale de la fase 1: queda para integraciones futuras menos estrictas.
 - **De la HU-26.3:** Calidad, vigencia y auditoría
 
 > Como coordinador o director, quiero ver los registros incompletos, duplicados o con fechas incoherentes, y quién cambió qué, para corregir a tiempo y respaldar cada decisión.

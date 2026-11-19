@@ -33,7 +33,8 @@ for c in M['cierres']:
 md += ['', '## Comportamiento esperado', '',
        '- Rol por `?rol=<id>` (se recuerda por sesión). Sin rol: `coordinador`.',
        '- Sin permiso, el control **no se muestra**; si se llega por URL, la pantalla dice «Sin permiso» y ofrece volver a Gestión.',
-       '- El menú oculta Calidad y auditoría a quien no la puede ver.',
+       '- Calidad y auditoría está apagada en la demo de la fase 1 (`SUID_CALIDAD = false`).',
+       '- «Editar» sobre un registro Validado solo aparece con `editar_validado` (coordinador) y pide motivo al guardar.',
        '- La firma de cada operación lleva el nombre y cargo del rol activo.',
        '- La autorización real la define el SUID; esto describe lo que la interfaz debe mostrar.', '',
        '## Menores de edad', '', M['menores']['regla'], '',
@@ -54,7 +55,7 @@ head = ''.join('<th data-r="%s" scope="col"><span class="ri ri-%s ri-s">%s</span
 cierres = ''.join('<tr><td><b>%s</b></td><td>%s</td><td>%s</td><td class="mu">%s</td></tr>' % (
     e(c['flujo']), e(c['estado']), ''.join('<span class="pill">%s</span>' % e(ROL[x]['label']) for x in c['quien']) or '<span class="mu">—</span>', e(c['nota'])) for c in M['cierres'])
 fuera = ''.join('<li><b>%s</b> %s</li>' % (e(f['label']), e(f['por'])) for f in M['fuera'])
-MENU = [('Gestión de sanciones', 'consultar'), ('Búsqueda avanzada', 'consultar'), ('Calidad y auditoría', 'calidad')]
+MENU = [('Gestión de sanciones', 'consultar'), ('Búsqueda avanzada', 'consultar')]
 roles_rows = ''.join('<tr><th scope="row"><span class="ri ri-%s">%s</span><b>%s</b><small>%s</small><a class="go" href="../suid/app.html?rol=%s#/control-acceso/infractores" target="_blank" rel="noopener">Ver la demo como %s →</a></th><td class="res">%s</td><td><div class="pills">%s</div></td><td><div class="pills">%s</div></td></tr>' % (
     r['id'], ICON.get(r['id'], ''), e(r['label']), e(r['cargo']), r['id'], e(r['label']), e(r['resumen']),
     ''.join('<span>%s</span>' % e(a['label']) for a in M['acciones'] if a['id'] in M['matriz'][r['id']]),

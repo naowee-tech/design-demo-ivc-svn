@@ -11,14 +11,14 @@
       "id": "coordinador",
       "label": "Coordinador",
       "cargo": "Coordinador del área",
-      "resumen": "Todo lo del profesional y además cierra: valida o devuelve por subsanar. Ve Calidad y auditoría.",
+      "resumen": "Todo lo del profesional, y cierra: valida o devuelve por subsanar. Edita registros validados, con motivo.",
       "origen": "diseño"
     },
     {
       "id": "director",
       "label": "Director",
       "cargo": "Director Técnico",
-      "resumen": "Aprueba: valida o devuelve por subsanar. Consulta y ve Calidad y auditoría. No digita.",
+      "resumen": "Aprueba: valida o devuelve por subsanar. Consulta. No digita.",
       "origen": "diseño"
     }
   ],
@@ -34,6 +34,10 @@
     {
       "label": "Entidades que reportan (usuario externo)",
       "por": "Reportan por integración o solicitud: propuesta fuera de la fase 1."
+    },
+    {
+      "label": "Calidad y auditoría",
+      "por": "Hallazgos y trazabilidad (HU-09): sale de la fase 1 y queda para integraciones futuras. La bitácora de cada registro se ve en su ficha."
     }
   ],
   "acciones": [
@@ -59,6 +63,13 @@
       "origen": "HU"
     },
     {
+      "id": "editar_validado",
+      "label": "Editar un registro validado",
+      "desc": "Con motivo obligatorio: el cambio aplica de inmediato y queda en el historial con el motivo.",
+      "ruta": "#/control-acceso/infractores/INF-2026-0001/editar",
+      "origen": "diseño"
+    },
+    {
       "id": "cargar",
       "label": "Carga masiva",
       "desc": "Subir varios registros con plantilla y reporte de inconsistencias.",
@@ -78,13 +89,6 @@
       "desc": "Cierra la revisión sin validar: el registro queda Por subsanar con el motivo.",
       "ruta": "#/control-acceso/infractores",
       "origen": "diseño"
-    },
-    {
-      "id": "calidad",
-      "label": "Calidad y auditoría",
-      "desc": "Hallazgos (incompletos, duplicados, fechas incoherentes) y trazabilidad de cada cambio.",
-      "ruta": "#/control-acceso/calidad",
-      "origen": "HU"
     }
   ],
   "matriz": {
@@ -98,16 +102,15 @@
       "consultar",
       "registrar",
       "editar",
+      "editar_validado",
       "cargar",
       "validar",
-      "devolver",
-      "calidad"
+      "devolver"
     ],
     "director": [
       "consultar",
       "validar",
-      "devolver",
-      "calidad"
+      "devolver"
     ]
   },
   "cierres": [
@@ -118,7 +121,7 @@
         "coordinador",
         "director"
       ],
-      "nota": "Quien digita no se cierra a sí mismo: el profesional deja el registro en Recibido."
+      "nota": "Por confirmar con el IVC si quien digita puede validar su propio registro; en la fase 1 no se restringe."
     },
     {
       "flujo": "Corrección de un registro devuelto",
@@ -143,12 +146,6 @@
       "estado": "Activa → Cumplida",
       "quien": [],
       "nota": "Automática al vencer: no requiere rol."
-    },
-    {
-      "flujo": "Calidad y auditoría",
-      "estado": "Sin cierre",
-      "quien": [],
-      "nota": "Es de consulta."
     }
   ],
   "menores": {

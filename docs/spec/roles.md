@@ -11,14 +11,15 @@ Todo se maneja por rol: si un flujo requiere cierre, hay al menos un rol que pue
 | Rol | Quién es | Qué hace |
 |---|---|---|
 | `profesional` | Profesional del IVC | Digita: registra, edita y consulta, y puede cargar en masa. No cierra el registro. |
-| `coordinador` | Coordinador del área | Todo lo del profesional y además cierra: valida o devuelve por subsanar. Ve Calidad y auditoría. |
-| `director` | Director Técnico | Aprueba: valida o devuelve por subsanar. Consulta y ve Calidad y auditoría. No digita. |
+| `coordinador` | Coordinador del área | Todo lo del profesional, y cierra: valida o devuelve por subsanar. Edita registros validados, con motivo. |
+| `director` | Director Técnico | Aprueba: valida o devuelve por subsanar. Consulta. No digita. |
 
 Fuera de la fase 1:
 
 - **Jurídica**: Apelaciones: no está en la HU-26.3.
 - **Atención al usuario (ATU)**: Notificaciones: no está en la HU-26.3.
 - **Entidades que reportan (usuario externo)**: Reportan por integración o solicitud: propuesta fuera de la fase 1.
+- **Calidad y auditoría**: Hallazgos y trazabilidad (HU-09): sale de la fase 1 y queda para integraciones futuras. La bitácora de cada registro se ve en su ficha.
 
 ## Matriz rol × acción
 
@@ -27,26 +28,26 @@ Fuera de la fase 1:
 | Consultar y buscar | sí | sí | sí | HU-26.3 |
 | Registrar | sí | sí | — | HU-26.3 |
 | Editar | sí | sí | — | HU-26.3 |
+| Editar un registro validado | — | sí | — | Criterio de diseño |
 | Carga masiva | sí | sí | — | HU-26.3 |
 | Validar registro | — | sí | sí | Criterio de diseño |
 | Devolver por subsanar | — | sí | sí | Criterio de diseño |
-| Calidad y auditoría | — | sí | sí | HU-26.3 |
 
 ## Quién cierra cada flujo
 
 | Flujo | Cambio de estado | Rol que cierra | Nota |
 |---|---|---|---|
-| Registro de un infractor | Recibido → Validado o Por subsanar | Coordinador, Director | Quien digita no se cierra a sí mismo: el profesional deja el registro en Recibido. |
+| Registro de un infractor | Recibido → Validado o Por subsanar | Coordinador, Director | Por confirmar con el IVC si quien digita puede validar su propio registro; en la fase 1 no se restringe. |
 | Corrección de un registro devuelto | Por subsanar → Validado | Coordinador, Director | El profesional (o el coordinador) corrige con «Editar»; el cierre sigue siendo la validación. |
 | Carga masiva | Registros nuevos en Recibido | Coordinador, Director | Cada registro cargado se valida o devuelve como uno individual. |
 | Vigencia de la restricción | Activa → Cumplida | — | Automática al vencer: no requiere rol. |
-| Calidad y auditoría | Sin cierre | — | Es de consulta. |
 
 ## Comportamiento esperado
 
 - Rol por `?rol=<id>` (se recuerda por sesión). Sin rol: `coordinador`.
 - Sin permiso, el control **no se muestra**; si se llega por URL, la pantalla dice «Sin permiso» y ofrece volver a Gestión.
-- El menú oculta Calidad y auditoría a quien no la puede ver.
+- Calidad y auditoría está apagada en la demo de la fase 1 (`SUID_CALIDAD = false`).
+- «Editar» sobre un registro Validado solo aparece con `editar_validado` (coordinador) y pide motivo al guardar.
 - La firma de cada operación lleva el nombre y cargo del rol activo.
 - La autorización real la define el SUID; esto describe lo que la interfaz debe mostrar.
 

@@ -46,13 +46,15 @@ Spec para dev. Fuente: `docs/model/flujos.json`. Vista: `docs/index.html#flujos`
 **Camino feliz**
 
 1. Desde la ficha, pulsar «Editar» y confirmar en el modal firmado con nombre y cargo.
-2. Corregir los campos necesarios.
-3. Guardar: el cambio queda en el historial con usuario y fecha; el estado no cambia.
-4. Si el registro estaba Por subsanar, sigue así hasta que el coordinador o el director lo valide.
+2. Si el registro está Validado, solo el coordinador puede editarlo y al guardar escribe el motivo: el cambio aplica de inmediato.
+3. Corregir los campos necesarios.
+4. Guardar: el cambio queda en el historial con usuario y fecha; el estado no cambia.
+5. Si el registro estaba Por subsanar, sigue así hasta que el coordinador o el director lo valide.
 
 **Errores**
 
 - Las mismas validaciones del registro.
+- Guardar un Validado sin motivo: no deja confirmar.
 
 **Estados vacíos**
 
@@ -61,6 +63,7 @@ Spec para dev. Fuente: `docs/model/flujos.json`. Vista: `docs/index.html#flujos`
 **Reglas**
 
 - Cada cambio de estado se audita: usuario, fecha, hora, estado anterior y nuevo.
+- Cada edición guarda quién, cuándo y el antes y después de cada campo; la de un Validado, también el motivo.
 
 ## Validación o devolución
 
@@ -86,7 +89,7 @@ Spec para dev. Fuente: `docs/model/flujos.json`. Vista: `docs/index.html#flujos`
 
 **Reglas**
 
-- Quien digita no se valida a sí mismo.
+- Por confirmar con el IVC si quien digita puede validar su propio registro; en la fase 1 no se restringe.
 
 ## Consulta
 
@@ -146,6 +149,7 @@ Spec para dev. Fuente: `docs/model/flujos.json`. Vista: `docs/index.html#flujos`
 
 - **Roles:** Coordinador, Director
 - **Origen:** HU-26.3
+- **Fase:** fuera de la fase 1. Sale de la fase 1: queda para integraciones futuras menos estrictas (HU-09).
 - **Pantalla:** `#/control-acceso/calidad`
 
 **Camino feliz**
@@ -173,5 +177,4 @@ Spec para dev. Fuente: `docs/model/flujos.json`. Vista: `docs/index.html#flujos`
 - [ ] Validación o devolución: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.
 - [ ] Consulta: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.
 - [ ] Carga masiva: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.
-- [ ] Calidad y auditoría: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.
 - [ ] Reglas de fechas cotejadas con la hoja «Diccionario de Datos» (pendiente: hasta 5 direcciones adicionales y abreviaturas al guardar).
