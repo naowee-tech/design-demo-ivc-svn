@@ -173,7 +173,7 @@
   /* Tabla de personas: encabezado con total, filas clicables y paginador (GI.pager se arma en paint). */
   var pgCfg = null;
   function tabla(cabs, filas) {
-    return '<div class="gt-wrap"><table class="gt-table"><thead><tr>' + cabs.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+    return '<div class="gt-wrap"><table class="gt-table gc-res"><thead><tr>' + cabs.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
   }
   function docPersona(p) { return esc(p.menor && !st.abiertos[keyOf(p)] ? enmascarar(p) : p.tipo + ' ' + p.texto); }
   function filaPersona(p, k) {

@@ -1,0 +1,172 @@
+/* Responsive de Control de acceso. Va al final y solo sobrescribe; cada bloque cita su hallazgo
+   de la auditoría (docs/responsive.html). Cortes: 600 celular · 767 cajón · 900 tarjetas. */
+
+/* ───────── R-01 · menú: cajón en celular, riel de íconos en tablet ───────── */
+.suid-burger { display: none; }
+@media (max-width: 900px) { .sidebar { display: flex; } }
+@media (max-width: 767px) {
+  .suid-burger { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 44px; height: 44px; margin-right: 4px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--text-primary); cursor: pointer; }
+  .suid-burger:hover { background: #f5f6fa; }
+  .suid-burger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .top-header { padding-left: 8px !important; padding-right: 12px; gap: 4px; }
+  /* A-04: la campana no hace nada en la demo; sin ella cabe el título de la vista. */
+  .suid-bell { display: none; }
+  .suid-bc { font-size: 15px; }
+}
+
+/* ───────── A-04 · en tablet las migas partían en dos renglones: queda solo la vista actual ───────── */
+@media (max-width: 900px) {
+  .suid-bc > a, .suid-bc > .suid-bc__sep, .suid-bc > span:not(.is-current) { display: none; }
+  .suid-bc .is-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* ───────── A-02 · zona táctil de 44 px (capa de la demo; el botón de origen sigue en 40) ───────── */
+@media (max-width: 900px) {
+  .naowee-btn, .gs-pick__btn, .gt-pg, .gs-reset, .gt-search input { min-height: 44px; }
+  .gt-pg, .gs-reset { min-width: 44px; }
+  .naowee-modal__dismiss { width: 44px; height: 44px; }
+  .gi-insight .gt-info::before { inset: -13px; }
+  .gc-try__btn { width: 44px; height: 44px; }
+}
+
+/* ───────── A-03 · nada bajo 12 px ───────── */
+.gt-ytxt, .gt-nowtxt { font-size: 12px; }
+span.gt-trend { font-size: 12px; }
+
+/* ───────── R-03 · observación y motivo a todo el ancho de la ventana ───────── */
+.gi-lbl > .gi-ta { box-sizing: border-box; width: 100%; min-height: 104px; border: 1px solid var(--border-dark); border-radius: 8px; background: #fff; color: var(--text-primary); font: inherit; font-size: 14px; }
+.gi-lbl > .gi-ta:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+
+/* ───────── R-06 · Registros en escritorio angosto: cede aire y deja partir, sin recortar ───────── */
+@media (min-width: 901px) and (max-width: 1500px) {
+  .gt-table.gi-reg thead th, .gt-table.gi-reg tbody td { padding-left: 8px; padding-right: 8px; }
+  .gt-table.gi-reg thead th { white-space: normal; line-height: 1.25; vertical-align: bottom; }
+  .gt-table.gi-reg th:first-child, .gt-table.gi-reg td:first-child { padding-left: 16px; }
+  .gt-table.gi-reg th:last-child, .gt-table.gi-reg td:last-child { padding-right: 12px; }
+  .gi-reg td:nth-child(5) small { white-space: normal; }
+  /* La fila ya abre el panel: el ojo repite esa acción y aquí cede su ancho a «Expediente». */
+  .gi-reg td.gt-actions .gt-ico { display: none; }
+  .gt-table.gi-reg th.gt-actions { overflow: hidden; white-space: nowrap; text-indent: -999px; }
+}
+
+@media (max-width: 900px) {
+  /* ───────── A-01 · las dos pestañas caben sin desplazar ───────── */
+  .gi-tabs { gap: 0; }
+  .gi-tab { padding: 10px 6px; font-size: 15px; gap: 5px; }
+
+  /* ───────── R-05 · filtros a ancho parejo ───────── */
+  .gt-toolbar .gt-search, #giCard .gt-toolbar .gc-field { flex: 1 1 100%; max-width: none; }
+  .gt-toolbar .gs-pick, .gt-toolbar .gc-fh { flex: 1 1 120px; min-width: 0; }
+  .gt-toolbar .gs-pick__btn, #giCard .gc-fh .gs-pick__btn { width: 100%; min-width: 0; max-width: none; justify-content: space-between; }
+  .gt-toolbar .gs-reset { margin-left: 0; }
+
+  /* ───────── V-01 · Registros: una tarjeta por registro ───────── */
+  .gt-wrap:has(.gi-reg) { overflow: visible; }
+  .gi-reg, .gi-reg tbody { display: block; }
+  .gi-reg thead { display: none; }
+  .gi-reg tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 16px; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .gt-table.gi-reg tbody td { display: block; min-width: 0; padding: 0; border: 0; }
+  .gi-reg tbody td::before { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--text-secondary); }
+  .gi-reg tbody td:nth-child(2) { grid-column: 1 / -1; order: 1; font-size: 16px; }
+  .gi-reg tbody td:nth-child(7) { order: 2; } .gi-reg tbody td:nth-child(7)::before { content: 'Restricción'; }
+  .gi-reg tbody td:nth-child(5) { order: 3; } .gi-reg tbody td:nth-child(5)::before { content: 'Fin de vigencia'; }
+  .gi-reg tbody td:nth-child(6) { order: 4; } .gi-reg tbody td:nth-child(6)::before { content: 'Registro'; }
+  .gi-reg tbody td:nth-child(1) { order: 5; } .gi-reg tbody td:nth-child(1)::before { content: 'Radicado'; }
+  .gi-reg tbody td:nth-child(3) { grid-column: 1 / -1; order: 6; } .gi-reg tbody td:nth-child(3)::before { content: 'Origen de la obligación'; }
+  .gi-reg tbody td:nth-child(4) { grid-column: 1 / -1; order: 7; } .gi-reg tbody td:nth-child(4)::before { content: 'Acto administrativo'; }
+  /* La tarjeta entera abre el panel: el botón del ojo sobra. */
+  .gi-reg tbody td.gt-actions { display: none; }
+  .gi-reg tbody td.gt-empty { grid-column: 1 / -1; }
+  .gt-table tbody tr.is-selected > td:first-child { box-shadow: none; }
+  .gi-reg tbody tr.is-selected { box-shadow: inset 3px 0 0 var(--accent); }
+
+  /* ───────── V-04 · Trazabilidad: línea de tiempo ───────── */
+  .gt-wrap:has(.gq-aud) { overflow: visible; }
+  .gq-aud, .gq-aud tbody { display: block; }
+  .gq-aud thead { display: none; }
+  .gq-aud tbody tr { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 14px 16px 14px 36px; background: transparent !important; }
+  .gq-aud tbody tr::before { content: ''; position: absolute; left: 14px; top: 20px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+  .gq-aud tbody tr::after { content: ''; position: absolute; left: 18px; top: 34px; bottom: -16px; width: 1px; background: var(--border-dark); }
+  .gq-aud tbody tr:last-child::after { display: none; }
+  .gt-table.gq-aud tbody td { display: block; padding: 0; border: 0; }
+  .gq-aud td:nth-child(4), .gq-aud td:nth-child(5) { order: 1; font-size: 16px; font-weight: 700; }
+  .gq-aud td:nth-child(4)::after { content: ' →'; color: var(--text-secondary); font-weight: 400; }
+  .gq-aud td.is-vacio { display: none !important; }
+  .gq-aud td:nth-child(1) { order: 2; flex: 1 1 100%; color: var(--text-secondary); }
+  .gq-aud td:nth-child(1) small { display: inline; margin-left: 6px; }
+  .gq-aud td:nth-child(2) { order: 3; }
+  .gq-aud td:nth-child(2) a { display: inline-flex; align-items: center; min-height: 44px; }
+  .gq-aud td:nth-child(3) { order: 4; color: var(--text-secondary); }
+  .gq-aud td:nth-child(3)::before { content: '· '; }
+  .gq-aud td:nth-child(6) { order: 5; flex: 1 1 100%; line-height: 1.45; }
+  .gq-aud td:nth-child(6):empty { display: none; }
+}
+
+@media (max-width: 767px) {
+  /* ───────── R-02 · el estado de la medida se lee completo ───────── */
+  .gx-estado__t, .gx-estado__l { white-space: normal; overflow: visible; }
+
+  /* ───────── V-05 · Ficha: acciones en barra fija; Validar a lo ancho, al alcance del pulgar ───────── */
+  .gi-head__actions:has(#aVal, #aSub) { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, .96); border-top: 1px solid var(--border); backdrop-filter: blur(6px); }
+  .gi-head__actions:has(#aVal, #aSub) .naowee-btn { justify-content: center; }
+  .gi-head__actions:has(#aVal, #aSub) > :only-child, .gi-head__actions #aVal { grid-column: 1 / -1; }
+  .gi-head__actions:has(#aVal):not(:has(#aEdit)) #aSub, .gi-head__actions:has(#aSub):not(:has(#aEdit)) #aSub { grid-column: 1 / -1; }
+  .gi-page:has(#aVal, #aSub) { padding-bottom: 72px !important; }
+  body:has(#aVal, #aSub) .gi-toasts { bottom: 140px; }
+
+  /* ───────── R-04 · las etiquetas de campo parten en vez de cortarse ───────── */
+  .gi-form .gi-lbl, .gi-form .gi-f > .gi-lbl { height: auto; min-height: 24px; align-items: baseline; line-height: 1.35; white-space: normal; overflow: visible; }
+  .gi-form .gi-lbl .gf-lt { overflow: visible; text-overflow: clip; white-space: normal; }
+}
+
+@media (max-width: 600px) {
+  /* R-05 · Registros: cada filtro en su renglón; reiniciar acompaña al último. */
+  .gt-toolbar .gs-pick { flex: 1 1 100%; }
+  .gt-toolbar .gs-pick:last-of-type { flex: 1 1 0; }
+
+  /* ───────── R-05 · Búsqueda: filtros en una columna, reiniciar junto a Consultar ───────── */
+  .gc-form .gc-field, .gc-form .gc-fh { flex: 1 1 100%; }
+  #gcForm .gc-fh .gs-pick__btn { width: 100%; min-width: 0; max-width: none; justify-content: space-between; }
+  .gc-form .gc-btn--q { flex: 1 1 0; min-width: 0; order: 9; }
+  .gc-form .gc-reset { order: 10; }
+
+  /* ───────── V-02 · Resultados: tarjeta por persona, con el estado arriba ───────── */
+  .gt-wrap:has(.gc-res) { overflow: visible; }
+  .gc-res, .gc-res tbody { display: block; }
+  .gc-res thead { display: none; }
+  .gc-res tbody tr { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .gt-table.gc-res tbody td { display: block; padding: 0; border: 0; }
+  .gc-res tbody td:last-child { order: -1; }
+  .gc-res tbody td:last-child small { font-size: 15px; color: var(--text-primary); margin-top: 6px; }
+  .gc-res tbody td:first-child strong { font-size: 16px; }
+  .gc-res tbody td:nth-child(2):not(:last-child) { color: var(--text-secondary); }
+
+  /* ───────── V-03 · Calidad: contadores en fila y un hallazgo por tarjeta ───────── */
+  .gq-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .gq-tile { min-width: 0; min-height: 72px; padding: 10px 12px; }
+  .gq-tile span { font-size: 13px; line-height: 1.25; }
+  .gt-wrap:has(.gq-hall) { overflow: visible; }
+  .gq-hall, .gq-hall tbody { display: block; }
+  .gq-hall thead { display: none; }
+  .gq-hall tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .gt-table.gq-hall tbody td { display: block; padding: 0; border: 0; }
+  .gq-hall td:first-child a { display: inline-flex; align-items: center; min-height: 44px; }
+  .gq-hall td:last-child { flex: 1 1 100%; line-height: 1.45; }
+}
+
+/* ───────── V-06 · Formulario: avance a lo ancho y los bloques en una fila que cabe entera ───────── */
+@media (max-width: 1000px) {
+  .gi-steps { display: flex; flex-wrap: wrap; gap: 8px; overflow: visible; padding-bottom: 0; }
+  .gf-total { flex: 1 1 100%; }
+  .gi-step { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: 6px; min-width: 0; min-height: 56px; padding: 10px 8px; text-align: center; }
+  .gi-step > div { display: block; width: 100%; min-width: 0; }
+  .gi-step b { padding: 0; white-space: normal; overflow: visible; font-size: 13px; }
+  .gi-step .gf-srow { display: block; margin-top: 6px; } .gi-step .gf-srow[hidden] { display: none; }
+  .gi-step .gf-badge, .gi-step .gf-ck { display: none !important; }
+  .gi-step.is-on { box-shadow: inset 0 -3px 0 var(--accent); border-color: var(--accent); }
+}
+@media (max-width: 600px) {
+  /* En celular solo la letra: el nombre del bloque ya está en el título del paso. */
+  .gi-step b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .gi-step .gf-srow { margin-top: 0; }
+}

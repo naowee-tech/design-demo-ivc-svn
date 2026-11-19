@@ -49,13 +49,13 @@
 
   function tablaCal(hs) {
     if (!hs.length) return '<p class="gq-vacio">Ningún registro con hallazgos de calidad.</p>';
-    return '<div class="gt-wrap"><table class="gt-table"><thead><tr><th>Registro</th><th>Hallazgo</th><th>Detalle</th></tr></thead><tbody>' +
+    return '<div class="gt-wrap"><table class="gt-table gq-hall"><thead><tr><th>Registro</th><th>Hallazgo</th><th>Detalle</th></tr></thead><tbody>' +
       hs.map(function (h) { return '<tr><td>' + link(h.id) + '</td><td>' + badge(h.tipo) + '</td><td>' + esc(h.det) + '</td></tr>'; }).join('') + '</tbody></table></div>';
   }
   function tablaAud(bs) {
-    return '<div class="gt-wrap"><table class="gt-table"><thead><tr><th>Fecha y hora</th><th>Registro</th><th>Usuario</th><th>Estado anterior</th><th>Estado nuevo</th><th>Nota</th></tr></thead><tbody>' +
+    return '<div class="gt-wrap"><table class="gt-table gq-aud"><thead><tr><th>Fecha y hora</th><th>Registro</th><th>Usuario</th><th>Estado anterior</th><th>Estado nuevo</th><th>Nota</th></tr></thead><tbody>' +
       bs.map(function (b) {
-        return '<tr><td>' + esc(U.fmt(b.fecha)) + '<small>' + esc(b.hora) + '</small></td><td>' + link(b.id) + '</td><td>' + esc(b.usuario) + '</td><td>' + esc(b.de || '—') + '</td><td>' + esc(b.a) + '</td><td>' + esc(b.nota || '') + '</td></tr>';
+        return '<tr><td>' + esc(U.fmt(b.fecha)) + '<small>' + esc(b.hora) + '</small></td><td>' + link(b.id) + '</td><td>' + esc(b.usuario) + '</td><td' + (b.de ? '' : ' class="is-vacio"') + '>' + esc(b.de || '—') + '</td><td>' + esc(b.a) + '</td><td>' + esc(b.nota || '') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
   }
 

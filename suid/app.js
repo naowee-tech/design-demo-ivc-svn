@@ -22,6 +22,7 @@
     eye: ico('<path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
     gate: ico('<path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7M4 12h16"/>'),
     out: ico('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
+    calidad: ico('<path d="M12 3l7 3v5c0 4.500-3 8.200-7 9.500-4-1.300-7-5-7-9.500V6l7-3z"/><path d="M9 12l2.200 2.200L15 10.500"/>'),
     search: ico('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.500" y2="16.500"/>'),
     inbox: ico('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.450 5.110L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.450-6.890A2 2 0 0 0 16.760 4H7.240a2 2 0 0 0-1.790 1.110z"/>'),
     chevR: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>',
@@ -42,7 +43,7 @@
       { id: 'infractores', label: 'Gestión de sanciones', icon: img('icon-acceso'), href: '#/control-acceso/infractores' },
       { id: 'consulta', label: 'Búsqueda avanzada', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
       w.SUID_SOLICITUDES === false ? null : { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
-      w.SUID_ROLES.puede('calidad') ? { id: 'calidad', label: 'Calidad y auditoría', icon: img('icon-busqueda'), href: '#/control-acceso/calidad' } : null,
+      w.SUID_ROLES.puede('calidad') ? { id: 'calidad', label: 'Calidad y auditoría', icon: I.calidad, href: '#/control-acceso/calidad' } : null,
       w.SUID_EVENTOS === false ? null : { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
     ] },
     { sec: 'Configuración', items: [{ id: 'equipo-coord', label: 'Usuarios y áreas', icon: img('icon-equipo'), ph: 1 }] },
