@@ -201,6 +201,11 @@
               "un registro está Por subsanar",
               "lo edito y guardo en el modal firmado",
               "se guarda el cambio, el estado no cambia y queda en el historial"
+            ],
+            [
+              "el registro está Validado",
+              "el coordinador lo edita y escribe el motivo",
+              "el cambio aplica de inmediato y queda en el historial con el motivo"
             ]
           ],
           "ir": [
@@ -305,14 +310,11 @@
               "veo usuario, fecha, hora, estado anterior y nuevo"
             ]
           ],
+          "fuera": "Sale de la fase 1: queda para integraciones futuras menos estrictas.",
           "ir": [
             [
               "Flujo",
               "index.html#flujos/calidad"
-            ],
-            [
-              "Demo",
-              "../suid/app.html#/control-acceso/calidad"
             ]
           ],
           "traza": "Calidad, vigencia y auditoría"

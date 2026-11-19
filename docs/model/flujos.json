@@ -185,16 +185,19 @@
       "ruta": "#/control-acceso/infractores/INF-2026-0003/editar",
       "pasos": [
         "Desde la ficha, pulsar «Editar» y confirmar en el modal firmado con nombre y cargo.",
+        "Si el registro está Validado, solo el coordinador puede editarlo y al guardar escribe el motivo: el cambio aplica de inmediato.",
         "Corregir los campos necesarios.",
         "Guardar: el cambio queda en el historial con usuario y fecha; el estado no cambia.",
         "Si el registro estaba Por subsanar, sigue así hasta que el coordinador o el director lo valide."
       ],
       "errores": [
-        "Las mismas validaciones del registro."
+        "Las mismas validaciones del registro.",
+        "Guardar un Validado sin motivo: no deja confirmar."
       ],
       "vacios": [],
       "reglas": [
-        "Cada cambio de estado se audita: usuario, fecha, hora, estado anterior y nuevo."
+        "Cada cambio de estado se audita: usuario, fecha, hora, estado anterior y nuevo.",
+        "Cada edición guarda quién, cuándo y el antes y después de cada campo; la de un Validado, también el motivo."
       ],
       "origen": "HU",
       "grafo": {
@@ -298,7 +301,7 @@
         "Registro ya Validado: no muestra las acciones de cierre."
       ],
       "reglas": [
-        "Quien digita no se valida a sí mismo."
+        "Por confirmar con el IVC si quien digita puede validar su propio registro; en la fase 1 no se restringe."
       ],
       "origen": "diseño",
       "grafo": {
@@ -691,6 +694,7 @@
         "Es de consulta: no tiene cierre."
       ],
       "origen": "HU",
+      "fuera": "Sale de la fase 1: queda para integraciones futuras menos estrictas (HU-09).",
       "grafo": {
         "carriles": [
           [

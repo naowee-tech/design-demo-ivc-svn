@@ -34,6 +34,8 @@ CSS = '''<style>
 .h-pie{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:18px;padding-top:14px;border-top:1px solid var(--bd)}
 .h-pie a{font-weight:700;font-size:14px;text-decoration:none}.h-pie a:hover{text-decoration:underline}
 .h-pie small{margin-left:auto;color:var(--mu);font-size:12px}
+.h.fuera{border:1.5px dashed var(--bd)}.h.fuera>*{opacity:.85}
+.h-pie small.fz{margin-left:0;flex-basis:100%;order:3}
 @media (max-width:700px){.h{padding:20px}.tj{margin-left:0;flex-basis:100%}.h-pie small{margin-left:0;flex-basis:100%}.cr li span b{display:block}}
 </style>'''
 
@@ -45,10 +47,11 @@ def historia(h):
             '<a class="tj" href="index.html#trabajos" target="_top">Trabajo %d · %s</a></div><h3>%s</h3>'
             '<p class="voz"><em>Como</em> %s, <em>quiero</em> %s, <em>para</em> %s.</p>'
             '<div class="cr"><p>Criterios de aceptación</p><ol>%s</ol></div>'
-            '<div class="h-pie">%s<small>De la HU-26.3: %s</small></div></li>') % (
-        ' prop' if h.get('propuesta') else '', e(h['id'].lower()), e(h['id']), e(h['rol']),
-        '<span class="pp">Modelo propuesto</span>' if h.get('propuesta') else '',
-        h['trabajo'], e(TRAB[h['trabajo'] - 1]), e(h['titulo']), e(h['como']), e(h['quiero']), e(h['para']), cr, ir, e(h['traza']))
+            '<div class="h-pie">%s<small>De la HU-26.3: %s</small>%s</div></li>') % (
+        (' prop' if h.get('propuesta') else '') + (' fuera' if h.get('fuera') else ''), e(h['id'].lower()), e(h['id']), e(h['rol']),
+        '<span class="pp">Fuera de la fase 1</span>' if h.get('fuera') else '<span class="pp">Modelo propuesto</span>' if h.get('propuesta') else '',
+        h['trabajo'], e(TRAB[h['trabajo'] - 1]), e(h['titulo']), e(h['como']), e(h['quiero']), e(h['para']), cr, ir, e(h['traza']),
+        '<small class="fz">%s</small>' % e(h['fuera']) if h.get('fuera') else '')
 
 
 O = J['origen']
@@ -68,11 +71,12 @@ print('ok historias.html ·', n, 'historias')
 md = ['# Historias de usuario · Gestión de infractores (IVC SVN, fase 1)', '',
       '%d historias que desglosan la HU-26.3 «%s» (%s) por quién hace qué. La HU original está adjunta en PROD-45.' % (n, O['hu'].split(' · ')[-1], O['version']), '',
       '| Historia | Título | Rol | Trabajo | De la HU-26.3 |', '|---|---|---|---|---|']
-md += ['| %s | %s%s | %s | %d · %s | %s |' % (h['id'], h['titulo'], ' (modelo propuesto)' if h.get('propuesta') else '', h['rol'], h['trabajo'], TRAB[h['trabajo'] - 1], h['traza']) for g in J['grupos'] for h in g['historias']]
+md += ['| %s | %s%s%s | %s | %d · %s | %s |' % (h['id'], h['titulo'], ' (modelo propuesto)' if h.get('propuesta') else '', ' (fuera de la fase 1)' if h.get('fuera') else '', h['rol'], h['trabajo'], TRAB[h['trabajo'] - 1], h['traza']) for g in J['grupos'] for h in g['historias']]
 for g in J['grupos']:
     md += ['', '## %s' % g['titulo'], '', g['sub']]
     for h in g['historias']:
-        md += ['', '### %s · %s' % (h['id'], h['titulo']), '', '- **Rol:** %s' % h['rol'] + (' · modelo propuesto' if h.get('propuesta') else ''),
+        md += ['', '### %s · %s' % (h['id'], h['titulo']), '', '- **Rol:** %s' % h['rol'] + (' · modelo propuesto' if h.get('propuesta') else '') + (' · fuera de la fase 1' if h.get('fuera') else ''),
+               ] + (['- **Fase:** %s' % h['fuera']] if h.get('fuera') else []) + [
                '- **De la HU-26.3:** %s' % h['traza'], '', '> Como %s, quiero %s, para %s.' % (h['como'], h['quiero'], h['para']), '', '**Criterios de aceptación**', '']
         md += ['%d. **Dado** %s, **cuando** %s, **entonces** %s.' % (i + 1, c[0], c[1], c[2]) for i, c in enumerate(h['criterios'])]
 open(R + '/docs/spec/historias.md', 'w', encoding='utf-8').write('\n'.join(md) + '\n')

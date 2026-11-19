@@ -157,17 +157,23 @@ def quien(rs):
     return n[0] if len(n) == 1 else ', '.join(n[:-1]) + ' o ' + n[-1]
 FS = FL['flujos']
 tabs = ''.join('<button type="button" role="tab" id="tab-%s" data-t="%s" aria-controls="%s" aria-selected="%s" tabindex="%s"><span class="n">%d</span><span><b>%s</b><small>%s</small></span></button>' % (
-    f['id'], f['id'], f['id'], 'true' if i == 0 else 'false', '0' if i == 0 else '-1', i + 1, e(f['titulo']), e(quien(f['roles']))) for i, f in enumerate(FS))
+    f['id'], f['id'], f['id'], 'true' if i == 0 else 'false', '0' if i == 0 else '-1', i + 1, e(f['titulo']), 'Fuera de la fase 1' if f.get('fuera') else e(quien(f['roles']))) for i, f in enumerate(FS))
 def nav(i):
     a = '<button type="button" class="pv" data-ir="%s">← Anterior: %s</button>' % (FS[i - 1]['id'], e(FS[i - 1]['titulo'])) if i else '<span></span>'
     b = '<button type="button" class="pv" data-ir="%s">Siguiente: %s →</button>' % (FS[i + 1]['id'], e(FS[i + 1]['titulo'])) if i < len(FS) - 1 else '<span></span>'
     return '<nav class="pvn" aria-label="Cambiar de flujo">%s%s</nav>' % (a, b)
+def cabeza(f):
+    # Un flujo fuera de la fase 1 se conserva como referencia, sin enlace a la demo (ahí está apagado).
+    if f.get('fuera'):
+        return '<p class="sub" style="margin:0 0 8px">Lo hace: %s. <span class="prop">Fuera de la fase 1</span></p><p class="sub">%s</p>' % (e(quien(f['roles'])), e(f['fuera']))
+    return '<p class="sub" style="margin:0 0 8px">Lo hace: %s. <span class="prop">%s</span> <a href="%s%s" target="_blank" rel="noopener">Verlo en la demo →</a></p>' % (
+        e(quien(f['roles'])), 'HU-26.3' if f['origen'] == 'HU' else 'criterio de diseño', DEMO, e(f['ruta']))
 panels = ''
 for i, f in enumerate(FS):
-    panels += ('<div class="panel" id="%s" role="tabpanel" aria-labelledby="tab-%s"%s><div class="card"><h3>%d. %s</h3><p class="sub" style="margin:0 0 8px">Lo hace: %s. <span class="prop">%s</span> <a href="%s%s" target="_blank" rel="noopener">Verlo en la demo →</a></p>%s%s'
+    panels += ('<div class="panel" id="%s" role="tabpanel" aria-labelledby="tab-%s"%s><div class="card"><h3>%d. %s</h3>%s%s%s'
                '<details><summary>Detalle: errores, estados vacíos y reglas</summary><div class="cols"><div><p class="lbl">Errores</p>%s</div><div><p class="lbl">Estados vacíos</p>%s</div></div><p class="lbl">Reglas</p>%s</details>%s</div></div>') % (
-        f['id'], f['id'], '' if i == 0 else ' hidden', i + 1, e(f['titulo']), e(quien(f['roles'])), 'HU-26.3' if f['origen'] == 'HU' else 'criterio de diseño',
-        DEMO, e(f['ruta']), LEYENDA, diagrama(f['grafo'], f['id'], f['titulo']), li(f['errores']), li(f['vacios']), li(f['reglas']), nav(i))
+        f['id'], f['id'], '' if i == 0 else ' hidden', i + 1, e(f['titulo']), cabeza(f),
+        LEYENDA, diagrama(f['grafo'], f['id'], f['titulo']), li(f['errores']), li(f['vacios']), li(f['reglas']), nav(i))
 js = """<script>(function(){var s=document.getElementById('seg'),bs=[].slice.call(s.querySelectorAll('[role=tab]'));
 function ver(t,foco){bs.forEach(function(b){var on=b.getAttribute('data-t')===t;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&foco)b.focus()});[].forEach.call(document.querySelectorAll('.panel'),function(p){p.hidden=p.id!==t;var c=p.querySelector('.cv');if(!p.hidden&&c&&c._fit)c._fit()})}
 s.addEventListener('click',function(e){var b=e.target.closest('[role=tab]');if(b)ver(b.getAttribute('data-t'))});
@@ -181,9 +187,9 @@ md = ['# Flujos de la fase 1 · IVC SVN', '', 'Spec para dev. Fuente: `docs/mode
 for k in ('registro', 'restriccion'):
     s = FL['estados'][k]; md += ['- **%s:** %s. %s' % (s['titulo'], '; '.join(' → '.join(r) for r in s['rutas']), s['nota'])]
 for f in FL['flujos']:
-    md += ['', '## %s' % f['titulo'], '', '- **Roles:** %s' % ', '.join(ROL[r] for r in f['roles']), '- **Origen:** %s' % ('HU-26.3' if f['origen'] == 'HU' else 'criterio de diseño, por confirmar'), '- **Pantalla:** `%s`' % f['ruta'], '', '**Camino feliz**', ''] + ['%d. %s' % (i + 1, x) for i, x in enumerate(f['pasos'])]
+    md += ['', '## %s' % f['titulo'], '', '- **Roles:** %s' % ', '.join(ROL[r] for r in f['roles']), '- **Origen:** %s' % ('HU-26.3' if f['origen'] == 'HU' else 'criterio de diseño, por confirmar')] + (['- **Fase:** fuera de la fase 1. %s' % f['fuera']] if f.get('fuera') else []) + ['- **Pantalla:** `%s`' % f['ruta'], '', '**Camino feliz**', ''] + ['%d. %s' % (i + 1, x) for i, x in enumerate(f['pasos'])]
     md += ['', '**Errores**', ''] + (['- ' + x for x in f['errores']] or ['- —']) + ['', '**Estados vacíos**', ''] + (['- ' + x for x in f['vacios']] or ['- —']) + ['', '**Reglas**', ''] + (['- ' + x for x in f['reglas']] or ['- —'])
-md += ['', '## Criterios de aceptación', ''] + ['- [ ] %s: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.' % f['titulo'] for f in FL['flujos']]
+md += ['', '## Criterios de aceptación', ''] + ['- [ ] %s: camino feliz, errores y vacíos cumplidos y enlazados a su pantalla.' % f['titulo'] for f in FL['flujos'] if not f.get('fuera')]
 md += ['- [ ] Reglas de fechas cotejadas con la hoja «Diccionario de Datos» (pendiente: hasta 5 direcciones adicionales y abreviaturas al guardar).', '']
 open(R + '/docs/spec/flujos.md', 'w', encoding='utf-8').write('\n'.join(md))
 

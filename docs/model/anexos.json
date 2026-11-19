@@ -22,12 +22,14 @@
         ["Indicadores", "Cómo se calcula cada uno de los seis indicadores: fórmula, ventana, etiqueta y lo que falta confirmar.", "spec/indicadores.md", "PROD-74", null],
         ["Flujos", "El paso a paso de cada recorrido.", "spec/flujos.md", "PROD-71", 36617],
         ["Modelo de datos", "Los 55 campos por bloque, catálogos, estados, reglas e integración.", "spec/modelo-datos.md", "PROD-71", 36627],
+        ["Base técnica", "Cómo construir la fase 1 en ivc-ms, public-gateway y suite-web-ivc: datos, reglas, API, permisos, front y lo que falta confirmar.", "spec/arquitectura.md", "PROD-45", null],
         ["Responsive", "Las 17 vistas a 375, 768 y 1280 px: qué se rompe, qué necesita variante y qué está bien.", "spec/responsive.md", "PROD-45", null]
       ]
     }
   ],
   "enlaces": [
     ["Demo", "https://naowee-tech.github.io/design-demo-ivc-svn/", "Entra con cualquier dato en el login."],
+    ["Recorrido animado", "https://naowee-tech.github.io/design-demo-ivc-svn/docs/recorrido-ingreso.html", "La presentación del ingreso a estadios, paso a paso."],
     ["Épica en Jira", "https://naowee.atlassian.net/browse/PROD-45", "PROD-45 · IVC Sistema Validación Nacional"],
     ["Entrega de la demo", "https://naowee.atlassian.net/browse/PROD-70", "PROD-70"],
     ["Repositorio", "https://github.com/naowee-tech/design-demo-ivc-svn", "naowee-tech/design-demo-ivc-svn"]
