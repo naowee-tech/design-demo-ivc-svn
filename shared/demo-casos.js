@@ -276,7 +276,7 @@
   /* Vistas de la demo; las rutas son relativas a suid/ y svn/, que están al mismo nivel. */
   var VISTAS = [
     ['Acceso', [['Inicio de sesión', 'index.html']]],
-    ['IVC', [['Gestión de sanciones', 'suid/app.html#/control-acceso/infractores'], ['Búsqueda avanzada', 'suid/app.html#/control-acceso/consulta'], ['Calidad y auditoría', 'suid/app.html#/control-acceso/calidad']]],
+    ['IVC', [['Gestión de sanciones', 'suid/app.html#/control-acceso/infractores'], ['Búsqueda avanzada', 'suid/app.html#/control-acceso/consulta']]],
     ['SVN', [['Inicio del SVN', 'svn/index.html#/'], ['Comprar y asignar ingresos', 'svn/index.html#/compra'], ['Acceso en puerta', 'svn/index.html#/puerta'], ['Monitor PMU', 'svn/index.html#/policia'], ['Portal de la persona', 'svn/index.html#/portal'], ['Consola de soporte', 'svn/index.html#/soporte'], ['Entidades y comercializadoras', 'svn/index.html#/entidades'], ['API y portal de integración', 'svn/index.html#/integracion']]]
   ];
 

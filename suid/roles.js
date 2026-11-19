@@ -6,11 +6,11 @@
       resumen: 'Registra, edita y consulta. Carga masiva. No cierra el registro.',
       puede: ['consultar', 'registrar', 'editar', 'cargar'] },
     coordinador: { label: 'Coordinador', cargo: 'Coordinador del área · Mindeporte', user: { name: 'Camilo Reyes', initials: 'CR' },
-      resumen: 'Todo lo del profesional, y cierra: valida o devuelve por subsanar. Ve Calidad y auditoría.',
-      puede: ['consultar', 'registrar', 'editar', 'cargar', 'validar', 'devolver', 'calidad'] },
+      resumen: 'Todo lo del profesional, y cierra: valida o devuelve por subsanar. Edita registros validados, con motivo.',
+      puede: ['consultar', 'registrar', 'editar', 'editar_validado', 'cargar', 'validar', 'devolver'] },
     director: { label: 'Director', cargo: 'Director Técnico · Mindeporte', user: { name: 'Lucía Pardo', initials: 'LP' },
-      resumen: 'Aprueba: valida o devuelve por subsanar. Consulta y ve Calidad y auditoría. No digita.',
-      puede: ['consultar', 'validar', 'devolver', 'calidad'] }
+      resumen: 'Aprueba: valida o devuelve por subsanar. Consulta. No digita.',
+      puede: ['consultar', 'validar', 'devolver'] }
   };
   var DEF = 'coordinador', id = DEF;
 

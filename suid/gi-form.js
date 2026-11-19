@@ -717,9 +717,37 @@
       sync(); return aviso();
     }
     showErrors([]); banner([]);
+    if (editId && GI.get(editId).estadoRegistro === 'Validado') return pideMotivo(rec);
+    guardar(rec, 'Registro actualizado por el profesional.');
+  }
+
+  /* Editar un Validado aplica de inmediato: pide el motivo y lo deja en el historial. Cancelar no guarda ni navega. */
+  function pideMotivo(rec) {
+    var m = UI.modal({ title: 'Confirma la operación', sub: editId,
+      body: '<p class="gi-p">El registro está Validado: el cambio aplica de inmediato y queda en el historial con el motivo.</p>' +
+        '<label class="gi-lbl gi-lbl--req">Motivo<textarea class="gi-ta" id="eMot" rows="3" required aria-invalid="false"></textarea></label>' +
+        '<p class="gi-err" id="eErr" hidden><span aria-hidden="true">⚠ </span>El motivo es obligatorio.</p>',
+      footer: '<button type="button" class="naowee-btn naowee-btn--mute" data-x>Cancelar</button><button type="button" class="naowee-btn naowee-btn--loud" id="eOk">Guardar cambios</button>' });
+    var ta = m.el.querySelector('#eMot'), err = m.el.querySelector('#eErr');
+    function marca(mal) {
+      err.hidden = !mal;
+      ta.setAttribute('aria-invalid', mal ? 'true' : 'false');
+      if (mal) ta.setAttribute('aria-describedby', 'eErr'); else ta.removeAttribute('aria-describedby');
+    }
+    ta.addEventListener('input', function () { if (!err.hidden && ta.value.trim()) marca(false); });
+    m.el.querySelector('#eOk').addEventListener('click', function () {
+      var mot = ta.value.trim();
+      if (!mot) { marca(true); ta.focus(); return; }
+      m.close();
+      guardar(rec, 'Edición de un registro validado. Motivo: ' + mot);
+    });
+    ta.focus();
+  }
+
+  function guardar(rec, nota) {
     SUID.busy(view.querySelector('#giSave'), editId ? 'Guardando cambios…' : 'Guardando registro…', function () {
       var out;
-      if (editId) { out = GI.update(editId, rec, 'Registro actualizado por el profesional.'); UI.toast('Cambios guardados.'); }
+      if (editId) { out = GI.update(editId, rec, nota); UI.toast('Cambios guardados.'); }
       else {
         out = GI.add(rec);
         if (sol && w.GS) w.GS.derivar(sol.id, out.id);

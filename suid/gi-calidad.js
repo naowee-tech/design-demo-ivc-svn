@@ -1,6 +1,7 @@
 /* Calidad y auditoría (HU-26.3): hallazgos sobre los registros y bitácora de cambios de estado. Solo lectura. */
 (function (w, d) {
   'use strict';
+  if (w.SUID_CALIDAD === false) return;
   var GI = w.GI, U = GI.util, D = GI.derive, esc = SUID.esc, BASE = '#/control-acceso/infractores';
   var st = { tab: 'cal', tipo: '', q: '' };
 
