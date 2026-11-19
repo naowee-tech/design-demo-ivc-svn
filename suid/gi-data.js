@@ -216,7 +216,7 @@
         historial: [H('2025-02-10', '09:00', '', 'Recibido'), H('2025-02-13', '10:10', 'Recibido', 'Validado'), H('2025-08-08', '00:05', 'Validado', 'Validado', 'La restricción pasó a Cumplida al terminar su vigencia (automático).')] })
     ];
     /* Lo más reciente primero, como la bandeja cuando se registra uno nuevo. */
-    return orig.concat(seedExtra(mk, H), seedSvn(mk, H, 46), seedCalidad(mk, H)).sort(function (a, b) { return a.fechaRegistro < b.fechaRegistro ? 1 : a.fechaRegistro > b.fechaRegistro ? -1 : 0; });
+    return sinDefectos(orig.concat(seedExtra(mk, H), seedSvn(mk, H, 46), seedCalidad(mk, H))).sort(function (a, b) { return a.fechaRegistro < b.fechaRegistro ? 1 : a.fechaRegistro > b.fechaRegistro ? -1 : 0; });
   }
 
 
@@ -288,15 +288,25 @@
   }
 
   var cache = null;
+  /* Con SUID_CALIDAD = false (fase 1) los 3 registros defectuosos de Calidad no se muestran, aunque ya estén guardados.
+     Solo se filtran al leer: con la bandera en true vuelven. */
+  var DEFECTOS = /^INF-2026-006[345]$/;
+  /* Se reconocen por id y documento: en navegadores con datos de antes de seedCalidad, el panel de casos ya usó esos ids. */
+  var DOC_DEFECTO = { 'INF-2026-0063': '1010100063', 'INF-2026-0064': '1010100004', 'INF-2026-0065': '1010100065' };
+  function esDefecto(r) { return DOC_DEFECTO[r.id] === r.numId; }
+  function sinDefectos(list) {
+    return w.SUID_CALIDAD === false ? list.filter(function (r) { return !esDefecto(r); }) : list;
+  }
   /* Los 3 registros de Calidad se agregan a lo ya guardado: cambiar la clave rompería el panel de casos (suid.gi.v3). */
   function conDefectos() {
+    if (w.SUID_CALIDAD === false) return;
     var ids = {}; cache.forEach(function (r) { ids[r.id] = 1; });
-    var falta = seed().filter(function (r) { return /^INF-2026-006[345]$/.test(r.id) && !ids[r.id]; });
+    var falta = seed().filter(function (r) { return DEFECTOS.test(r.id) && !ids[r.id]; });
     if (falta.length) { cache = falta.concat(cache); persist(); }
   }
   function load() {
     if (cache) return cache;
-    try { var raw = localStorage.getItem(KEY); if (raw) { cache = JSON.parse(raw); conDefectos(); return cache; } } catch (e) {}
+    try { var raw = localStorage.getItem(KEY); if (raw) { cache = sinDefectos(JSON.parse(raw)); conDefectos(); return cache; } } catch (e) {}
     cache = seed();
     persist();
     return cache;
@@ -304,8 +314,10 @@
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} }
 
   function nextId() {
-    var n = load().reduce(function (m, r) { return Math.max(m, +r.id.split('-')[2] || 0); }, 0) + 1;
-    return 'INF-' + new Date().getFullYear() + '-' + String(n).padStart(4, '0');
+    var n = load().reduce(function (m, r) { return Math.max(m, +r.id.split('-')[2] || 0); }, 0) + 1, id;
+    /* Los ids de los 3 registros de Calidad quedan reservados aunque estén ocultos: si otro registro los toma, se ocultaría al recargar. */
+    do { id = 'INF-' + new Date().getFullYear() + '-' + String(n++).padStart(4, '0'); } while (DEFECTOS.test(id));
+    return id;
   }
 
   function duplicado(r, exceptId) {

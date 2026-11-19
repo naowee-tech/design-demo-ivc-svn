@@ -5,6 +5,8 @@
   var BASE = '#/control-acceso/infractores';
   /* Origen del alta/expediente: el volver regresa a la pantalla (y pestaña) previa, no a una ruta fija. */
   var R = w.SUID_ROLES;
+  /* Un registro Validado solo lo edita quien tiene editar_validado (coordinador), y con motivo. */
+  function puedeEditar(r) { return R.puede('editar') && (r.estadoRegistro !== 'Validado' || R.puede('editar_validado')); }
   var FLUJO = /^#\/control-acceso\/infractores\/(nuevo|carga-masiva|[^\/]+(\/editar)?)$/, origen = null, tabActiva = 'ind', tabPedida = null;
   function hashDe(u) { var i = (u || '').indexOf('#'); return i < 0 ? '' : u.slice(i); }
   w.addEventListener('hashchange', function (e) {
@@ -497,7 +499,7 @@
       '<a class="gi-back" href="' + volverA(BASE) + '" aria-label="Volver" title="Volver">' + svg('back') + '</a>' +
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">' + esc(D.nombreCompleto(r)) + (menor ? ' <span class="naowee-badge naowee-badge--neutral naowee-badge--quiet">Menor de edad</span>' : '') + '</h1>' +
       '<p class="page-subtitle"><span class="gi-mono">' + r.id + '</span> · ' + esc(r.tipoId) + ' ' + esc(GI.fmtDoc(r.tipoId, r.numId)) + '</p></div>' +
-      '<div class="gi-head__actions">' + (R.puede('editar') ? '<a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' : '') + acciones + '</div></header>' +
+      '<div class="gi-head__actions">' + (puedeEditar(r) ? '<a class="naowee-btn naowee-btn--quiet" id="aEdit" href="' + BASE + '/' + r.id + '/editar">' + svg('pencil') + ' Editar</a>' : '') + acciones + '</div></header>' +
       X.interno(X.deRegistro(r)) + '</div>';
 
     var aVal = d.getElementById('aVal'), aSub = d.getElementById('aSub'), aEdit = d.getElementById('aEdit');
@@ -549,7 +551,8 @@
     var rest = ctx.rest;
     if (!rest.length) return viewList(view, ctx);
     var need = rest[0] === 'nuevo' ? 'registrar' : rest[0] === 'carga-masiva' ? 'cargar' : rest[1] === 'editar' ? 'editar' : '';
-    if (need && !R.puede(need)) {
+    var reg = rest[1] === 'editar' ? GI.get(rest[0]) : null;
+    if ((need && !R.puede(need)) || (reg && !puedeEditar(reg))) {
       ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Sin permiso' }];
       view.innerHTML = '<div class="page-inner suid-ph"><h1 class="page-title">Sin permiso</h1><p class="page-subtitle">El rol ' + esc(R.info().label) + ' no puede hacer esta acción.</p><a class="naowee-btn naowee-btn--loud" href="' + BASE + '">Volver a Gestión</a></div>';
       return;

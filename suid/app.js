@@ -43,7 +43,7 @@
       { id: 'infractores', label: 'Gestión de sanciones', icon: img('icon-acceso'), href: '#/control-acceso/infractores' },
       { id: 'consulta', label: 'Búsqueda avanzada', icon: img('icon-busqueda'), href: '#/control-acceso/consulta' },
       w.SUID_SOLICITUDES === false ? null : { id: 'solicitudes', label: 'Solicitudes', icon: img('icon-solicitudes'), href: '#/control-acceso/solicitudes' },
-      w.SUID_ROLES.puede('calidad') ? { id: 'calidad', label: 'Calidad y auditoría', icon: I.calidad, href: '#/control-acceso/calidad' } : null,
+      w.SUID_CALIDAD === false ? null : { id: 'calidad', label: 'Calidad y auditoría', icon: I.calidad, href: '#/control-acceso/calidad' },
       w.SUID_EVENTOS === false ? null : { id: 'eventos', label: 'Eventos', divider: true, icon: img('icon-eventos'), href: '#/control-acceso/eventos' }
     ] },
     { sec: 'Configuración', items: [{ id: 'equipo-coord', label: 'Usuarios y áreas', icon: img('icon-equipo'), ph: 1 }] },
@@ -167,6 +167,8 @@
     });
     /* Sin ruta: inicio en blanco con la marca de agua del IVC (DC-001). */
     var inicio = !r.path;
+    /* Calidad y auditoría salió de la fase 1: con SUID_CALIDAD = false su ruta muestra el aviso a cualquier rol. */
+    var fueraCalidad = w.SUID_CALIDAD === false && (r.path === 'control-acceso/calidad' || r.path.indexOf('control-acceso/calidad/') === 0);
     var ctx = { route: r, rest: match ? r.path.slice(match.length).replace(/^\//, '').split('/').filter(Boolean) : [] };
     var ITEM = { 'control-acceso/consulta': 'consulta', 'control-acceso/solicitudes': 'solicitudes', 'control-acceso/calidad': 'calidad', 'control-acceso/eventos': 'eventos' };
     /* Registrar, editar, carga masiva y la ficha son acciones de Gestión, no ítems del menú. */
@@ -176,9 +178,9 @@
       if (inicio) {
         view.innerHTML = '<div class="suid-home"><h1 class="sk-sr">Inicio</h1><span class="suid-home__wm" aria-hidden="true">IVC</span></div>';
         ctx.crumbs = [{ label: 'Inicio' }];
-      } else if (match === 'control-acceso/calidad' && !w.SUID_ROLES.puede('calidad')) {
-        view.innerHTML = '<div class="page-inner suid-ph"><h1 class="page-title">Sin permiso</h1><p class="page-subtitle">Calidad y auditoría no está disponible para el rol ' + SUID.esc(w.SUID_ROLES.info().label) + '.</p><a class="naowee-btn naowee-btn--loud" href="#/control-acceso/infractores">Ir a Gestión</a></div>';
-        ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Sin permiso' }];
+      } else if (fueraCalidad) {
+        view.innerHTML = '<div class="page-inner suid-ph"><h1 class="page-title">Fuera de la fase 1</h1><p class="page-subtitle">Calidad y auditoría queda para integraciones futuras. La bitácora de cada registro está en su ficha.</p><a class="naowee-btn naowee-btn--loud" href="#/control-acceso/infractores">Ir a Gestión</a></div>';
+        ctx.crumbs = [{ label: 'Inicio', href: '#/' }, { label: 'Fuera de la fase 1' }];
       } else if (match) {
         SUID.views[match](view, ctx);
       } else {
@@ -192,7 +194,7 @@
     }
 
     var mine = ++tok, L = SUID.load;
-    var ms = quiet === true || !L || inicio ? 0 : L.delay(match, ctx);
+    var ms = quiet === true || !L || inicio || fueraCalidad ? 0 : L.delay(match, ctx);
     if (!ms) { pinta(); return; }
     var cr = L.crumbs(match, ctx);
     renderHeader(cr);

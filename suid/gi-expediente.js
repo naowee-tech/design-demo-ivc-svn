@@ -4,6 +4,9 @@
   'use strict';
   var GI = w.GI, U = GI.util, D = GI.derive, C = GI.cat;
   var BASE = '#/control-acceso/infractores', SOLS = '#/control-acceso/solicitudes';
+  /* Misma regla que la ficha (gi.js): un Validado solo lo edita quien tiene editar_validado.
+     SUID_ROLES se lee al llamar: roles.js carga después de este archivo. */
+  function puedeEditar(r) { var R = w.SUID_ROLES; return !!R && R.puede('editar') && (r.estadoRegistro !== 'Validado' || R.puede('editar_validado')); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function vacio(v) { return v === '' || v == null ? '—' : v; }
 
@@ -228,7 +231,7 @@
           ['Radicado jurídica', esc(r.radJuridica)], ['Profesional responsable', esc(r.profesional)], ['Observaciones', esc(r.observaciones), true]] }],
       relacionados: [{ k: 'Solicitud de origen', v: enlHtml || '—' }, { k: 'Otras restricciones de esta persona', v: otras }],
       historial: hist,
-      acciones: '<a class="naowee-btn naowee-btn--loud" href="' + BASE + '/' + esc(r.id) + '" data-k="exp">Ver expediente</a><a class="naowee-btn naowee-btn--quiet" href="' + BASE + '/' + esc(r.id) + '/editar">Editar</a>'
+      acciones: '<a class="naowee-btn naowee-btn--loud" href="' + BASE + '/' + esc(r.id) + '" data-k="exp">Ver expediente</a>' + (puedeEditar(r) ? '<a class="naowee-btn naowee-btn--quiet" href="' + BASE + '/' + esc(r.id) + '/editar">Editar</a>' : '')
     };
     return m;
   }
