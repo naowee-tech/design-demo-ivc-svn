@@ -35,9 +35,10 @@ Documento completo: https://naowee-tech.github.io/design-demo-ivc-svn/entrega/
 | 01 | [Para qué existe](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#trabajos) | Qué debe lograr el módulo | — | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) | — |
 | 02 | [Historias](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#hu) | Quién hace qué y cómo se acepta | [historias.md](historias.md) | [PROD-73](https://naowee.atlassian.net/browse/PROD-73) | Enlaces dentro de cada historia |
 | 03 | [Roles](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#roles) | Qué puede y ve cada rol | [roles.md](roles.md) | [PROD-72](https://naowee.atlassian.net/browse/PROD-72) | Una entrada por rol (ver abajo) |
-| 04 | [Superficie](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#superficie) | Las 17 vistas, paneles y modales | [superficie.md](superficie.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) | Todas |
+| 04 | [Superficie](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#superficie) | Las 17 vistas, paneles y modales | [superficie.md](superficie.md) · [indicadores.md](indicadores.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) | Todas |
 | 05 | [Flujos](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#flujos) | Paso a paso de cada recorrido | [flujos.md](flujos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) | — |
 | 06 | [Datos](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#datos) | Los 55 campos, catálogos, estados e integración | [modelo-datos.md](modelo-datos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) | Formulario «Registrar infractor» |
+| 08 | [Responsive](https://naowee-tech.github.io/design-demo-ivc-svn/entrega/#responsive) | Cómo se ve cada vista en celular, tablet y escritorio, y qué cambia de forma | [responsive.md](responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) | Todas, a 375 / 768 / 1280 px |
 
 La entrega de la demo como tal es [PROD-70 · Entrega de demo IVC SVN](https://naowee.atlassian.net/browse/PROD-70).
 
@@ -106,14 +107,16 @@ Cada archivo está en dos lados: **Jira** descarga el adjunto de la tarea (pide 
 | historias.md | Historias | [Jira](https://naowee.atlassian.net/secure/attachment/36623/historias.md) · [Repo](historias.md) | [PROD-73](https://naowee.atlassian.net/browse/PROD-73) |
 | roles.md | Roles | [Jira](https://naowee.atlassian.net/secure/attachment/36618/roles.md) · [Repo](roles.md) | [PROD-72](https://naowee.atlassian.net/browse/PROD-72) |
 | superficie.md | Superficie | [Jira](https://naowee.atlassian.net/secure/attachment/36620/superficie.md) · [Repo](superficie.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) |
+| indicadores.md | Superficie (sección «Cómo se calculan los indicadores») | [Repo](indicadores.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) |
 | flujos.md | Flujos | [Jira](https://naowee.atlassian.net/secure/attachment/36617/flujos.md) · [Repo](flujos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
 | modelo-datos.md | Datos | [Jira](https://naowee.atlassian.net/secure/attachment/36627/modelo-datos.md) · [Repo](modelo-datos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
+| responsive.md | Responsive | [Repo](responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) |
 
 **Enlaces**
 
 | Qué | Enlace |
 |---|---|
-| Documento de la entrega (6 pestañas) | https://naowee-tech.github.io/design-demo-ivc-svn/entrega/ |
+| Documento de la entrega (8 pestañas) | https://naowee-tech.github.io/design-demo-ivc-svn/entrega/ |
 | Demo | https://naowee-tech.github.io/design-demo-ivc-svn/ |
 | Repositorio | https://github.com/naowee-tech/design-demo-ivc-svn |
 | Épica en Jira | https://naowee.atlassian.net/browse/PROD-45 |
@@ -127,6 +130,7 @@ Cada pestaña se genera con un script en `docs/model/` desde un JSON. Para cambi
 | Para qué existe | `jtbd.json` | `gen-jtbd.py` |
 | Historias | `historias.json` | `gen-historias.py` |
 | Roles | `roles.tpl.html` (+ `suid/roles.js`) | `gen-roles.py` |
-| Superficie | `superficie.json` | `gen-superficie.py` |
+| Superficie | `superficie.json` + `indicadores.json` (cálculo de los indicadores, también escribe `indicadores.md`) | `gen-superficie.py` |
 | Flujos | `flujos.json` | `gen-flujos-superficie.py` |
 | Datos | `hu-26-3.html` + `campos-en.json` + `obligatoriedad.json` + `suid/gi-catalogos.js` | `gen-modelo-datos.py` |
+| Responsive | `responsive.json` + `responsive-medicion.json` (la escribe `medir-responsive.mjs`, con capturas en `docs/img/responsive/`) | `gen-responsive.py` |

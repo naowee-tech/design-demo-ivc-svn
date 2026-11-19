@@ -1,0 +1,375 @@
+{
+  "fecha": "18-nov-2026",
+  "anchos": [
+    [
+      375,
+      "Celular",
+      "iPhone 13 mini / SE; el piso del módulo."
+    ],
+    [
+      768,
+      "Tablet",
+      "iPad en vertical; aquí empieza el riel colapsado del shell."
+    ],
+    [
+      1280,
+      "Escritorio",
+      "Laptop; la referencia con la que se diseñó la demo."
+    ]
+  ],
+  "criterios": [
+    [
+      "Desborde",
+      "La página no se puede correr de lado: nada se sale del ancho de la pantalla."
+    ],
+    [
+      "Recorte",
+      "Ningún dato queda cortado por un contenedor o por puntos suspensivos cuando es información clave."
+    ],
+    [
+      "Scroll propio",
+      "Un bloque con scroll horizontal (tabla, tira de pasos) se acepta solo si se nota y no esconde columnas clave."
+    ],
+    [
+      "Zona táctil",
+      "Lo que se toca mide al menos 44 px de lado (WCAG 2.5.5)."
+    ],
+    [
+      "Texto",
+      "Nada por debajo de 12 px."
+    ],
+    [
+      "Navegación",
+      "Desde cualquier vista se puede llegar a las otras secciones del módulo."
+    ]
+  ],
+  "tipos": {
+    "rompe": [
+      "Se rompe",
+      "Se corrige en el lugar, sin cambiar el diseño."
+    ],
+    "variante": [
+      "Necesita variante",
+      "La versión de escritorio no cabe; en celular cambia de forma (tabla → tarjetas, panel → hoja)."
+    ],
+    "ajuste": [
+      "Ajuste menor",
+      "Funciona, pero se ve apretado o queda bajo el criterio."
+    ]
+  },
+  "hallazgos": [
+    {
+      "id": "R-01",
+      "tipo": "rompe",
+      "titulo": "Sin menú por debajo de 900 px",
+      "vistas": [],
+      "anchos": [
+        375,
+        768
+      ],
+      "que": "suid/app.css oculta la barra lateral bajo 900 px y no pone nada en su lugar: en celular y tablet no hay cómo pasar de Gestión a Búsqueda o a Calidad.",
+      "archivo": "suid/gi-responsive.js",
+      "estado": "resuelto",
+      "transversal": true,
+      "solucion": "Botón ☰ en el encabezado que abre la barra como cajón (se cierra al navegar, con Esc o tocando fuera). En tablet queda el riel de íconos del shell."
+    },
+    {
+      "id": "R-02",
+      "tipo": "rompe",
+      "titulo": "El estado de la restricción se corta con «…»",
+      "vistas": [
+        "panel-registro",
+        "panel-persona"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "«Sanción activa · bloquea en tod…» y «Medida vigente · bloquea en to…»: se pierde justo el alcance de la medida, que es lo que la persona vino a ver.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "El titular y la línea de vigencia parten en dos renglones en vez de cortarse."
+    },
+    {
+      "id": "R-03",
+      "tipo": "rompe",
+      "titulo": "El campo de observación y de motivo no ocupa el ancho",
+      "vistas": [
+        "validar",
+        "devolver"
+      ],
+      "anchos": [
+        375,
+        768,
+        1280
+      ],
+      "que": "El área de texto queda en unos 160 px dentro de la ventana; en celular parece un recuadro suelto y el motivo de devolución, que es obligatorio, se escribe a ciegas.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "El campo ocupa todo el ancho de la ventana, con alto de 4 renglones."
+    },
+    {
+      "id": "R-04",
+      "tipo": "rompe",
+      "titulo": "Etiquetas de campo cortadas",
+      "vistas": [
+        "editar",
+        "registrar"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "«Ciudad o municipio de reside…»: la etiqueta de un campo obligatorio no se lee completa.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Las etiquetas parten en dos renglones; ya no llevan puntos suspensivos."
+    },
+    {
+      "id": "R-05",
+      "tipo": "rompe",
+      "titulo": "Filtros de ancho desigual",
+      "vistas": [
+        "registros",
+        "consulta"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "Los selectores (Registro, Restricción, Estado, Tipo, Ciudad) quedan cada uno de su ancho, sin llenar la fila; el botón de reiniciar flota aparte.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "En celular cada filtro ocupa su renglón y reiniciar acompaña al último; en tablet se reparten el ancho."
+    },
+    {
+      "id": "R-06",
+      "tipo": "rompe",
+      "titulo": "La tabla de Registros se corta también en escritorio",
+      "vistas": [
+        "registros",
+        "panel-registro"
+      ],
+      "anchos": [
+        1280
+      ],
+      "que": "A 1280 px la columna Restricción queda a medias y no hay scroll lateral: la tabla mide 1.420 px dentro de un contenedor que recorta.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Entre 900 y 1500 px la tabla cede aire, los encabezados parten en dos renglones y el ojo se oculta (la fila ya abre el panel); «Expediente» queda a la vista."
+    },
+    {
+      "id": "V-01",
+      "tipo": "variante",
+      "titulo": "Registros de infractores: tabla → tarjetas",
+      "vistas": [
+        "registros",
+        "panel-registro"
+      ],
+      "anchos": [
+        375,
+        768
+      ],
+      "que": "En 375 solo se ven Registro, Infractor y la mitad de Origen; en 768 se corta Fin de vigencia, que es la columna que más se consulta.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Bajo 900 px cada registro es una tarjeta: nombre y documento arriba, restricción y fin de vigencia, estado del registro y radicado, origen y acto. Tocarla abre el mismo panel."
+    },
+    {
+      "id": "V-02",
+      "tipo": "variante",
+      "titulo": "Resultados de búsqueda: tabla → tarjeta por persona",
+      "vistas": [
+        "consulta"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "La columna Estado se corta («Faltan 26 días · hasta 10/11/202…»): es la respuesta a la pregunta de la vista.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Una tarjeta por persona con el estado y los días arriba; nombre, documento y medidas debajo."
+    },
+    {
+      "id": "V-03",
+      "tipo": "variante",
+      "titulo": "Calidad: hallazgos en tarjetas",
+      "vistas": [
+        "calidad"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "La columna Detalle queda cortada a una palabra por línea; los tres contadores se apilan a media pantalla.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Los tres contadores en una fila y cada hallazgo como tarjeta: registro, tipo y el detalle completo."
+    },
+    {
+      "id": "V-04",
+      "tipo": "variante",
+      "titulo": "Trazabilidad: tabla → línea de tiempo",
+      "vistas": [
+        "trazabilidad"
+      ],
+      "anchos": [
+        375,
+        768
+      ],
+      "que": "En 375 solo caben Fecha, Registro y Usuario; en 768 la Nota queda cortada. Cada fila mide menos de 44 px de alto para tocarla.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Bajo 900 px es una línea de tiempo: el cambio de estado como titular, fecha y hora, registro y usuario, y la nota completa."
+    },
+    {
+      "id": "V-05",
+      "tipo": "variante",
+      "titulo": "Ficha: acciones en una barra fija abajo",
+      "vistas": [
+        "ficha"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "Editar, Devolver y Validar se apilan arriba con anchos distintos, antes del contenido; al bajar a revisar los datos se pierden.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Barra fija abajo: Validar a todo el ancho, con Editar y Devolver encima."
+    },
+    {
+      "id": "V-06",
+      "tipo": "variante",
+      "titulo": "Formulario: la tira de bloques se esconde en celular",
+      "vistas": [
+        "editar",
+        "registrar"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "La tira de bloques (B Infractor, C Tutor…) queda con scroll horizontal y cortada al lado del porcentaje.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Bajo 1000 px el avance va a todo el ancho y los bloques en una fila que cabe entera (letra, nombre y barra); en celular solo la letra, porque el nombre ya está en el título del paso."
+    },
+    {
+      "id": "A-01",
+      "tipo": "ajuste",
+      "titulo": "Pestañas recortadas",
+      "vistas": [
+        "indicadores",
+        "registros"
+      ],
+      "anchos": [
+        375
+      ],
+      "que": "«Registros de infract…» o «…es»: las dos pestañas no caben y queda una a medias.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Las pestañas se compactan y caben las dos sin desplazar."
+    },
+    {
+      "id": "A-02",
+      "tipo": "ajuste",
+      "titulo": "Zonas táctiles de 40 px",
+      "vistas": [
+        "indicadores",
+        "registros",
+        "editar",
+        "calidad"
+      ],
+      "anchos": [
+        375,
+        768
+      ],
+      "que": "Los botones del sistema de diseño miden 40 px de alto, y los íconos ⓘ y los chips de filtro aún menos.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Botones, filtros, paginador y cierre de ventanas suben a 44 px bajo 900 px, en una capa de la demo. El botón de origen (repo de diseño) sigue en 40 px."
+    },
+    {
+      "id": "A-03",
+      "tipo": "ajuste",
+      "titulo": "Texto de 10-11 px",
+      "vistas": [
+        "indicadores"
+      ],
+      "anchos": [
+        375,
+        768,
+        1280
+      ],
+      "que": "Las etiquetas de tendencia (Por vencer, Estable…), los ejes de la gráfica y el pie del login.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "solucion": "Ejes de la gráfica y marcas de tendencia a 12 px."
+    },
+    {
+      "id": "A-04",
+      "tipo": "ajuste",
+      "titulo": "Título del encabezado cortado",
+      "vistas": [],
+      "anchos": [
+        375
+      ],
+      "que": "«Gestión de sancion…», «Editar INF-2026-00…»: el encabezado repite lo que el título de la vista ya dice.",
+      "archivo": "suid/gi-responsive.css",
+      "estado": "resuelto",
+      "transversal": true,
+      "solucion": "Bajo 900 px el encabezado muestra solo la vista actual; en celular se oculta la campana (no tiene función en la demo) y el título cabe completo."
+    },
+    {
+      "id": "A-05",
+      "tipo": "ajuste",
+      "titulo": "Login: campos de 39 px y textos de 11 px",
+      "vistas": [
+        "login"
+      ],
+      "anchos": [
+        375,
+        768,
+        1280
+      ],
+      "que": "Los campos y el botón miden 37–39 px de alto y la ayuda del pie usa 11 px.",
+      "solucion": "No se toca aquí: el login es copia del tema real del SUID (suid/login/css). Se lleva al equipo dueño de ese tema.",
+      "archivo": "suid/login/css/components-v2.css",
+      "estado": "origen"
+    }
+  ],
+  "vistas": {
+    "login": "Funciona en los tres anchos; quedan dos ajustes que son del tema del SUID.",
+    "indicadores": "Los indicadores se apilan, la gráfica escala y las dos pestañas caben.",
+    "registros": "Tarjetas en celular y tablet; en escritorio la tabla ya no se recorta.",
+    "panel-registro": "Pantalla completa en celular, con el estado de la medida completo.",
+    "registrar": "Los bloques se apilan y el pie con Cancelar / Comenzar queda a mano.",
+    "carga": "Los pasos 1 a 4 funcionan en celular: la validación ya muestra una tarjeta por fila con error. El paso 5 (confirmar) se revisa a mano.",
+    "carga-salir": "La ventana sale como hoja inferior.",
+    "ficha": "Las acciones quedan en una barra fija abajo.",
+    "validar": "Hoja inferior con el campo de observación a todo el ancho.",
+    "devolver": "Hoja inferior con el campo de motivo a todo el ancho.",
+    "editar": "Avance y bloques en una fila que cabe; las etiquetas se leen completas.",
+    "consulta": "Filtros a todo el ancho y el resultado como tarjeta con el estado arriba.",
+    "panel-persona": "Pantalla completa en celular, con el estado de la medida completo.",
+    "menor-motivo": "La ventana del motivo funciona bien en los tres anchos.",
+    "calidad": "Contadores en una fila y hallazgos en tarjetas.",
+    "trazabilidad": "Línea de tiempo en celular y tablet.",
+    "avisos": "Aviso breve de 3 s; se revisa a mano al validar o devolver."
+  },
+  "decidir": [
+    "Botones de 44 px: la demo ya los sube en una capa propia. ¿Se lleva el cambio al botón del sistema de diseño (shared/components.css es copia)?",
+    "Login (A-05): es el tema real del SUID. ¿Se reporta al equipo dueño o se deja como está?",
+    "Carga masiva, paso 5 (confirmar la importación): no se pudo abrir de forma automática. Se revisa a mano."
+  ],
+  "manual": [
+    "avisos"
+  ],
+  "extra": {
+    "carga": [
+      [
+        "carga-3",
+        "Paso 3 · validación"
+      ],
+      [
+        "carga-4",
+        "Paso 4 · corregir filas"
+      ]
+    ]
+  }
+}

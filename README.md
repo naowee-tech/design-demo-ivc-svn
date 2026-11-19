@@ -10,7 +10,7 @@ Abre en el login del SUID. Es un login de demostración: entra con cualquier dat
 
 **Empezar aquí:** [`docs/spec/index.md`](docs/spec/index.md). Qué es el módulo, en qué orden leerlo y cómo se cruzan los documentos con las tareas de Jira ([PROD-45](https://naowee.atlassian.net/browse/PROD-45)) y la demo.
 
-- **Documento de la entrega** (6 pestañas): https://naowee-tech.github.io/design-demo-ivc-svn/entrega/
+- **Documento de la entrega** (8 pestañas): https://naowee-tech.github.io/design-demo-ivc-svn/entrega/
 - **Specs en markdown** (el mismo contenido de cada pestaña, adjunto en su tarea de Jira):
 
   | Spec | Tarea |
@@ -18,8 +18,10 @@ Abre en el login del SUID. Es un login de demostración: entra con cualquier dat
   | [historias.md](docs/spec/historias.md) | [PROD-73](https://naowee.atlassian.net/browse/PROD-73) |
   | [roles.md](docs/spec/roles.md) | [PROD-72](https://naowee.atlassian.net/browse/PROD-72) |
   | [superficie.md](docs/spec/superficie.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) |
+  | [indicadores.md](docs/spec/indicadores.md) | [PROD-74](https://naowee.atlassian.net/browse/PROD-74) |
   | [flujos.md](docs/spec/flujos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
   | [modelo-datos.md](docs/spec/modelo-datos.md) | [PROD-71](https://naowee.atlassian.net/browse/PROD-71) |
+  | [responsive.md](docs/spec/responsive.md) | [PROD-45](https://naowee.atlassian.net/browse/PROD-45) |
 
 - **Insumos del IVC** (v. 30-sep-2026, también adjuntos en PROD-45): [`docs/spec/insumos/`](docs/spec/insumos/). Contiene la HU-26.3 (.docx), la base de datos de sancionatorios (.xlsx, origen de los 55 campos) y el prototipo de formulario (.xlsx).
 

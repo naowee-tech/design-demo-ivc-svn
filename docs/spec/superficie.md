@@ -53,7 +53,7 @@ Donde se registran, se revisan y se cierran los registros.
 
 **Qué tiene**
 
-- Seis indicadores: vencen en 30 días, corren sin bloquear (sin validar), revisión media en días, devueltos a inspección, reincidencia a 3 años y conducta más frecuente; cada uno con su tendencia.
+- Seis indicadores: vencen en 30 días, corren sin bloquear (sin validar), revisión media en días, devueltos a inspección, reincidencia a 3 años y conducta más frecuente; cada uno con su tendencia. El cálculo de cada uno está en indicadores.md.
 - Gráfica de infractores mes a mes: nuevos contra los que salen por cumplimiento, con selector de periodo y tabla accesible.
 
 **Acciones**

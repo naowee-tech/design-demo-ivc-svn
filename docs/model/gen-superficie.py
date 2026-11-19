@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Genera docs/superficie.html y docs/spec/superficie.md desde docs/model/superficie.json.
+"""Genera docs/superficie.html y docs/spec/superficie.md desde docs/model/superficie.json,
+y la sección de indicadores + docs/spec/indicadores.md desde docs/model/indicadores.json.
 Uso: python3 docs/model/gen-superficie.py"""
 import json, os
 from html import escape as e
@@ -7,6 +8,7 @@ from html import escape as e
 R = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SU = json.load(open(R + '/docs/model/superficie.json', encoding='utf-8'))
 V = SU['vistas']
+IN = json.load(open(R + '/docs/model/indicadores.json', encoding='utf-8'))
 ROL = {'profesional': 'Profesional', 'coordinador': 'Coordinador', 'director': 'Director'}
 SV = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>'
 ICON = {'profesional': SV % '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
@@ -59,6 +61,15 @@ dialog.lb{max-width:min(1200px,94vw);padding:0;border:0;border-radius:16px;backg
 dialog.lb::backdrop{background:rgba(15,18,30,.6)}dialog.lb img{display:block;width:100%;height:auto}
 dialog.lb button{position:absolute;right:12px;top:12px;padding:8px 12px;border:0;border-radius:10px;background:var(--pn);font:700 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 @media (max-width:1000px){.v{grid-template-columns:1fr}.v-g{border-right:0;border-bottom:1px solid var(--bd)}.v-cols{grid-template-columns:1fr}.mr{grid-template-columns:1fr}.mc+.mc::before{display:none}.where{grid-template-columns:1fr}}
+.ind{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 0;padding:0;list-style:none}
+.ind li{padding:20px 22px;background:var(--pn);border:1px solid var(--bd);border-radius:18px;box-shadow:var(--sh)}
+.ind h3,section.sec .ind h3{margin:0 0 2px;font-size:18px;font-weight:800}.ind .q{margin:0 0 12px;color:var(--mu);font-size:14.5px}
+.ind dl{margin:0;display:grid;grid-template-columns:92px 1fr;gap:8px 14px;font-size:13.5px;line-height:1.5}
+.ind dt{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);padding-top:2px}.ind dd{margin:0}
+.ind code{display:block;padding:8px 10px;border-radius:9px;background:var(--sf);border:1px solid var(--bd);font:12.5px/1.5 ui-monospace,Menlo,monospace;white-space:normal}
+.ind .et{margin:0;padding:0;list-style:none}.ind .et li{padding:0;border:0;box-shadow:none;background:none;border-radius:0}
+.ind .pc{padding:8px 10px;border-radius:9px;background:var(--wabg);border:1px solid var(--wabd);color:var(--wa)}
+@media (max-width:1000px){.ind{grid-template-columns:1fr}}
 </style>'''
 
 M = SU['menu']
@@ -97,6 +108,15 @@ dep = ''.join('<tr><td><b>%s</b></td><td><span class="pill">%s</span></td><td>%s
 body = ('<h2>Dónde vive en el IVC</h2><p class="sub">Una sección nueva del menú, con tres entradas.</p>%s'
         '<h2>Mapa de vistas</h2><p class="sub">Desde cada entrada del menú, a qué vista se llega. Toca una para ir a su detalle.</p>%s') % (where, mapa)
 body += ''.join('<section id="%s"><h2>%s</h2><p class="sub">%s</p><ol class="vs">%s</ol></section>' % (g['id'], e(g['titulo']), e(g['sub']), ''.join(vista(i) for i in g['vistas'])) for g in SU['grupos'])
+ind = ''.join('<li id="ind-%s"><h3>%s</h3><p class="q">%s</p><dl><dt>Cifra</dt><dd>%s</dd><dt>Fórmula</dt><dd><code>%s</code></dd><dt>Ventana</dt><dd>%s</dd>'
+              '<dt>Etiqueta</dt><dd><ul class="et">%s</ul></dd><dt>En el ⓘ</dt><dd>%s</dd><dt>Datos</dt><dd>%s</dd><dt>Por confirmar</dt><dd class="pc">%s</dd></dl></li>' % (
+    x['id'], e(x['n']), e(x['pregunta']), e(x['cifra']), e(x['formula']), e(x['ventana']),
+    ''.join('<li><b>%s:</b> %s</li>' % (e(a), e(b)) for a, b in x['etiqueta']), e(x['ayuda']), e(x['datos']), e(x['confirmar'])) for x in IN['indicadores'])
+body += ('<section id="indicadores"><h2>Cómo se calculan los indicadores</h2><p class="sub">%s Spec: <a href="spec/indicadores.md">indicadores.md</a>.</p>'
+         '<div class="tw"><table><thead><tr><th>Término</th><th>Qué significa</th></tr></thead><tbody>%s</tbody></table></div><ul class="ind">%s</ul>'
+         '<h3>Casos sin dato</h3><ul>%s</ul><h3>Por decidir</h3><ul>%s</ul></section>') % (
+    e(IN['intro']), ''.join('<tr><td><b>%s</b></td><td>%s</td></tr>' % (e(a), e(b)) for a, b in IN['definiciones']), ind,
+    ''.join('<li>%s</li>' % e(c) for c in IN['casos']), ''.join('<li>%s</li>' % e(c) for c in IN['abierto']))
 body += '<h2>De qué depende</h2><div class="tw"><table><thead><tr><th>Qué</th><th>De quién</th><th>Nota</th></tr></thead><tbody>%s</tbody></table></div>' % dep
 body += '<dialog class="lb" id="lb"><button type="button" id="lbx">Cerrar</button><img id="lbi" alt=""></dialog>'
 js = '''<script>(function(){var d=document.getElementById('lb'),i=document.getElementById('lbi');
@@ -134,4 +154,20 @@ md += ['', '## Criterios de aceptación', '',
        '- [ ] La navegación sigue el mapa: menú → vista → ficha → confirmaciones.',
        '- [ ] Ninguna pantalla actual del IVC cambia; el módulo entra como sección nueva del menú.', '']
 open(R + '/docs/spec/superficie.md', 'w', encoding='utf-8').write('\n'.join(md))
+# ── spec de indicadores ──
+mi = ['# Indicadores · Gestión de infractores (IVC SVN, fase 1)', '', IN['intro'], '',
+      '- **Vista:** Gestión · Indicadores (`#/control-acceso/infractores`), descrita en [superficie.md](superficie.md).',
+      '- **Fuente:** ' + IN['fuente'], '- **Revisado:** ' + IN['fecha'], '',
+      '## Resumen', '', '| Indicador | Qué responde | Ventana |', '|---|---|---|']
+mi += ['| %s | %s | %s |' % (x['n'], x['pregunta'], x['ventana']) for x in IN['indicadores']]
+mi += ['', '## Definiciones', '', '| Término | Qué significa |', '|---|---|'] + ['| %s | %s |' % (a, b) for a, b in IN['definiciones']]
+for x in IN['indicadores']:
+    mi += ['', '## %s' % x['n'], '', x['pregunta'], '', '- **Cifra:** ' + x['cifra'], '- **Fórmula:** `%s`' % x['formula'], '- **Ventana:** ' + x['ventana'],
+           '- **En el ⓘ:** ' + x['ayuda'], '- **Datos que usa:** ' + x['datos'], '- **Por confirmar:** ' + x['confirmar'], '', '| Etiqueta | Cuándo |', '|---|---|']
+    mi += ['| %s | %s |' % (a, b) for a, b in x['etiqueta']]
+mi += ['', '## Casos sin dato', ''] + ['- ' + c for c in IN['casos']] + ['', '## Por decidir', ''] + ['- ' + c for c in IN['abierto']]
+mi += ['', '## Criterios de aceptación', '', '- [ ] Cada indicador da la misma cifra que su fórmula sobre los mismos registros.',
+       '- [ ] La etiqueta cambia en los cortes indicados y siempre lleva símbolo y palabra.',
+       '- [ ] El ⓘ de cada indicador muestra el contexto descrito.', '- [ ] Los plazos y cortes quedan confirmados por el IVC.', '']
+open(R + '/docs/spec/indicadores.md', 'w', encoding='utf-8').write('\n'.join(mi))
 print('ok superficie.html + spec/superficie.md ·', len(V), 'vistas')
