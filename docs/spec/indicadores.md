@@ -1,6 +1,6 @@
 # Indicadores · Gestión de infractores (IVC SVN, fase 1)
 
-Los seis indicadores de la pestaña Gestión · Indicadores se calculan al abrir la vista, a partir de los registros y de su historial. Ninguno se guarda.
+No disponible hasta la siguiente etapa: la pestaña Gestión · Indicadores está oculta en la demo y este cálculo queda como referencia. Los seis indicadores de la pestaña Gestión · Indicadores se calculan al abrir la vista, a partir de los registros y de su historial. Ninguno se guarda.
 
 - **Vista:** Gestión · Indicadores (`#/control-acceso/infractores`), descrita en [superficie.md](superficie.md).
 - **Fuente:** Lo que hoy calcula la demo: `suid/gi-data.js`, función `insights`. Los textos y umbrales de la etiqueta están en `suid/gi.js`, función `insightsHtml`.

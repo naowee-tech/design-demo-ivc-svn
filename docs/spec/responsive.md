@@ -165,7 +165,7 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 |---|---|---|
 | En todo el módulo | Bien | R-01 Sin menú por debajo de 900 px, A-04 Título del encabezado cortado |
 | Inicio de sesión | Ajuste menor | Funciona en los tres anchos; quedan dos ajustes que son del tema del SUID. |
-| Gestión · Indicadores | Bien | Los indicadores se apilan, la gráfica escala y las dos pestañas caben. |
+| Gestión · Indicadores | Bien | No disponible hasta la siguiente etapa. Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben. |
 | Gestión · Registros de infractores | Bien | Tarjetas en celular y tablet; en escritorio la tabla ya no se recorta. |
 | Panel del expediente | Bien | Pantalla completa en celular, con el estado de la medida completo. |
 | Registrar infractor | Bien | Los bloques se apilan y el pie con Cancelar / Comenzar queda a mano. |

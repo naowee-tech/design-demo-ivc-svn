@@ -485,7 +485,7 @@
     {
       "t": "¿Gestión · Indicadores entra en la fase 1?",
       "d": "Está ligada a HU-09.",
-      "mientras": "no se construye y la demo queda igual. Si entra, hay que definir cada indicador en datos y agregar un endpoint de agregados.",
+      "mientras": "no se construye: no disponible hasta la siguiente etapa y la pestaña queda oculta en la demo. Si entra, hay que definir cada indicador en datos y agregar un endpoint de agregados.",
       "ref": "Superficie · Indicadores"
     },
     {

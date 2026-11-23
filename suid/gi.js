@@ -7,7 +7,9 @@
   var R = w.SUID_ROLES;
   /* Un registro Validado solo lo edita quien tiene editar_validado (coordinador), y con motivo. */
   function puedeEditar(r) { return R.puede('editar') && (r.estadoRegistro !== 'Validado' || R.puede('editar_validado')); }
-  var FLUJO = /^#\/control-acceso\/infractores\/(nuevo|carga-masiva|[^\/]+(\/editar)?)$/, origen = null, tabActiva = 'ind', tabPedida = null;
+  /* Indicadores no está disponible hasta la siguiente etapa: con SUID_INDICADORES = false se oculta la pestaña y Gestión abre en Registros. */
+  var IND = w.SUID_INDICADORES !== false, TAB0 = IND ? 'ind' : 'reg';
+  var FLUJO = /^#\/control-acceso\/infractores\/(nuevo|carga-masiva|[^\/]+(\/editar)?)$/, origen = null, tabActiva = TAB0, tabPedida = null;
   function hashDe(u) { var i = (u || '').indexOf('#'); return i < 0 ? '' : u.slice(i); }
   w.addEventListener('hashchange', function (e) {
     var a = hashDe(e.oldURL), b = hashDe(e.newURL);
@@ -392,11 +394,11 @@
       '<header class="gi-head"><div class="page-title-block"><h1 class="page-title">Gestión de infractores</h1>' +
       '<p class="page-subtitle">Registra, valida y consulta las sanciones en firme de la Ley 1453 de 2011.</p></div>' +
       '<div class="gi-head__actions"><button type="button" class="naowee-btn naowee-btn--mute" disabled title="Propuesta: sin contrato definido. Pendiente de validar con IVC." aria-label="Registrar por integración, propuesta pendiente de validar con IVC">Por integración · Propuesta</button>' + (R.puede('registrar') ? '<a class="naowee-btn naowee-btn--loud" href="' + BASE + '/nuevo">' + svg('plus') + ' Registrar infractores</a>' : '') + '</div></header>' +
-      '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión"><button type="button" role="tab" class="gi-tab" id="giTabI" aria-selected="true" aria-controls="giPanI" data-tab="ind">Indicadores</button>' +
-      '<button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="false" aria-controls="giPanR" tabindex="-1" data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
+      '<div class="gi-tabs" role="tablist" aria-label="Vista de la gestión">' + (IND ? '<button type="button" role="tab" class="gi-tab" id="giTabI" aria-selected="true" aria-controls="giPanI" data-tab="ind">Indicadores</button>' : '') +
+      '<button type="button" role="tab" class="gi-tab" id="giTabR" aria-selected="' + !IND + '" aria-controls="giPanR"' + (IND ? ' tabindex="-1"' : '') + ' data-tab="reg">Registros de infractores <span class="gt-count" id="giTabRN">' + filtrar().length + '</span></button>' +
       (w.GS ? '<button type="button" role="tab" class="gi-tab" id="giTabS" aria-selected="false" aria-controls="giPanS" tabindex="-1" data-tab="sol">Expedientes por tramitar <span class="gt-count" id="giTabSN">' + (w.GS.lista ? w.GS.lista().length : 0) + '</span></button>' : '') + '</div>' +
-      '<div id="giPanI" class="gi-pan-ind" role="tabpanel" aria-labelledby="giTabI"><section class="gi-panel-row" aria-label="Panorama de infractores">' + insightsHtml() + '<div id="giChartCard">' + chartHtml() + '</div></section></div>' +
-      '<div id="giPanR" role="tabpanel" aria-labelledby="giTabR" hidden>' +
+      '<div id="giPanI" class="gi-pan-ind" role="tabpanel" aria-labelledby="giTabI"' + (IND ? '' : ' hidden') + '><section class="gi-panel-row" aria-label="Panorama de infractores">' + insightsHtml() + '<div id="giChartCard">' + chartHtml() + '</div></section></div>' +
+      '<div id="giPanR" role="tabpanel" aria-labelledby="giTabR"' + (IND ? ' hidden' : '') + '>' +
       '<section class="gt-card" id="giCard" aria-label="Registros de infractores">' +
         '<div class="gt-toolbar"><div class="gc-field">' + svg('search') + '<input type="text" id="giQ" aria-label="Buscar por documento, nombre o acto" title="Buscar por documento, nombre o acto" placeholder="Buscar" value="' + esc(filt.q) + '"></div>' +
         filtrosHtml() +
@@ -447,8 +449,8 @@
         if (k !== 'reg') GI.panel.cerrar('api');
       });
     });
-    tabActiva = 'ind';
-    if (tabPedida && tabPedida !== 'ind') { var tp = view.querySelector('.gi-tab[data-tab="' + tabPedida + '"]'); if (tp) tp.click(); }
+    tabActiva = TAB0;
+    if (tabPedida && tabPedida !== TAB0) { var tp = view.querySelector('.gi-tab[data-tab="' + tabPedida + '"]'); if (tp) tp.click(); }
     tabPedida = null;
     d.getElementById('giQ').addEventListener('input', function (e) { filt.q = e.target.value; pag = 1; paint(); });
     /* selectGrafico no expone un reset: se repinta la vista, igual que al elegir un filtro. */

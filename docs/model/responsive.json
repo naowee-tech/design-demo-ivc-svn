@@ -335,7 +335,7 @@
   ],
   "vistas": {
     "login": "Funciona en los tres anchos; quedan dos ajustes que son del tema del SUID.",
-    "indicadores": "Los indicadores se apilan, la gráfica escala y las dos pestañas caben.",
+    "indicadores": "No disponible hasta la siguiente etapa. Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben.",
     "registros": "Tarjetas en celular y tablet; en escritorio la tabla ya no se recorta.",
     "panel-registro": "Pantalla completa en celular, con el estado de la medida completo.",
     "registrar": "Los bloques se apilan y el pie con Cancelar / Comenzar queda a mano.",

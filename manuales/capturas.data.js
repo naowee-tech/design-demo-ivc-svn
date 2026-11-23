@@ -7,8 +7,7 @@ window.MANUALES_CAPTURAS = {
   "acc-panel-estado": {"src":"img/acc-panel-estado.webp","w":640,"h":592,"dpr":2,"marcas":[{"n":1,"x":34.38,"y":14.16,"w":61.88,"h":73.94}]},
   "ivc-login": {"src":"img/ivc-login.webp","w":914,"h":1016,"dpr":2,"marcas":[{"n":1,"x":0,"y":57.99,"w":100,"h":10.22}]},
   "ivc-menu": {"src":"img/ivc-menu.webp","w":548,"h":1600,"dpr":2,"marcas":[{"n":1,"x":2.19,"y":34.25,"w":95.26,"h":6.5},{"n":2,"x":2.19,"y":40.5,"w":95.26,"h":6.5},{"n":3,"x":2.19,"y":46.75,"w":95.26,"h":6.5},{"n":4,"x":2.19,"y":55.38,"w":95.26,"h":6.5}]},
-  "ivc-gestion-ind": {"src":"img/ivc-gestion-ind.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":2.78,"y":14.97,"w":13.72,"h":8.01},{"n":2,"x":46.21,"y":24.52,"w":51,"h":62.56},{"n":3,"x":75.45,"y":3.37,"w":21.77,"h":6.74}]},
-  "ivc-gestion-reg": {"src":"img/ivc-gestion-reg.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":16.1,"y":14.97,"w":28.11,"h":8.01},{"n":2,"x":2.88,"y":41.73,"w":97.12,"h":17.54}]},
+  "ivc-gestion-reg": {"src":"img/ivc-gestion-reg.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":2.78,"y":14.97,"w":28.11,"h":8.01},{"n":2,"x":2.88,"y":43.69,"w":94.23,"h":17.54},{"n":3,"x":75.45,"y":3.37,"w":21.77,"h":6.74}]},
   "ivc-gestion-panel": {"src":"img/ivc-gestion-panel.webp","w":1000,"h":625,"dpr":1,"marcas":[{"n":1,"x":48.13,"y":10.5,"w":51.88,"h":89.5},{"n":2,"x":49.77,"y":18,"w":24.49,"h":6}]},
   "ivc-gestion-exp": {"src":"img/ivc-gestion-exp.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":43.81,"y":14.97,"w":28.85,"h":8.01}]},
   "ivc-alta-inicio": {"src":"img/ivc-alta-inicio.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":84.95,"y":92.13,"w":12.27,"h":6.74}]},
@@ -46,4 +45,5 @@ window.MANUALES_CAPTURAS = {
   "svn-puerta-medida": {"src":"img/svn-puerta-medida.webp","w":588,"h":1244,"dpr":2,"marcas":[{"n":1,"x":7.87,"y":3.73,"w":84.25,"h":8.08}]},
   "svn-pmu-lista": {"src":"img/svn-pmu-lista.webp","w":1000,"h":625,"dpr":1,"marcas":[{"n":1,"x":59.19,"y":57.09,"w":3.22,"h":5.16}]},
   "svn-pmu-tablero": {"src":"img/svn-pmu-tablero.webp","w":892,"h":619,"dpr":1,"marcas":[{"n":1,"x":67.6,"y":38.26,"w":29.63,"h":24.83},{"n":2,"x":68.87,"y":54.6,"w":13.57,"h":6.66}]},
+  "ivc-gestion-ind": {"src":"img/ivc-gestion-ind.webp","w":1000,"h":708,"dpr":1,"marcas":[{"n":1,"x":2.78,"y":14.97,"w":13.72,"h":8.01},{"n":2,"x":46.21,"y":24.52,"w":51,"h":62.56},{"n":3,"x":75.45,"y":3.37,"w":21.77,"h":6.74}]}
 };

@@ -20,7 +20,6 @@
     {
       "entrada": "Gestión de sanciones",
       "principal": [
-        "indicadores",
         "registros"
       ],
       "abre": [
@@ -133,7 +132,8 @@
           "ayuda-indicador.jpg",
           "Ayuda ⓘ de un indicador"
         ]
-      ]
+      ],
+      "fuera": "No disponible hasta la siguiente etapa. La pestaña está oculta en la demo y Gestión abre en Registros; se conserva como referencia."
     },
     "registros": {
       "n": "Gestión · Registros de infractores",
@@ -144,7 +144,7 @@
         "coordinador",
         "director"
       ],
-      "para": "Encontrar un registro y ver en qué estado está.",
+      "para": "Encontrar un registro y ver en qué estado está. Es lo primero que se ve al entrar a Gestión.",
       "contiene": [
         "Tabla de registros: número, infractor (con marca de menor), origen de la obligación, acto administrativo, fin de vigencia, estado del registro y estado de la restricción.",
         "Filtros por estado del registro y de la restricción.",

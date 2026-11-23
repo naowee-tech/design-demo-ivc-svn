@@ -11,7 +11,10 @@ V = SU['vistas']
 IN = json.load(open(R + '/docs/model/indicadores.json', encoding='utf-8'))
 # Grupos con «fuera» quedan como referencia: no cuentan en las vistas de la fase 1 ni enlazan a la demo.
 FUERA = {i for g in SU['grupos'] if g.get('fuera') for i in g['vistas']}
-N1 = sum(len(g['vistas']) for g in SU['grupos'] if not g.get('fuera'))
+# Una vista con «fuera» propio sale sola (no disponible hasta la siguiente etapa), sin sacar a su grupo.
+NODISP = {i for i in V if V[i].get('fuera')}
+FUERA |= NODISP
+N1 = sum(len([i for i in g['vistas'] if i not in NODISP]) for g in SU['grupos'] if not g.get('fuera'))
 NUM = {1: 'una', 2: 'dos', 3: 'tres', 4: 'cuatro'}
 ROL = {'profesional': 'Profesional', 'coordinador': 'Coordinador', 'director': 'Director'}
 SV = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>'
@@ -53,7 +56,7 @@ CSS = '''<style>
 .rl{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 7px;border-radius:999px;font-size:11.5px;font-weight:700}
 .rl-profesional{background:#e8f0fe;color:#1d4ed8}.rl-coordinador{background:#fdf0e9;color:#d74009}.rl-director{background:#f1effc;color:#5b4bb7}
 .v h3,section.sec .v h3{margin:2px 0 6px;font-size:21px;font-weight:800;letter-spacing:-.01em}
-.v-para{margin:0 0 16px;font-size:15.5px;color:var(--mu)}
+.v-para{margin:0 0 16px;font-size:15.5px;color:var(--mu)}.v-nd{margin:0 0 12px;padding:8px 12px;border-radius:8px;background:var(--slbg);color:var(--sl);font-size:14px;font-weight:600}
 .v-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .v-cols p{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
 .v-cols ul{margin:0;padding-left:16px;font-size:13.5px;line-height:1.5}.v-cols li{margin:3px 0}
@@ -101,12 +104,12 @@ def vista(i):
         '<div class="th">%s</div>' % ''.join('<button type="button" class="v-img v-t%s" aria-label="Ver: %s"><img src="img/superficie/%s" alt="%s" loading="lazy"><span>%s</span></button>' % (
             ' on' if j == 0 else '', e(c), e(f), e(v['n'] + ' · ' + c), e(c)) for j, (f, c) in enumerate(im)) if len(im) > 1 else '')) if im else ''
     return ('<li class="v%s" id="v-%s">%s'
-            '<div class="v-b"><div class="v-top"><span class="tp">%s</span>%s</div><h3>%s</h3><p class="v-para">%s</p>'
+            '<div class="v-b"><div class="v-top"><span class="tp">%s</span>%s</div><h3>%s</h3>%s<p class="v-para">%s</p>'
             '<div class="v-cols"><div><p>Qué tiene</p>%s</div><div><p>Qué se puede hacer</p>%s</div><div><p>Estados y errores</p>%s</div></div>'
             '<div class="v-pie">%s%s</div></div></li>') % (
         '' if im else ' sin-img', i, gal, e(v['tipo']),
         ''.join('<span class="rl rl-%s">%s%s</span>' % (r, ICON[r], ROL[r]) for r in v['roles']),
-        e(v['n']), e(v['para']), lst(v['contiene']), lst(v['acciones']), lst(v['estados']), hus, '' if i in FUERA else '<a class="go" href="%s" target="_blank" rel="noopener">Abrir en la demo →</a>' % e(demo(v)))
+        e(v['n']), '<p class="v-nd">%s</p>' % e(v['fuera']) if i in NODISP else '', e(v['para']), lst(v['contiene']), lst(v['acciones']), lst(v['estados']), hus, '' if i in FUERA else '<a class="go" href="%s" target="_blank" rel="noopener">Abrir en la demo →</a>' % e(demo(v)))
 
 
 dep = ''.join('<tr><td><b>%s</b></td><td><span class="pill">%s</span></td><td>%s</td></tr>' % (e(d['que']), e(d['de']), e(d['nota'])) for d in SU['dependencias'])
@@ -143,13 +146,13 @@ md = ['# Superficie · Gestión de infractores (IVC SVN, fase 1)', '',
 nm = lambda ids: ', '.join(V[i]['n'] for i in ids) or '—'
 md += ['| %s | %s | %s | %s |' % (m['entrada'], nm(m['principal']), nm(m['abre']), nm(m.get('desde_ficha', []))) for m in SU['mapa']]
 md += ['', '## Resumen de vistas', '', '| Vista | Tipo | Ruta | Quién la ve | Historias |', '|---|---|---|---|---|']
-md += ['| %s | %s | `%s` | %s | %s |' % (V[i]['n'] + (' (fuera de la fase 1)' if i in FUERA else ''), V[i]['tipo'], V[i]['ruta'], ', '.join(ROL[r] for r in V[i]['roles']), ', '.join(V[i]['historias']) or '—') for g in SU['grupos'] for i in g['vistas']]
+md += ['| %s | %s | `%s` | %s | %s |' % (V[i]['n'] + (' (no disponible hasta la siguiente etapa)' if i in NODISP else ' (fuera de la fase 1)' if i in FUERA else ''), V[i]['tipo'], V[i]['ruta'], ', '.join(ROL[r] for r in V[i]['roles']), ', '.join(V[i]['historias']) or '—') for g in SU['grupos'] for i in g['vistas']]
 for g in SU['grupos']:
     md += ['', '## %s' % (g['titulo'] + (' · fuera de la fase 1' if g.get('fuera') else '')), '', g['sub']]
     for i in g['vistas']:
         v = V[i]
         md += ['', '### %s' % v['n'], '', '- **Tipo:** %s' % v['tipo'], '- **Ruta:** `%s`' % v['ruta'], '- **Quién la ve:** %s' % ', '.join(ROL[r] for r in v['roles']),
-               '- **Para qué:** %s' % v['para'], '- **Capturas:** %s' % (', '.join(c for _, c in v['imgs']) or '—'), '- **Historias:** %s' % (', '.join(v['historias']) or '—'), '', '**Qué tiene**', ''] + ['- ' + x for x in v['contiene']]
+               '- **Para qué:** %s' % v['para'],] + (['- **Estado:** %s' % v['fuera']] if i in NODISP else []) + [ '- **Capturas:** %s' % (', '.join(c for _, c in v['imgs']) or '—'), '- **Historias:** %s' % (', '.join(v['historias']) or '—'), '', '**Qué tiene**', ''] + ['- ' + x for x in v['contiene']]
         md += ['', '**Acciones**', ''] + ['- ' + x for x in v['acciones']]
         if v['estados']: md += ['', '**Estados y errores**', ''] + ['- ' + x for x in v['estados']]
 md += ['', '## Dependencias', '', '| Qué | De quién | Nota |', '|---|---|---|'] + ['| %s | %s | %s |' % (d['que'], d['de'], d['nota']) for d in SU['dependencias']]

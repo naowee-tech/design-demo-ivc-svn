@@ -1,6 +1,6 @@
 # Superficie · Gestión de infractores (IVC SVN, fase 1)
 
-Inventario de las 15 vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.
+Inventario de las 14 vistas del módulo: dónde viven, cómo se navega entre ellas, quién las ve, qué contienen, qué acciones ofrecen y qué estados manejan.
 
 ## Dónde vive
 
@@ -12,14 +12,14 @@ Sección **Control de acceso** en el menú del IVC, con dos entradas: Gestión d
 
 | Entrada del menú | Abre | Desde ahí | Ventanas de confirmación |
 |---|---|---|---|
-| Gestión de sanciones | Gestión · Indicadores, Gestión · Registros de infractores | Panel del expediente, Registrar infractor, Carga masiva, Ficha del infractor | Validar registro, Devolver por subsanar, Editar registro, ¿Salir de la carga masiva? |
+| Gestión de sanciones | Gestión · Registros de infractores | Panel del expediente, Registrar infractor, Carga masiva, Ficha del infractor | Validar registro, Devolver por subsanar, Editar registro, ¿Salir de la carga masiva? |
 | Búsqueda avanzada | Búsqueda avanzada | Panel de la persona, Ficha del infractor | Abrir datos de un menor |
 
 ## Resumen de vistas
 
 | Vista | Tipo | Ruta | Quién la ve | Historias |
 |---|---|---|---|---|
-| Gestión · Indicadores | Pestaña | `#/control-acceso/infractores` | Profesional, Coordinador, Director | HU-09 |
+| Gestión · Indicadores (no disponible hasta la siguiente etapa) | Pestaña | `#/control-acceso/infractores` | Profesional, Coordinador, Director | HU-09 |
 | Gestión · Registros de infractores | Pestaña | `#/control-acceso/infractores` | Profesional, Coordinador, Director | HU-07 |
 | Panel del expediente | Panel lateral | `#/control-acceso/infractores` | Profesional, Coordinador, Director | HU-07 |
 | Registrar infractor | Asistente por pasos | `#/control-acceso/infractores/nuevo` | Profesional, Coordinador | HU-01, HU-02 |
@@ -47,6 +47,7 @@ Donde se registran, se revisan y se cierran los registros.
 - **Ruta:** `#/control-acceso/infractores`
 - **Quién la ve:** Profesional, Coordinador, Director
 - **Para qué:** Ver de un vistazo cómo está la base hoy y hacia dónde va.
+- **Estado:** No disponible hasta la siguiente etapa. La pestaña está oculta en la demo y Gestión abre en Registros; se conserva como referencia.
 - **Capturas:** Indicadores y gráfica, Ayuda ⓘ de un indicador
 - **Historias:** HU-09
 
@@ -70,7 +71,7 @@ Donde se registran, se revisan y se cierran los registros.
 - **Tipo:** Pestaña
 - **Ruta:** `#/control-acceso/infractores`
 - **Quién la ve:** Profesional, Coordinador, Director
-- **Para qué:** Encontrar un registro y ver en qué estado está.
+- **Para qué:** Encontrar un registro y ver en qué estado está. Es lo primero que se ve al entrar a Gestión.
 - **Capturas:** Tabla de registros
 - **Historias:** HU-07
 
@@ -483,7 +484,7 @@ Lo que aparece en varias vistas.
 
 ## Criterios de aceptación
 
-- [ ] Las 15 vistas existen con el contenido, las acciones y los estados descritos.
+- [ ] Las 14 vistas existen con el contenido, las acciones y los estados descritos.
 - [ ] Cada vista se muestra solo a los roles indicados; las acciones respetan la matriz de Roles.
 - [ ] La navegación sigue el mapa: menú → vista → ficha → confirmaciones.
 - [ ] Ninguna pantalla actual del IVC cambia; el módulo entra como sección nueva del menú.

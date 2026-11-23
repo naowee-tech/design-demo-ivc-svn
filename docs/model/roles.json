@@ -44,7 +44,7 @@
     {
       "id": "consultar",
       "label": "Consultar y buscar",
-      "desc": "Gestión (bandeja e indicadores), ficha y Búsqueda avanzada.",
+      "desc": "Gestión (bandeja), ficha y Búsqueda avanzada.",
       "ruta": "#/control-acceso/infractores",
       "origen": "HU"
     },

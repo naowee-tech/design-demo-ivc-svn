@@ -314,7 +314,7 @@ Qué roles del IVC reciben los seis permisos del módulo.
 
 Está ligada a HU-09.
 
-**Mientras tanto:** no se construye y la demo queda igual. Si entra, hay que definir cada indicador en datos y agregar un endpoint de agregados.
+**Mientras tanto:** no se construye: no disponible hasta la siguiente etapa y la pestaña queda oculta en la demo. Si entra, hay que definir cada indicador en datos y agregar un endpoint de agregados.
 
 *Ref.: Superficie · Indicadores*
 

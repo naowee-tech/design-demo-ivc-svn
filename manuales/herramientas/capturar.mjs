@@ -60,9 +60,9 @@ const CAPTURAS = [
   { id: 'ivc-login', ruta: 'index.html', recorte: '.auth-card', marcas: ['#kc-login'] },
   { id: 'ivc-menu', ruta: 'suid/app.html', recorte: '#sidebar',
     marcas: ['.nav-row[data-id="infractores"]', '.nav-row[data-id="consulta"]', '.nav-row[data-id="solicitudes"]', '.nav-row[data-id="eventos"]'] },
-  { id: 'ivc-gestion-ind', ruta: IVC + 'infractores', recorte: '#view', marcas: ['#giTabI', '#giChartCard', p => p.locator('#view').getByText('Registrar infractores', { exact: true }).first()] },
+  // Indicadores no está disponible hasta la siguiente etapa: Gestión abre en Registros.
   { id: 'ivc-gestion-reg', ruta: IVC + 'infractores', prep: async p => { await p.click('#giTabR'); await p.waitForTimeout(700); },
-    recorte: '#view', marcas: ['#giTabR', '#view tbody tr:visible'] },
+    recorte: '#view', marcas: ['#giTabR', '#view tbody tr:visible', p => p.locator('#view').getByText('Registrar infractores', { exact: true }).first()] },
   { id: 'ivc-gestion-panel', ruta: IVC + 'infractores',
     prep: async p => { await p.click('#giTabR'); await p.waitForTimeout(700); await p.locator('#view tbody tr:visible').first().click({ position: { x: 60, y: 10 } }); await p.waitForTimeout(800); },
     recorte: 'viewport', marcas: ['.gpn', p => p.locator('.gpn').getByText('Ver expediente', { exact: true }).first()] },

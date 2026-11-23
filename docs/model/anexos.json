@@ -19,7 +19,7 @@
         ["Historias de usuario", "Las 9 historias con sus criterios de aceptación.", "spec/historias.md", "PROD-73", 36623],
         ["Roles", "Los 3 roles, la matriz rol × acción y quién cierra cada flujo.", "spec/roles.md", "PROD-72", 36618],
         ["Superficie", "Las 17 vistas del módulo, con sus paneles y modales.", "spec/superficie.md", "PROD-74", 36620],
-        ["Indicadores", "Cómo se calcula cada uno de los seis indicadores: fórmula, ventana, etiqueta y lo que falta confirmar.", "spec/indicadores.md", "PROD-74", null],
+        ["Indicadores", "No disponible hasta la siguiente etapa; queda como referencia. Cómo se calcula cada uno de los seis indicadores: fórmula, ventana, etiqueta y lo que falta confirmar.", "spec/indicadores.md", "PROD-74", null],
         ["Flujos", "El paso a paso de cada recorrido.", "spec/flujos.md", "PROD-71", 36617],
         ["Modelo de datos", "Los 55 campos por bloque, catálogos, estados, reglas e integración.", "spec/modelo-datos.md", "PROD-71", 36627],
         ["Base técnica", "Cómo construir la fase 1 en ivc-ms, public-gateway y suite-web-ivc: datos, reglas, API, permisos, front y lo que falta confirmar.", "spec/arquitectura.md", "PROD-45", null],

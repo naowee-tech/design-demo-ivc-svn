@@ -1,6 +1,6 @@
 {
   "fecha": "19-nov-2026",
-  "intro": "Los seis indicadores de la pestaña Gestión · Indicadores se calculan al abrir la vista, a partir de los registros y de su historial. Ninguno se guarda.",
+  "intro": "No disponible hasta la siguiente etapa: la pestaña Gestión · Indicadores está oculta en la demo y este cálculo queda como referencia. Los seis indicadores de la pestaña Gestión · Indicadores se calculan al abrir la vista, a partir de los registros y de su historial. Ninguno se guarda.",
   "fuente": "Lo que hoy calcula la demo: `suid/gi-data.js`, función `insights`. Los textos y umbrales de la etiqueta están en `suid/gi.js`, función `insightsHtml`.",
   "definiciones": [
     ["Hoy", "La fecha del día en que se abre la vista."],
