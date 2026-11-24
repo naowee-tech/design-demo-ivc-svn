@@ -1,5 +1,6 @@
 // Captura y mide cada vista de superficie.json a 375/768/1280: escribe img/responsive/ y responsive-medicion.json.
 // Uso: node docs/model/medir-responsive.mjs [vista…]   Playwright sale de PLAYWRIGHT_PATH o de momentum-web.
+// Las vistas de referencia de superficie.json (fuera de la fase 1 o no disponibles) no se miden: conservan su medición anterior.
 import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
@@ -147,8 +148,12 @@ async function tomar(id, rec, W) {
 const pedidas = process.argv.slice(2);
 const previa = (() => { try { return JSON.parse(fs.readFileSync(SALIDA, 'utf8')); } catch { return {}; } })();
 const res = { ...previa };
+// Misma regla que gen-superficie.py y gen-responsive.py: grupo con «fuera» o vista con «fuera» propio.
+const SUP = JSON.parse(fs.readFileSync(path.join(AQUI, 'superficie.json'), 'utf8'));
+const REF = new Set([...SUP.grupos.filter(g => g.fuera).flatMap(g => g.vistas), ...Object.keys(SUP.vistas).filter(i => SUP.vistas[i].fuera)]);
 for (const [id, rec] of Object.entries(RECETAS)) {
   if (pedidas.length && !pedidas.includes(id)) continue;
+  if (REF.has(id)) { console.log('referencia', id, '(se conserva la medición anterior)'); continue; }
   if (rec.manual) { res[id] = { manual: rec.manual }; console.log('manual', id); continue; }
   res[id] = {};
   for (const W of ANCHOS) {

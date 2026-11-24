@@ -18,6 +18,21 @@ for h in J['hallazgos']:
 TRANS = [h for h in J['hallazgos'] if h.get('transversal')]
 TIPO = {h['id']: h['tipo'] for h in J['hallazgos'] if h['estado'] != 'resuelto'}
 ORDEN = ['rompe', 'variante', 'ajuste', 'ok']
+# Vistas de referencia, con la regla de gen-superficie.py: grupo con «fuera» o vista con «fuera» propio (la propia gana).
+REF = {i: 'fuera de la fase 1' for g in SUP['grupos'] if g.get('fuera') for i in g['vistas']}
+REF.update({i: 'no disponible hasta la siguiente etapa' for i, x in SUP['vistas'].items() if x.get('fuera')})
+
+
+def fase1(h):
+    # Cuenta para la fase 1 si es transversal o toca al menos una vista de la fase 1.
+    return not h['vistas'] or any(v not in REF for v in h['vistas'])
+
+
+H1 = [h for h in J['hallazgos'] if fase1(h)]
+
+
+def donde(v):
+    return NOM.get(v, v) + (' (referencia)' if v in REF else '')
 
 
 def veredicto(v):
@@ -84,8 +99,12 @@ b += ('<p data-call="info" data-call-l="Volver a medir">La medición la hace <co
       'la clasificación vive en <code>docs/model/responsive.json</code> y esta página sale de <code>gen-responsive.py</code>. Auditoría del %s.</p></section>') % e(J['fecha'])
 
 # Resumen
-n = {t: sum(1 for h in J['hallazgos'] if h['tipo'] == t) for t in J['tipos']}
-b += '<section id="resumen"><h2>Resumen</h2><p class="sub">%d hallazgos en %d vistas; %d resueltos. Nada se apretó: lo que no cabe cambia de forma.</p>' % (len(J['hallazgos']), len(J['vistas']), sum(1 for h in J['hallazgos'] if h['estado'] == 'resuelto'))
+n = {t: sum(1 for h in H1 if h['tipo'] == t) for t in J['tipos']}
+REFS = [v for g in SUP['grupos'] for v in g['vistas'] if v in REF and v in J['vistas']]
+b += ('<section id="resumen"><h2>Resumen</h2><p class="sub">%d hallazgos en %d vistas de la fase 1; %d resueltos. Nada se apretó: lo que no cabe cambia de forma. '
+      'Además, %d vistas de referencia (%s) con %d hallazgos propios: se conservan como referencia.</p>') % (
+    len(H1), sum(1 for v in J['vistas'] if v not in REF), sum(1 for h in H1 if h['estado'] == 'resuelto'),
+    len(REFS), e(', '.join(NOM.get(v, v) for v in REFS)), len(J['hallazgos']) - len(H1))
 b += '<div class="cnt">%s</div>' % ''.join('<div class="t-%s"><b>%d</b><span>%s</span><p>%s</p></div>' % (t, n[t], e(J['tipos'][t][0]), e(J['tipos'][t][1])) for t in J['tipos'])
 filas = '<tr><td><b>En todo el módulo</b><br><small>Menú y encabezado</small></td><td>%s</td>%s<td><small>%s</small></td></tr>' % (
     chip(min([h['tipo'] for h in TRANS if h['id'] in TIPO] + ['ok'], key=ORDEN.index)),
@@ -96,7 +115,7 @@ for g in SUP['grupos']:
         if v not in J['vistas']: continue
         ver = veredicto(v)
         filas += '<tr><td><a href="#v-%s">%s</a><br><small>%s</small></td><td>%s</td>%s<td><small>%s</small></td></tr>' % (
-            v, e(NOM.get(v, v)), e(g['titulo']), chip(ver), ''.join('<td>%s</td>' % resumen_ancho(v, w) for w in ANCHOS), e(', '.join(POR_VISTA.get(v, [])) or '—'))
+            v, e(NOM.get(v, v)), e(g['titulo']), chip(ver) + (' ' + chip('manual', REF[v]) if v in REF else ''), ''.join('<td>%s</td>' % resumen_ancho(v, w) for w in ANCHOS), e(', '.join(POR_VISTA.get(v, [])) or '—'))
 b += '<div class="mxw"><table class="mx"><thead><tr><th>Vista</th><th>Veredicto</th>%s<th>Hallazgos</th></tr></thead><tbody>%s</tbody></table></div></section>' % (
     ''.join('<th>%d px</th>' % w for w in ANCHOS), filas)
 
@@ -108,8 +127,8 @@ for t, (tit, sub) in J['tipos'].items():
         est = chip('manual', 'Se corrige en el origen') if h['estado'] == 'origen' else chip('ok', 'Resuelto') if h['estado'] == 'resuelto' else chip('manual', 'Pendiente')
         b += ('<li id="%s"><div class="cab"><span class="id">%s</span><b>%s</b>%s</div><dl>'
               '<dt>Dónde</dt><dd>%s%s</dd><dt>Qué pasa</dt><dd>%s</dd><dt>%s</dt><dd>%s</dd><dt>Archivo</dt><dd><code>%s</code></dd></dl></li>') % (
-            h['id'], h['id'], e(h['titulo']), est,
-            ', '.join('<a href="#v-%s">%s</a>' % (v, e(NOM.get(v, v))) for v in h['vistas']) or 'Todo el módulo',
+            h['id'], h['id'], e(h['titulo']), est + ('' if fase1(h) else chip('manual', 'Solo en vistas de referencia')),
+            ', '.join('<a href="#v-%s">%s</a>' % (v, e(donde(v))) for v in h['vistas']) or 'Todo el módulo',
             e(' · ' + ' / '.join('%d' % w for w in h['anchos']) + ' px'), e(h['que']), 'Solución' if h['estado'] == 'resuelto' else 'Pendiente', e(h['solucion']), e(h['archivo']))
     b += '</ul></section>'
 
@@ -121,7 +140,7 @@ for g in SUP['grupos']:
         nota = J['vistas'][v]
         ids = POR_VISTA.get(v, [])
         b += '<div class="vv" id="v-%s"><h3>%s %s %s</h3><p>%s</p>' % (
-            v, e(NOM.get(v, v)), chip(veredicto(v)), ' '.join('<a class="id" href="#%s">%s</a>' % (i, i) for i in ids), e(nota))
+            v, e(NOM.get(v, v)), chip(veredicto(v)) + (' ' + chip('manual', REF[v]) if v in REF else ''), ' '.join('<a class="id" href="#%s">%s</a>' % (i, i) for i in ids), e(nota))
         for clave, rot in [(v, '')] + [tuple(x) for x in J.get('extra', {}).get(v, [])]:
             caps = ''
             for w in ANCHOS:
@@ -149,11 +168,11 @@ for t, (tit, sub) in J['tipos'].items():
     md += ['## %s' % tit, '', sub, '']
     for h in [h for h in J['hallazgos'] if h['tipo'] == t]:
         md += ['### %s · %s' % (h['id'], h['titulo']), '',
-               '- **Dónde:** %s (%s px)' % (', '.join(NOM.get(v, v) for v in h['vistas']) or 'Todo el módulo', ' / '.join(map(str, h['anchos']))),
+               '- **Dónde:** %s (%s px)' % (', '.join(donde(v) for v in h['vistas']) or 'Todo el módulo', ' / '.join(map(str, h['anchos']))),
                '- **Qué pasa:** ' + h['que'], '- **%s:** ' % ('Solución' if h['estado'] == 'resuelto' else 'Pendiente') + h['solucion'], '- **Archivo:** `%s`' % h['archivo'], '- **Estado:** ' + h['estado'], '']
 md += ['## Veredicto por vista', '', '| Vista | Veredicto | Nota |', '|---|---|---|']
 md += ['| En todo el módulo | %s | %s |' % (VER[min([h['tipo'] for h in TRANS if h['id'] in TIPO] + ['ok'], key=ORDEN.index)], ', '.join(h['id'] + ' ' + h['titulo'] for h in TRANS))]
-md += ['| %s | %s | %s |' % (NOM.get(v, v), VER[veredicto(v)], x) for v, x in J['vistas'].items()]
+md += ['| %s | %s | %s |' % (NOM.get(v, v) + (' (%s)' % REF[v] if v in REF else ''), VER[veredicto(v)], x) for v, x in J['vistas'].items()]
 md += ['', '## Por decidir', ''] + ['- ' + x for x in J['decidir']] + ['']
 open(R + '/docs/spec/responsive.md', 'w', encoding='utf-8').write('\n'.join(md))
 print('ok responsive.html · spec/responsive.md')
