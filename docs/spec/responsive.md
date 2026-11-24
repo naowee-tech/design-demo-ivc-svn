@@ -18,7 +18,7 @@ Se corrige en el lugar, sin cambiar el diseño.
 ### R-01 · Sin menú por debajo de 900 px
 
 - **Dónde:** Todo el módulo (375 / 768 px)
-- **Qué pasa:** suid/app.css oculta la barra lateral bajo 900 px y no pone nada en su lugar: en celular y tablet no hay cómo pasar de Gestión a Búsqueda o a Calidad.
+- **Qué pasa:** suid/app.css oculta la barra lateral bajo 900 px y no pone nada en su lugar: en celular y tablet no hay cómo pasar de Gestión de sanciones a Búsqueda avanzada.
 - **Solución:** Botón ☰ en el encabezado que abre la barra como cajón (se cierra al navegar, con Esc o tocando fuera). En tablet queda el riel de íconos del shell.
 - **Archivo:** `suid/gi-responsive.js`
 - **Estado:** resuelto
@@ -85,7 +85,7 @@ La versión de escritorio no cabe; en celular cambia de forma (tabla → tarjeta
 
 ### V-03 · Calidad: hallazgos en tarjetas
 
-- **Dónde:** Calidad y auditoría · Calidad (375 px)
+- **Dónde:** Calidad y auditoría · Calidad (referencia) (375 px)
 - **Qué pasa:** La columna Detalle queda cortada a una palabra por línea; los tres contadores se apilan a media pantalla.
 - **Solución:** Los tres contadores en una fila y cada hallazgo como tarjeta: registro, tipo y el detalle completo.
 - **Archivo:** `suid/gi-responsive.css`
@@ -93,7 +93,7 @@ La versión de escritorio no cabe; en celular cambia de forma (tabla → tarjeta
 
 ### V-04 · Trazabilidad: tabla → línea de tiempo
 
-- **Dónde:** Calidad y auditoría · Trazabilidad (375 / 768 px)
+- **Dónde:** Calidad y auditoría · Trazabilidad (referencia) (375 / 768 px)
 - **Qué pasa:** En 375 solo caben Fecha, Registro y Usuario; en 768 la Nota queda cortada. Cada fila mide menos de 44 px de alto para tocarla.
 - **Solución:** Bajo 900 px es una línea de tiempo: el cambio de estado como titular, fecha y hora, registro y usuario, y la nota completa.
 - **Archivo:** `suid/gi-responsive.css`
@@ -121,7 +121,7 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 
 ### A-01 · Pestañas recortadas
 
-- **Dónde:** Gestión · Indicadores, Gestión · Registros de infractores (375 px)
+- **Dónde:** Gestión · Indicadores (referencia), Gestión · Registros de infractores (375 px)
 - **Qué pasa:** «Registros de infract…» o «…es»: las dos pestañas no caben y queda una a medias.
 - **Solución:** Las pestañas se compactan y caben las dos sin desplazar.
 - **Archivo:** `suid/gi-responsive.css`
@@ -129,7 +129,7 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 
 ### A-02 · Zonas táctiles de 40 px
 
-- **Dónde:** Gestión · Indicadores, Gestión · Registros de infractores, Editar registro, Calidad y auditoría · Calidad (375 / 768 px)
+- **Dónde:** Gestión · Indicadores (referencia), Gestión · Registros de infractores, Editar registro, Calidad y auditoría · Calidad (referencia) (375 / 768 px)
 - **Qué pasa:** Los botones del sistema de diseño miden 40 px de alto, y los íconos ⓘ y los chips de filtro aún menos.
 - **Solución:** Botones, filtros, paginador y cierre de ventanas suben a 44 px bajo 900 px, en una capa de la demo. El botón de origen (repo de diseño) sigue en 40 px.
 - **Archivo:** `suid/gi-responsive.css`
@@ -137,8 +137,8 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 
 ### A-03 · Texto de 10-11 px
 
-- **Dónde:** Gestión · Indicadores (375 / 768 / 1280 px)
-- **Qué pasa:** Las etiquetas de tendencia (Por vencer, Estable…), los ejes de la gráfica y el pie del login.
+- **Dónde:** Gestión · Indicadores (referencia) (375 / 768 / 1280 px)
+- **Qué pasa:** Las etiquetas de tendencia (Por vencer, Estable…) y los ejes de la gráfica.
 - **Solución:** Ejes de la gráfica y marcas de tendencia a 12 px.
 - **Archivo:** `suid/gi-responsive.css`
 - **Estado:** resuelto
@@ -165,7 +165,7 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 |---|---|---|
 | En todo el módulo | Bien | R-01 Sin menú por debajo de 900 px, A-04 Título del encabezado cortado |
 | Inicio de sesión | Ajuste menor | Funciona en los tres anchos; quedan dos ajustes que son del tema del SUID. |
-| Gestión · Indicadores | Bien | No disponible hasta la siguiente etapa. Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben. |
+| Gestión · Indicadores (no disponible hasta la siguiente etapa) | Bien | Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben. |
 | Gestión · Registros de infractores | Bien | Tarjetas en celular y tablet; en escritorio la tabla ya no se recorta. |
 | Panel del expediente | Bien | Pantalla completa en celular, con el estado de la medida completo. |
 | Registrar infractor | Bien | Los bloques se apilan y el pie con Cancelar / Comenzar queda a mano. |
@@ -178,8 +178,8 @@ Funciona, pero se ve apretado o queda bajo el criterio.
 | Búsqueda avanzada | Bien | Filtros a todo el ancho y el resultado como tarjeta con el estado arriba. |
 | Panel de la persona | Bien | Pantalla completa en celular, con el estado de la medida completo. |
 | Abrir datos de un menor | Bien | La ventana del motivo funciona bien en los tres anchos. |
-| Calidad y auditoría · Calidad | Bien | Contadores en una fila y hallazgos en tarjetas. |
-| Calidad y auditoría · Trazabilidad | Bien | Línea de tiempo en celular y tablet. |
+| Calidad y auditoría · Calidad (fuera de la fase 1) | Bien | Contadores en una fila y hallazgos en tarjetas. |
+| Calidad y auditoría · Trazabilidad (fuera de la fase 1) | Bien | Línea de tiempo en celular y tablet. |
 | Avisos breves | Revisión manual | Aviso breve de 3 s; se revisa a mano al validar o devolver. |
 
 ## Por decidir

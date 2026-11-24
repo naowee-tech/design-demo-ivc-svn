@@ -67,7 +67,7 @@
         375,
         768
       ],
-      "que": "suid/app.css oculta la barra lateral bajo 900 px y no pone nada en su lugar: en celular y tablet no hay cómo pasar de Gestión a Búsqueda o a Calidad.",
+      "que": "suid/app.css oculta la barra lateral bajo 900 px y no pone nada en su lugar: en celular y tablet no hay cómo pasar de Gestión de sanciones a Búsqueda avanzada.",
       "archivo": "suid/gi-responsive.js",
       "estado": "resuelto",
       "transversal": true,
@@ -296,7 +296,7 @@
         768,
         1280
       ],
-      "que": "Las etiquetas de tendencia (Por vencer, Estable…), los ejes de la gráfica y el pie del login.",
+      "que": "Las etiquetas de tendencia (Por vencer, Estable…) y los ejes de la gráfica.",
       "archivo": "suid/gi-responsive.css",
       "estado": "resuelto",
       "solucion": "Ejes de la gráfica y marcas de tendencia a 12 px."
@@ -335,7 +335,7 @@
   ],
   "vistas": {
     "login": "Funciona en los tres anchos; quedan dos ajustes que son del tema del SUID.",
-    "indicadores": "No disponible hasta la siguiente etapa. Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben.",
+    "indicadores": "Cuando se midió: los indicadores se apilan, la gráfica escala y las dos pestañas caben.",
     "registros": "Tarjetas en celular y tablet; en escritorio la tabla ya no se recorta.",
     "panel-registro": "Pantalla completa en celular, con el estado de la medida completo.",
     "registrar": "Los bloques se apilan y el pie con Cancelar / Comenzar queda a mano.",
