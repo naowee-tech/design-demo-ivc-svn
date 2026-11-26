@@ -5,8 +5,8 @@
   var st, editId, view, ctxRef, sol = null;
   var lastDep = {}, auto = {}, touched = {}, evs = [], pcache = {}, cur = 'start', visited = {}, tried = null;
   var SECS = ['inf', 'rep', 'hec', 'san', 'int'];
-  /* La fecha de registro es automática: no es un paso, se muestra como dato al final (DC-155). */
-  var LET = { inf: 'B', rep: 'C', hec: 'D', san: 'E', int: 'F' };
+  /* El tutor es A2, anexo del infractor: si aparece, las demás letras no se corren. */
+  var LET = { inf: 'A', rep: 'A2', hec: 'B', san: 'C', int: 'D' };
   var TITLES = { inf: 'Infractor', rep: 'Representante o tutor', hec: 'Hechos y conducta', san: 'Sobre la sanción', int: 'Gestión interna' };
   var HINTS = { inf: 'Identificación, residencia y contacto.', rep: 'Solo si el infractor es menor de edad.', hec: 'Fecha, evento deportivo y conductas.', san: 'Acto administrativo, ejecutoria y meses de sanción.', int: 'Radicado y profesional responsable.' };
   var NEXT = '<svg class="gi-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
@@ -97,7 +97,7 @@
     var S = function (path) { return sel(path, C.sentido.map(function (x) { return x; }), '—'); };
     var H = function (t) { return '<p class="gf-addr-h">' + t + '</p>'; }, A = function (n, l, inner, o) { o = o || {}; o.c = 0; return fld(n, l, inner, o); };
     var N = function (n, l, path, err) { return A(n, l, inp(path, { max: 3, attr: 'inputmode="numeric"' }), { req: 1, err: err }); };
-    h += '<div class="gi-sub gi-c12 js-urbana-' + k + AD + '"><p class="gi-sub__t">Dirección de residencia</p><div class="gi-grid12 gi-addr">' +
+    h += '<div class="gi-sub gi-c12 js-urbana-' + k + AD + '"><p class="gi-sub__t"><span class="gi-n"></span> Dirección de residencia</p><div class="gi-grid12 gi-addr">' +
       H('Vía principal') +
       A('1', 'Vía principal', seg(k + '.a.via', C.viaUrbana.map(function (x) { return [x[0], x[0]]; }), 'Vía principal'), { cls: 'gf-w4', req: 1, err: k + '.a.via' }) +
       N('2', 'Número', k + '.a.n1', k + '.a.n1') + A('3', 'Letra', L(k + '.a.l1')) + A('4', 'Bis', B(k + '.a.b1')) + A('5', 'Letra', L(k + '.a.l2')) +
@@ -243,6 +243,15 @@
     if (a.adicOn && a.adic) { var ab2 = (C.infoAdicional.filter(function (x) { return x[0] === a.adic; })[0] || [])[1] || ''; s += ' ' + ab2 + ' ' + a.indic; }
     return s.replace(/\s+/g, ' ').trim();
   }
+  /* La cédula se expide a los 18 (edad de hoy); la TI es de menores (edad a la fecha de los hechos). */
+  function docEdad() {
+    var p = st.i, today = U.today();
+    if (!p.fechaNac || p.fechaNac > today) return '';
+    var hoy = U.ageAt(p.fechaNac, today), alHecho = U.ageAt(p.fechaNac, st.f.fechaHechos || today);
+    if (/\(CC\)/.test(p.tipoId) && hoy < 18) return 'Con ' + hoy + ' años no puede tener cédula de ciudadanía: se expide desde los 18. Si es menor, elige tarjeta de identidad (TI).';
+    if (/\(TI\)/.test(p.tipoId) && alHecho >= 18) return 'La tarjeta de identidad es para menores de 18 y tenía ' + alHecho + ' años a la fecha de los hechos. Elige otro tipo de documento.';
+    return '';
+  }
   function menorNow() { return D.esMenor({ fechaNac: st.i.fechaNac, fechaHechos: st.f.fechaHechos }); }
   /* menorOn solo viene de un registro guardado con representante y sin fechas que lo confirmen. */
   function menorEff() { return menorNow() === true || st.ui.menorOn; }
@@ -351,7 +360,22 @@
   }
   /* Los bloques inactivos van en display:none, así que "visible" se decide por [hidden], no por layout. */
   function shown(el, sec) { for (; el && el !== sec; el = el.parentNode) if (el.hidden) return false; return true; }
+  /* Los números siguen solo lo visible: sin saltos al ocultar el representante o un sub-bloque. */
+  function relabel() {
+    var n = 0;
+    SECS.forEach(function (id) {
+      var sec = view.querySelector('#sec-' + id);
+      if (sec.hidden) return;
+      var top = 0, sub = 0;
+      sec.querySelectorAll('.gi-n').forEach(function (e) {
+        if (!shown(e, sec)) return;
+        if (e.closest('.gi-addr, [class*="js-rural-"], .js-otra')) txt(e, top + '.' + (++sub));
+        else { top = ++n; sub = 0; txt(e, String(top)); }
+      });
+    });
+  }
   function progress() {
+    relabel();
     var tot = 0, done = 0, q = function (s) { return view.querySelector(s); };
     SECS.forEach(function (id) {
       var sec = q('#sec-' + id), t = 0, dn = 0;
@@ -431,6 +455,9 @@
       txt(q('[data-tiponame="' + k + '"]'), tn);
     });
     q('.js-adic-r').hidden = !st.r.a.adicOn;
+    var de = docEdad(), ds = q('[data-err="i.fechaNac"]'), dc = ds.parentNode.querySelector('.gi-in');
+    if (de) { txt(ds, de); ds.setAttribute('data-docedad', de); dc.classList.add('is-invalid'); }
+    else if (ds.getAttribute('data-docedad') === ds.textContent && ds.textContent) { txt(ds, ''); dc.classList.remove('is-invalid'); }
     var m = menorEff(), tag = q('[data-menortag]');
     tag.hidden = menorNow() !== true; tag.closest('.gf-ro').classList.toggle('gf-ro--menor', !tag.hidden);
     q('#sec-rep').hidden = !m; q('#go-rep').hidden = !m;
@@ -530,6 +557,7 @@
       if (p.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.correo)) errs.push([k + '.correo', tag + ': el correo no tiene un formato válido.']);
       if (p.telefono && p.telefono.length > 10) errs.push([k + '.telefono', tag + ': el teléfono admite máximo 10 dígitos.']);
       if (p.fechaNac && p.fechaNac > today) errs.push([k + '.fechaNac', tag + ': la fecha de nacimiento no puede ser futura.']);
+      if (k === 'i' && docEdad()) errs.push(['i.fechaNac', docEdad()]);
       if (k === 'r' && p.fechaNac && p.fechaNac <= today && U.ageAt(p.fechaNac, today) < 18) errs.push([k + '.fechaNac', 'El representante o tutor debe ser mayor de edad (18 años o más).']);
       if (k === 'r' && /\(TI\)/.test(p.tipoId)) errs.push([k + '.tipoId', 'La tarjeta de identidad es solo para menores; elige otro tipo para el representante.']);
     }

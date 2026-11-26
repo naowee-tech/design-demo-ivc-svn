@@ -77,7 +77,7 @@
     var html = '<div class="sidebar-logo suid-logo">' +
       '<a class="suid-logo__back" href="../index.html" aria-label="Volver">' + I.back + '</a>' +
       '<img src="login/img/ministerio.svg" alt="Ministerio del Deporte" class="suid-logo__img"><div class="logo-sep"></div>' +
-      '<span class="sb-logo-img sb-logo-img--pill" title="Inspección, Vigilancia y Control">IVC</span></div>' +
+      '<span class="sb-logo-img sb-logo-img--pill" title="Sistema Único de Información del Deporte">SUID</span></div>' +
       '<nav class="sidebar-nav" role="navigation" aria-label="Menú principal">';
     MENU.forEach(function (s0) {
       var s = { sec: s0.sec, items: s0.items.filter(Boolean) };
