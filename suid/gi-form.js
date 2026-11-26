@@ -376,6 +376,18 @@
       });
     });
   }
+  /* Todos los campos editables visibles (no solo obligatorios); los calculados y los interruptores no cuentan. */
+  function allFields(sec) {
+    var a = 0, f = 0;
+    sec.querySelectorAll('.gi-f:not(.gf-ro):not(.gf-swf)').forEach(function (fe) {
+      if (!shown(fe, sec)) return;
+      var rq = fe.getAttribute('data-req'), c = fe.querySelector('[data-sg], [data-multi], [data-p]');
+      if (!rq && !c) return;
+      a++;
+      if (rq ? filled(rq) : c.hasAttribute('data-sg') ? !!String(segVal(c.getAttribute('data-sg')) || '') : filled(c.getAttribute('data-multi') || c.getAttribute('data-p'))) f++;
+    });
+    return [f, a];
+  }
   function progress() {
     relabel();
     var tot = 0, done = 0, q = function (s) { return view.querySelector(s); };
@@ -383,16 +395,17 @@
       var sec = q('#sec-' + id), t = 0, dn = 0;
       if (!sec.hidden) sec.querySelectorAll('[data-req]').forEach(function (el) { if (!shown(el, sec)) return; t++; if (filled(el.getAttribute('data-req'))) dn++; });
       tot += t; done += dn;
+      var af = sec.hidden ? [0, 0] : allFields(sec);
       var bad = false; if (!sec.hidden) sec.querySelectorAll('.gi-ferr:not(:empty)').forEach(function (e) { if (shown(e, sec)) bad = true; });
       q('#go-' + id).classList.toggle('has-err', bad);
-      if (pcache[id] === t + '/' + dn) return;
-      pcache[id] = t + '/' + dn;
+      if (pcache[id] === t + '/' + dn + '/' + af) return;
+      pcache[id] = t + '/' + dn + '/' + af;
       var full = t > 0 && dn === t, label = t ? dn + ' de ' + t + ' campos' : 'Sin campos obligatorios';
       var bd = q('[data-scount="' + id + '"]'); txt(bd, dn + '/' + t); bd.title = label;
       q('[data-srow="' + id + '"]').hidden = !t; setBar(q('[data-sbar="' + id + '"]'), dn, t, label);
-      txt(q('[data-startcnt="' + id + '"]'), t + (t === 1 ? ' campo' : ' campos'));
+      txt(q('[data-startcnt="' + id + '"]'), af[1] + (af[1] === 1 ? ' campo' : ' campos'));
       q('#go-' + id).classList.toggle('is-done', full);
-      var c = q('[data-count="' + id + '"]'); txt(c, label); c.hidden = full || !t;
+      var c = q('[data-count="' + id + '"]'); txt(c, af[0] + ' de ' + af[1] + ' campos'); c.hidden = !af[1];
       q('[data-done="' + id + '"]').hidden = !full;
     });
     var pct = tot ? Math.floor(done * 100 / tot) : 0;
