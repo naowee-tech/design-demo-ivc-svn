@@ -248,10 +248,12 @@
     var p = st.i, today = U.today();
     if (!p.fechaNac || p.fechaNac > today) return '';
     var hoy = U.ageAt(p.fechaNac, today), alHecho = U.ageAt(p.fechaNac, st.f.fechaHechos || today);
-    if (/\(CC\)/.test(p.tipoId) && hoy < 18) return 'Con ' + hoy + ' años no puede tener cédula de ciudadanía: se expide desde los 18. Si es menor, elige tarjeta de identidad (TI).';
-    if (/\(TI\)/.test(p.tipoId) && alHecho >= 18) return 'La tarjeta de identidad es para menores de 18 y tenía ' + alHecho + ' años a la fecha de los hechos. Elige otro tipo de documento.';
+    if (/\(CC\)/.test(p.tipoId) && hoy < 18) return 'Con ' + hoy + ' años no puede tener cédula de ciudadanía: se expide desde los 18.';
+    if (/\(TI\)/.test(p.tipoId) && alHecho >= 18) return 'La tarjeta de identidad es para menores de 18 y tenía ' + alHecho + ' años a la fecha de los hechos.';
     return '';
   }
+  /* El arreglo de un clic: el documento que sí corresponde a la edad. */
+  function docFix() { return /\(CC\)/.test(st.i.tipoId) ? [C.tiposId[2], 'Cambiar a tarjeta de identidad (TI)'] : [C.tiposId[0], 'Cambiar a cédula de ciudadanía (CC)']; }
   function menorNow() { return D.esMenor({ fechaNac: st.i.fechaNac, fechaHechos: st.f.fechaHechos }); }
   /* menorOn solo viene de un registro guardado con representante y sin fechas que lo confirmen. */
   function menorEff() { return menorNow() === true || st.ui.menorOn; }
@@ -458,6 +460,11 @@
     var de = docEdad(), ds = q('[data-err="i.fechaNac"]'), dc = ds.parentNode.querySelector('.gi-in');
     if (de) { txt(ds, de); ds.setAttribute('data-docedad', de); dc.classList.add('is-invalid'); }
     else if (ds.getAttribute('data-docedad') === ds.textContent && ds.textContent) { txt(ds, ''); dc.classList.remove('is-invalid'); }
+    var fx = q('[data-fixdoc]');
+    if (!fx) { ds.insertAdjacentHTML('afterend', '<button type="button" class="naowee-btn naowee-btn--quiet naowee-btn--small gf-fixdoc" data-fixdoc hidden></button>'); fx = q('[data-fixdoc]'); }
+    fx.hidden = !de; if (de) { fx.setAttribute('data-fixdoc', docFix()[0]); txt(fx, docFix()[1]); }
+    /* Con el documento en contradicción con la edad no se avanza ni se guarda: el autollenado no lo arregla. */
+    ['#gfNext', '#giSave'].forEach(function (sl) { var bt = q(sl); if (!bt) return; bt.disabled = !!de; if (de) bt.title = 'Corrige el tipo de documento del infractor (paso A).'; else bt.removeAttribute('title'); });
     var m = menorEff(), tag = q('[data-menortag]');
     tag.hidden = menorNow() !== true; tag.closest('.gf-ro').classList.toggle('gf-ro--menor', !tag.hidden);
     q('#sec-rep').hidden = !m; q('#go-rep').hidden = !m;
@@ -708,12 +715,6 @@
     else if (id === 'hec') fillHechos(); else if (id === 'san') fillSancion(); else if (id === 'int') fillInterna();
     sync();
   }
-  /* El barrido solo revela lo que se completó; lo que ya venía lleno (p. ej. desde una solicitud) no se toca. */
-  function autofillAnimado(id) {
-    var s = w.LaserFill && secEl(id) ? w.LaserFill.snap(secEl(id)) : null;
-    autofill(id);
-    if (s) w.LaserFill.play(secEl(id), s);
-  }
   function aviso() { showErrors([]); banner([]); UI.toast('Completamos los datos de ejemplo; revise y pulse ' + (view.querySelector('#giSave').hidden ? 'Siguiente' : 'Guardar registro') + ' de nuevo.'); }
   /* Con faltantes no hay error: se rellena el bloque y el siguiente clic ya avanza. */
   function guard(from, to) {
@@ -721,7 +722,7 @@
     for (var i = from; i < to; i++) {
       if (!blockErrors(list[i]).length) continue;
       if (list[i] !== cur) go(list[i]);
-      autofillAnimado(list[i]);
+      autofill(list[i]);
       var left = blockErrors(list[i]);
       if (left.length) { showErrors(left, secEl(list[i])); banner(left, true, true); firstInvalid(); return false; }
       aviso();
@@ -734,7 +735,7 @@
     if (errs.length) {
       var at = steps().filter(function (id) { return errs.some(function (e) { return secOf(e[0]) === id; }); })[0] || cur;
       if (at !== cur) go(at);
-      SECS.forEach(function (id) { if (!secEl(id).hidden && blockErrors(id).length) autofillAnimado(id); });
+      SECS.forEach(function (id) { if (!secEl(id).hidden && blockErrors(id).length) autofill(id); });
       var rest = validate();
       if (rest.length) { showErrors(rest); banner(rest); firstInvalid(); return; }
       return aviso();
@@ -841,7 +842,6 @@
     idInfo(k);
     var o = w.DemoCasos && !editId && w.DemoCasos.autocompletar(st[k].tipoId || C.tiposId[0], st[k].numId);
     if (!o) return;
-    var s = w.LaserFill && secEl(cur) ? w.LaserFill.snap(secEl(cur)) : null;
     Object.assign(st[k], o.persona);
     if (k === 'i' && !vigenteDe('i')) {
       if (o.rep) Object.assign(st.r, o.rep);
@@ -850,7 +850,6 @@
       if (menorEff() && o.rep) fillPerson('r');
     }
     sync();
-    if (s) w.LaserFill.play(secEl(cur), s, { defer: true });
   }
   function bind() {
     var form = view.querySelector('#giForm');
@@ -899,6 +898,8 @@
         lastDep.evAsk = false; sync(); renderEvents();
         var nx = view.querySelector(ans.getAttribute('data-evans') === 'no' ? '[data-sg="competicion"] input' : '[data-p="ciudadHechos"]'); if (nx) nx.focus();
       }
+      var fd = e.target.closest('[data-fixdoc]');
+      if (fd) { segSet('i.tipoId', fd.getAttribute('data-fixdoc')); mark('i.tipoId'); sync(); var on = view.querySelector('[data-sg="i.tipoId"] input:checked'); if (on) on.focus(); }
       if (b) { st.f.descripcion = baseText(); auto.descripcion = 1; clearErr('descripcion'); sync(); var ta = view.querySelector('[data-p="descripcion"]'); ta.focus(); }
     });
     view.querySelector('#gfFilter').addEventListener('input', function (e) {

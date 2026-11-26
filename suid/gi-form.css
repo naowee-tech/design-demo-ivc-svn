@@ -175,7 +175,9 @@
 .gi-form .gi-lbl .gi-n { flex: none; margin-right: 0; }
 .gi-form .gi-lbl .gf-lt { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .gi-form .gi-lbl--req::after { flex: none; }
-.gf-vig__k .gi-n, .gf-ro .gi-n { margin-right: 0; }
+.gf-ro .gi-n { margin-right: 0; }
+/* .gf-vig__k no es flex: el número necesita su propio aire. */
+.gf-vig__k .gi-n { margin-right: 6px; }
 
 /* DC-155: la fecha de registro cierra el último bloque como dato informativo. */
 .gi-form .gi-grid12 > .gf-regdate { margin: -1px 0 0 -1px; padding: 16px 20px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
@@ -231,3 +233,4 @@
 /* DC-103: con sanción vigente el resto del formulario queda inerte */
 .gf-lock .gi-sec:not(#sec-start) .gi-grid12 > :not(:has([data-p="i.numId"], [name="i.tipoId"])) { opacity: .5; pointer-events: none; }
 .gf-lock .gf-idinfo--neg { border-width: 2px; }
+.gf-fixdoc { margin-top: 8px; }
